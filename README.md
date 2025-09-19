@@ -2,6 +2,6 @@ This file is empty right now, but you will need to update it to explain who is i
 
 # Team Members
 
-| V#   | Name     |
-| ---- | -------- |
-| TODO | Fill out |
+| V#   | Name                 |
+| ---- | --------             |
+| V00984911 | Anitta Varghese |
