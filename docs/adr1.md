@@ -17,4 +17,5 @@ We are choosing TypeScript with React for our frontend.
 - React has less of a learning curve and is ideal for smaller projects.
 
 ### Consequences
-What becomes easier or more difficult to do because of this change?
+Changing over to JavaScript would be relatively time consuming if it becomes necessary. 
+However, since TypeScript is stricter in its typing we should have an easier time debugging/testing the code.
