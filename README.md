@@ -4,4 +4,7 @@ This file is empty right now, but you will need to update it to explain who is i
 
 | V#   | Name     |
 | ---- | -------- |
+<<<<<<< README.md
+| V01006449 | Nisa Tahsin |
 | V0101819 | Griffin Costello |
+
