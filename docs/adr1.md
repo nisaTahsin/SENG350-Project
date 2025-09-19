@@ -1,12 +1,20 @@
-#Title
-###Status
-What is the status, such as proposed, accepted, rejected, deprecated, superseded, etc.?
+# Frontend Scripting Language
+### Status
+Proposed
 
-###Context
-What is the issue that we're seeing that is motivating this decision or change?
+### Context
+We need to choose a scripting language for our frontend.
 
-###Decision
-What is the change that we're proposing and/or doing?
+### Options
+Either TypeScript or JavaScript with either React or next.js.
 
-###Consequences
+### Decision
+We are choosing TypeScript with React for our frontend.
+
+### Motivation
+- We can use TypeScript for our entry layer and backend as well, which will help keep languages consistent across the project.
+- TypeScript has more scalability compared to JavaScript.
+- React has less of a learning curve and is ideal for smaller projects.
+
+### Consequences
 What becomes easier or more difficult to do because of this change?
