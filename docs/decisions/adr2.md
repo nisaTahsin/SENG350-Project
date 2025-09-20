@@ -1,11 +1,11 @@
-<<<<<<< docs/adr2.md
+
 # Database Technology
 
 ### Status
 Proposed
 
 ### Context
-We need to store classrooms, bookings, users, and audit logs. Concurrency correctness is a must, and there must be exactly one successful booking.We need to store classrooms, bookings, users, and audit logs. Concurrency correctness is a must, and there must be exactly one successful booking.We need to store classrooms, bookings, users, and audit logs. Concurrency correctness is a must, and there must be exactly one successful booking.
+We need to store classrooms, bookings, users, and audit logs. Concurrency correctness is a must, and there must be exactly one successful booking.
 
 ### Options
 Either SQLite or PostgreSQL
@@ -25,13 +25,3 @@ We are choosing PostgreSQL as the primary database for our project.
 - Consumes more memory and CPU compared to SQLite.
 
 
-
-
-
-
-
-
-
-
-
->>>>>>> docs/adr2.md
