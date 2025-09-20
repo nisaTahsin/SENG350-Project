@@ -1,14 +1,19 @@
 # Product Requirements Document
 
-
-| Table of Contents                                                              |
-| ------------------------------------------------------------------------------ |
-| [1.0 Overview](prd.md#1.0 Overview)                                            |
-| [2.0 Objectives and Goals](prd.md#2.0 Objectives and Goals)                    |
-| [3.0 User Stories](prd.md#3.0 User Stories)                                    |
-| [4.0 Functional Requirements](prd.md#4.0 Functional Requirements)              |
-| [5.0 Quality Attribute Requirements](prd.md#5.0 Quality Attribute Requirements)|
-| [6.0 Milestones & Deliverables](prd.md#6.0 Milestones & Deliverables)          |
+| Table of Contents                                                                                  |
+| -------------------------------------------------------------------------------------------------- |
+| [1.0 Overview](prd.md#1.0 Overview)                                                                |
+| [2.0 Objectives and Goals](prd.md#2.0 Objectives and Goals)                                        |
+| [3.0 User Stories](prd.md#3.0 User Stories)                                                        |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.1 Staff User Stories](prd.md#3.1 Staff User Stories)        |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.2 Registrar User Stories](prd.md#3.2 Registrar User Stories)|
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.3 Admin User Stories](prd.md#3.3 Admin User Stories)        |
+| [4.0 Functional Requirements](prd.md#4.0 Functional Requirements)                                  |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[4.1 Staff Requirements](prd.md#4.1 Staff Requirements)        |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[4.2 Registrar Requirements](prd.md#4.2 Registrar Requirements)|
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[4.3 Admin Requirements](prd.md#4.3 Admin Requirements)        |
+| [5.0 Quality Attribute Requirements](prd.md#5.0 Quality Attribute Requirements)                    |
+| [6.0 Milestones & Deliverables](prd.md#6.0 Milestones & Deliverables)                              |
 
 
 
@@ -21,15 +26,15 @@
 <p>We will strive to:
 
 - **Guarantee Quality** \
-Back all functional and non-functional requirements with acceptance tests, ensuring concurrency correctness, and responsiveness.
+Back all functional and non-functional requirements with acceptance tests, ensuring concurrency correctness, and responsiveness. <br><br>
 - **Improve Efficiency** \
-Reduce delays from the current manual scheduling system by providing fast, responsive booking functionality.
+Reduce delays from the current manual scheduling system by providing fast, responsive booking functionality. <br><br>
 - **Ensure Scheduling Integrity** \
-Equip registrars with tools to resolve conflicts, manage room schedules and analyze booking patterns to ensure fair classroom allocation.
+Equip registrars with tools to resolve conflicts, manage room schedules and analyze booking patterns to ensure fair classroom allocation. <br><br>
 - **Support Long-Term Maintainability** \
-Provide test plans, API specifications to facilitate future improvements and maintenance.
+Provide test plans, API specifications to facilitate future improvements and maintenance. <br><br>
 - **Promote Self-Service** \
-Helps UVic staff to manage their own bookings, cancellations, and histories without any other intervention. 
+Helps UVic staff to manage their own bookings, cancellations, and histories without any other intervention. <br><br>
 
 
 ## 3.0 User Stories
@@ -48,7 +53,6 @@ Helps UVic staff to manage their own bookings, cancellations, and histories with
 
 #### 3.3 Admin User Story
 - A-1: Admins can view operation logs and a health page. [See Gitlab Issue #25]
-
 
 ## 4.0 Functional Requirements
 The system must support the following functional requirements. Each requirement has a GitLab issue associated with it for management purposes. 
@@ -95,7 +99,6 @@ flowchart LR
   Modifiability --> Availability-Hours
 ~~~
 
-
 ## 6.0 Milestones & Deliverables
 
 |Milestone                  | Start date | End date | Duration | Deliverables |
@@ -106,5 +109,3 @@ flowchart LR
 |Implementation II          | 10-27-2025 |11-09-2025| 13 days  |<ul><li>Features for Registrar (analytics, editing schedules, viewing ratios).</li><li>Features for Admin (system health, operation logs, role management).</li><li>Integration of analytics dashboard.</li><li>Expanded automated test coverage.</li></ul>
 |Refactoring                | 11-10-2025 |11-23-2025| 13 days  |Code cleanup and optimization.<ul><li>Bug fixing and performance improvements.</li><li>Finalize documentation for maintainability.</li><li>Conduct security and privilege manual testing.</li></ul>
 |Reflection and Presentation| 11-24-2025 |11-30-2025| 6 days   |<ul><li>Final project report.</li><li>Demonstration of end-to-end functionality.</li><li>Retrospective and lessons learned.</li><li>Stakeholder presentation.</li></ul>
-
-
