@@ -1,3 +1,4 @@
+<<<<<<< docs/adr2.md
 # Database Technology
 
 ### Status
@@ -33,3 +34,4 @@ We are choosing PostgreSQL as the primary database for our project.
 
 
 
+>>>>>>> docs/adr2.md
