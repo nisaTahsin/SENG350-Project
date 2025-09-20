@@ -1,19 +1,19 @@
 # Product Requirements Document
 
-| Table of Contents                                                                                  |
-| -------------------------------------------------------------------------------------------------- |
-| [1.0 Overview](prd.md##1.0 Overview)                                                                |
-| [2.0 Objectives and Goals](prd.md##2.0 Objectives and Goals)                                        |
-| [3.0 User Stories](prd.md##3.0 User Stories)                                                        |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.1 Staff User Stories](prd.md####3.1 Staff User Stories)        |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.2 Registrar User Stories](prd.md####3.2 Registrar User Stories)|
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.3 Admin User Stories](prd.md####3.3 Admin User Stories)        |
-| [4.0 Functional Requirements](prd.md##4.0 Functional Requirements)                                  |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[4.1 Staff Requirements](prd.md####4.1 Staff Requirements)        |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[4.2 Registrar Requirements](prd.md####4.2 Registrar Requirements)|
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[4.3 Admin Requirements](prd.md####4.3 Admin Requirements)        |
-| [5.0 Quality Attribute Requirements](prd.md##5.0 Quality Attribute Requirements)                    |
-| [6.0 Milestones & Deliverables](prd.md##6.0 Milestones & Deliverables)                              |
+| Table of Contents                                                                               |
+| ---------------------------------------------------------------------------------------------   |
+| [1.0 Overview](##1.0 Overview)                                                                  |
+| [2.0 Objectives and Goals](##2.0 Objectives and Goals)                                          |
+| [3.0 User Stories](##3.0 User Stories)                                                          |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.1 Staff User Stories](####3.1 Staff User Stories)        |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.2 Registrar User Stories](####3.2 Registrar User Stories)|
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.3 Admin User Stories](####3.3 Admin User Stories)        |
+| [4.0 Functional Requirements](##4.0 Functional Requirements)                                    |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[4.1 Staff Requirements](####4.1 Staff Requirements)        |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[4.2 Registrar Requirements](####4.2 Registrar Requirements)|
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[4.3 Admin Requirements](####4.3 Admin Requirements)        |
+| [5.0 Quality Attribute Requirements](##5.0 Quality Attribute Requirements)                      |
+| [6.0 Milestones & Deliverables](##6.0 Milestones & Deliverables)                                |
 
 
 
