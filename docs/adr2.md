@@ -1,22 +1,37 @@
-#Frontend Scripting Language
+<<<<<<< docs/adr2.md
+# Database Technology
 
-###Status
+### Status
 Proposed
 
-###Context
-We need to choose a testing framework compatible with our system.
+### Context
+We need to store classrooms, bookings, users, and audit logs. Concurrency correctness is a must, and there must be exactly one successful booking.We need to store classrooms, bookings, users, and audit logs. Concurrency correctness is a must, and there must be exactly one successful booking.We need to store classrooms, bookings, users, and audit logs. Concurrency correctness is a must, and there must be exactly one successful booking.
 
-###Options
-Jest or Vitest.
+### Options
+Either SQLite or PostgreSQL
 
-###Decision
-We are Jest for our testing framework
+### Decision
+We are choosing PostgreSQL as the primary database for our project.
 
-###Motivation
-- This is widely compatible with NestJS, our entry layer and backend choice
-- Much more documentation and higher user base
-- Built in code coverage reports allow us to easily gauge our testing progress
+### Motivation
+- PostgreSQL provides strong concurrency control, ensuring only one booking is successful per room/time slot.
+- It supports custom datatypes, functions, and indexing methods.
+- It offers scalability and reliability for high-traffic scenarios.
+- Data integrity is better maintained compared to SQLite.
 
-###Consequences
-- Slightly slower runtime compared to Vitest
-- Not as lightweight
+### Consequences
+- Requires installation and configuration, which is not ideal for very small apps.
+- Requires managing database migrations.
+- Consumes more memory and CPU compared to SQLite.
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> docs/adr2.md
