@@ -88,7 +88,7 @@ flowchart LR
   Utility --> Visibility
   Utility --> Security
   Utility --> Modifiability
-  Performance --> Data-latency
+  Performance --> Data-Latency
   Performance --> System-Load-Capacity
   Accuracy --> Update-Frequency
   Accuracy --> Consistency
@@ -96,7 +96,30 @@ flowchart LR
   Visibility --> Booking-State
   Security --> System-Security
   Security --> Data-Integrity
-  Modifiability --> Availability-Hours
+  Modifiability --> Maintainability
+  Modifiability --> Configurability
+  System-Security --> Admin-Logs["Operation logs and health page visible only to Admins"]
+  Data-Latency --> Real-time-update-logs["Operation logs and health page updated in real time"]
+  Data-Integrity --> Admin-audit["Admins audit user actions, ensuring no malicious data changes"]
+  Configurability --> Classroom-reassign["Registrars can reassign classrooms"]
+  Internal-Logs --> Capity-ratio["Registrars can view student/classroom capacity ratio for all classrooms"]
+  System-Security --> Block-accounts["Registrars block malicious accounts"]
+  Internal-Logs --> R-view-history["Registrars can view all classroom booking history"]
+  Configurability --> Hold-release["Registrars release holds on classrooms"]
+  Data-Latency --> R-Analytics["Detailed analytics page for Registrars loaded in < 2s"]
+  Update-Frequency --> Popular-classrooms["Popular classroom analytics updated daily"]
+  Maintainability --> Open-hour-update["Registrars can take down classrooom listings and update open hours"]
+  Booking-State --> Unavilable-booking["Unavailble classrooms cannot be booked by Staff"]
+  Data-Integrity --> Booking-visibility["Bookings only visible and modifiable by Staff creating them or Registrars"]
+  Configurability --> Booking-cancellation["Bookings can be cancelled by Staff"]
+  Internal-Logs --> Staff-history["Staff can see their own booking history"]
+  Consistency --> Booking-conflict["Only one Staff is successful in booking conflicts"]
+  Data-Latency --> Booking-result-message["Booking success/failure mesages received in < 2s"]
+  System-Load-Capacity --> Load-Capacity["System handles 200-300 staff simultaneously"] 
+  System-Load-Capacity --> Booking-Capacity["System can handle 1000 active bookings"]
+  Booking-State --> Classroom-status["Classrooms show if booked or unbooked"]
+  Update-Frequency --> Classroom-status-update["Available classrooms list updates < 2s after any booking completion/cancellation"]
+
 ~~~
 
 ## 6.0 Milestones & Deliverables
