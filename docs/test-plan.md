@@ -26,7 +26,7 @@ Regression testing to ensure stability after refactoring.
 <br>**Scenario 2** - Concurrency correctness “Given multiple users attempt to book the same room and time slot simultaneously, when their requests are processed, then exactly one booking is confirmed and all others are rejected” \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Test type: Concurrency test(Automated) \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;How: Run parallel clients ie: parallel request with same room, date, timeslot, within milliseconds of each other. Databases have only one row for that timeslot, success response for one client and error/conflict message for others. \
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Success: Exactly one booking persisted, no deadlocks. 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Success: Exactly one booking persisted, no deadlocks. \
 <br>**Scenario 3** - Perfomance “Given the system is under peak usage, when a user searches for available classrooms, then the results are returned within 3 seconds” \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Test type: Perfomance test \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;How: Simulate 300+ users querying availability at once and measure response times for search requests. \
