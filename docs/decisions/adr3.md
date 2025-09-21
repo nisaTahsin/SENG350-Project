@@ -1,22 +1,32 @@
 # Testing and Demo Tools
 
-### Status
+## Status
 Proposed
 
-### Context
+## Context
 We need to choose a testing framework compatible with our system.
 
-### Options
-Jest or Vitest.
+**Options**: Jest or Vitest.
 
-### Decision
+## Decision
 We are Jest for our testing framework
 
-### Motivation
+**Motivation**: 
 - This is widely compatible with NestJS, our entry layer and backend choice
 - Much more documentation and higher user base
 - Built in code coverage reports allow us to easily gauge our testing progress
 
-### Consequences
+**Tradeoffs**:
+-
+-
+-
+
+## Consequences
 - Slightly slower runtime compared to Vitest
 - Not as lightweight
+
+**Linked Requirements**:
+- [REQ-](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_2_proj/-/issues/)
+- [REQ-](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_2_proj/-/issues/)
+- [REQ-](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_2_proj/-/issues/)
+
