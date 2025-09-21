@@ -34,7 +34,7 @@ Regression testing to ensure stability after refactoring.
 <br>**Scenario 4** - Modifiability “Given an administrator is logged in, when they update a classroom’s availability hours, then the system applies the changes immediately without requiring downtime" \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Test type: System test \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;How: Change a classroom’s close hours in the admin interface while users are actively booking. Attempt to book in the new range. \
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Success: New availability rules are enforced immediately, bookings outside the updated hours are rejected, and in-range bookings succeed. \
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Success: New availability rules are enforced immediately, bookings outside the updated hours are rejected, and in-range bookings succeed.
 
 
 
