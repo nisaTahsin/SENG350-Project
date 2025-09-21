@@ -26,6 +26,6 @@ We are choosing TypeScript with React for our frontend.
 - The learning curve for TypeScript will be steeper but in return we should gain more scalibility and reliability. 
 
 **Linked Requirements**:
-- REQ-S-3: Staff must be able to reserve a classroom with a single click. [See Gitlab Issue #4]
-- REQ-S-6: When two people compete for the same time slot, only one is given the classroom to ensure no double bookings. [See Gitlab Issue #9]
-- REQ-S-7: State of bookings are clearly shown ie: successful bookings are given a success message, and failed ones are given a failure message. [See Gitlab Issue #10]
+- [REQ-S-3: Single click reservation](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_2_proj/-/issues/4)
+- [REQ-S-6: No double bookings](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_2_proj/-/issues/9)
+- [REQ-S-7: Booking state visibility](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_2_proj/-/issues/10)
