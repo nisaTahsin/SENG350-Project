@@ -3,3 +3,5 @@ If you use AI tools different from Github Copilot, or you are not using the auto
 ChatGPT (2025-09-19) - how difficult is it to change a project from typescript to javascript?
 
 ChatGPT (2025-09-21) - What are the trade-offs between choosing typescript or javascript for the frontend of a project?
+
+ChatGPT (2025-09-19) - Why might we use Jest over Vitest or vice versa
