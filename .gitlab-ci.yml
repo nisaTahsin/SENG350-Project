@@ -58,7 +58,7 @@ test_job:
     - docker pull $CONTAINER_IMAGE
     # 'docker run': Executes your test command inside the container.
     #                ***IMPORTANT: Replace '/path/to/your/test/script.sh' with your actual test command.***
-    - docker run $CONTAINER_IMAGE /path/to/your/test/script.sh
+    - docker run $CONTAINER_IMAGE src/frontend/tests/utils.test.ts
 
 # --- Push Stage (Optional for 'main' branch) ---
 # This job tags the successfully built and tested image as 'latest' and pushes it.
