@@ -15,6 +15,13 @@ default:
   # This is essential for pushing your Docker images to the registry.
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - |
+      for i in {1..30}; do
+        docker info && break
+        echo "Waiting for Docker to be ready..."
+        sleep 1
+      done
+      # code from chatGPT
 
 # 'stages' define the order of execution for your pipeline.
 # Jobs within the same stage run in parallel, and stages run sequentially.
