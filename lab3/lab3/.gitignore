@@ -1,0 +1,6 @@
+# Common junk
+.DS_Store
+.vscode/
+*.log
+.env
+**/__pycache__/
