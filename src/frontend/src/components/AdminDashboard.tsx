@@ -1,0 +1,61 @@
+import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import './Dashboard.css';
+
+const AdminDashboard: React.FC = () => {
+  const { user, logout } = useAuth();
+
+  return (
+    <div className="dashboard">
+      <header className="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <div className="user-info">
+          <span>Welcome, {user?.username}!</span>
+          <button onClick={logout} className="logout-button">
+            Logout
+          </button>
+        </div>
+      </header>
+      
+      <main className="dashboard-content">
+        <div className="dashboard-card">
+          <h2>System Configuration</h2>
+          <p>Configure system-level settings and parameters</p>
+          <button className="action-button">System Config</button>
+        </div>
+        
+        <div className="dashboard-card">
+          <h2>Audit Records</h2>
+          <p>View comprehensive audit trails and system records</p>
+          <button className="action-button">View Audit Records</button>
+        </div>
+        
+        <div className="dashboard-card">
+          <h2>System Health</h2>
+          <p>Monitor system performance and health metrics</p>
+          <button className="action-button">System Health</button>
+        </div>
+        
+        <div className="dashboard-card">
+          <h2>User Roles & Permissions</h2>
+          <p>Manage user roles and system permissions</p>
+          <button className="action-button">Manage Permissions</button>
+        </div>
+        
+        <div className="dashboard-card">
+          <h2>Database Management</h2>
+          <p>Oversee database operations and maintenance</p>
+          <button className="action-button">Database Admin</button>
+        </div>
+        
+        <div className="dashboard-card">
+          <h2>System Monitoring</h2>
+          <p>Monitor system activity without daily intervention</p>
+          <button className="action-button">System Monitor</button>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default AdminDashboard;
