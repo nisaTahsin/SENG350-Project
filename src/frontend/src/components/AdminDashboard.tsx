@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Dashboard.css';
 
 const AdminDashboard: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="dashboard">
@@ -21,37 +23,37 @@ const AdminDashboard: React.FC = () => {
         <div className="dashboard-card">
           <h2>System Configuration</h2>
           <p>Configure system-level settings and parameters</p>
-          <button className="action-button">System Config</button>
+          <button className="action-button" onClick={() => navigate('/admin/system-config')}>System Config</button>
         </div>
         
         <div className="dashboard-card">
           <h2>Audit Records</h2>
           <p>View comprehensive audit trails and system records</p>
-          <button className="action-button">View Audit Records</button>
+          <button className="action-button" onClick={() => navigate('/admin/audit-records')}>View Audit Records</button>
         </div>
         
         <div className="dashboard-card">
           <h2>System Health</h2>
           <p>Monitor system performance and health metrics</p>
-          <button className="action-button">System Health</button>
+          <button className="action-button" onClick={() => navigate('/admin/system-health')}>System Health</button>
         </div>
         
         <div className="dashboard-card">
           <h2>User Roles & Permissions</h2>
           <p>Manage user roles and system permissions</p>
-          <button className="action-button">Manage Permissions</button>
+          <button className="action-button" onClick={() => navigate('/admin/permissions')}>Manage Permissions</button>
         </div>
         
         <div className="dashboard-card">
           <h2>Database Management</h2>
           <p>Oversee database operations and maintenance</p>
-          <button className="action-button">Database Admin</button>
+          <button className="action-button" onClick={() => navigate('/admin/database')}>Database Admin</button>
         </div>
         
         <div className="dashboard-card">
           <h2>System Monitoring</h2>
           <p>Monitor system activity without daily intervention</p>
-          <button className="action-button">System Monitor</button>
+          <button className="action-button" onClick={() => navigate('/admin/monitoring')}>System Monitor</button>
         </div>
       </main>
     </div>

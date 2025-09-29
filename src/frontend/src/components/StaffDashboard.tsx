@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Dashboard.css';
 
 const StaffDashboard: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="dashboard">
@@ -21,37 +23,19 @@ const StaffDashboard: React.FC = () => {
         <div className="dashboard-card">
           <h2>Browse Availability</h2>
           <p>View available classrooms and time slots for booking</p>
-          <button className="action-button">Browse Availability</button>
-        </div>
-        
-        <div className="dashboard-card">
-          <h2>Create Booking</h2>
-          <p>Book a classroom for your meeting or event</p>
-          <button className="action-button">Create New Booking</button>
+          <button className="action-button" onClick={() => navigate('/staff/browse-availability')}>Browse Availability</button>
         </div>
         
         <div className="dashboard-card">
           <h2>My Bookings</h2>
           <p>View and manage your current bookings</p>
-          <button className="action-button">View My Bookings</button>
-        </div>
-        
-        <div className="dashboard-card">
-          <h2>Cancel Booking</h2>
-          <p>Cancel or modify your existing bookings</p>
-          <button className="action-button">Manage Bookings</button>
+          <button className="action-button" onClick={() => navigate('/staff/my-bookings')}>View My Bookings</button>
         </div>
         
         <div className="dashboard-card">
           <h2>Booking History</h2>
           <p>View your past booking history and records</p>
-          <button className="action-button">View History</button>
-        </div>
-        
-        <div className="dashboard-card">
-          <h2>Quick Book</h2>
-          <p>Quickly book a room for immediate use</p>
-          <button className="action-button">Quick Book</button>
+          <button className="action-button" onClick={() => navigate('/staff/booking-history')}>View History</button>
         </div>
       </main>
     </div>

@@ -6,6 +6,26 @@ import StaffDashboard from './components/StaffDashboard';
 import RegistrarDashboard from './components/RegistrarDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+
+// Staff pages
+import StaffBrowseAvailability from './components/pages/StaffBrowseAvailability';
+import StaffMyBookings from './components/pages/StaffMyBookings';
+import StaffBookingHistory from './components/pages/StaffBookingHistory';
+
+// Registrar pages
+import RegistrarClassroomManagement from './components/pages/RegistrarClassroomManagement';
+import RegistrarTimeSlotManagement from './components/pages/RegistrarTimeSlotManagement';
+import RegistrarEscalations from './components/pages/RegistrarEscalations';
+import RegistrarAccountManagement from './components/pages/RegistrarAccountManagement';
+import RegistrarStatisticsLogs from './components/pages/RegistrarStatisticsLogs';
+
+// Admin pages
+import AdminSystemConfig from './components/pages/AdminSystemConfig';
+import AdminAuditRecords from './components/pages/AdminAuditRecords';
+import AdminSystemHealth from './components/pages/AdminSystemHealth';
+import AdminPermissions from './components/pages/AdminPermissions';
+import AdminDatabase from './components/pages/AdminDatabase';
+import AdminMonitoring from './components/pages/AdminMonitoring';
 import './App.css';
 
 const AppContent: React.FC = () => {
@@ -56,6 +76,124 @@ const AppContent: React.FC = () => {
               </ProtectedRoute>
             } 
           />
+          {/* Staff routes */}
+          <Route 
+            path="/staff/browse-availability" 
+            element={
+              <ProtectedRoute>
+                <StaffBrowseAvailability />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/staff/my-bookings" 
+            element={
+              <ProtectedRoute>
+                <StaffMyBookings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/staff/booking-history" 
+            element={
+              <ProtectedRoute>
+                <StaffBookingHistory />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Registrar routes */}
+          <Route 
+            path="/registrar/classroom-management" 
+            element={
+              <ProtectedRoute>
+                <RegistrarClassroomManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/registrar/time-slot-management" 
+            element={
+              <ProtectedRoute>
+                <RegistrarTimeSlotManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/registrar/escalations" 
+            element={
+              <ProtectedRoute>
+                <RegistrarEscalations />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/registrar/account-management" 
+            element={
+              <ProtectedRoute>
+                <RegistrarAccountManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/registrar/statistics-logs" 
+            element={
+              <ProtectedRoute>
+                <RegistrarStatisticsLogs />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Admin routes */}
+          <Route 
+            path="/admin/system-config" 
+            element={
+              <ProtectedRoute>
+                <AdminSystemConfig />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/audit-records" 
+            element={
+              <ProtectedRoute>
+                <AdminAuditRecords />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/system-health" 
+            element={
+              <ProtectedRoute>
+                <AdminSystemHealth />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/permissions" 
+            element={
+              <ProtectedRoute>
+                <AdminPermissions />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/database" 
+            element={
+              <ProtectedRoute>
+                <AdminDatabase />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/monitoring" 
+            element={
+              <ProtectedRoute>
+                <AdminMonitoring />
+              </ProtectedRoute>
+            } 
+          />
+          
           <Route 
             path="/" 
             element={<Navigate to={getDashboardRoute()} replace />} 
