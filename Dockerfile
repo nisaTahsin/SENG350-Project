@@ -1,24 +1,3 @@
-FROM ubuntu:14.04
-MAINTAINER Neil Ernst, nernst@uvic.ca
-
-# add add-apt-repo cmd
-RUN apt-get -y install software-properties-common
-
-# add openjdk repo
-RUN add-apt-repository -y ppa:openjdk-r/ppa
-
-# update packages and install
-RUN apt-get -y update
-RUN apt-get install -y wget openjdk-11-jdk curl unzip
-
-RUN apt-get -y install git
-RUN apt-get -y install maven
-RUN apt-get -y install libblas*
-RUN ldconfig /usr/local/cuda/lib64
-
-ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
-
-
 # macOS verion
 
 FROM ubuntu:22.04
