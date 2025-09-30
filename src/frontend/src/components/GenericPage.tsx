@@ -2,13 +2,15 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './GenericPage.css';
 
+
 interface GenericPageProps {
   title: string;
   description: string;
   userType: 'staff' | 'registrar' | 'admin';
+  children?: React.ReactNode;
 }
 
-const GenericPage: React.FC<GenericPageProps> = ({ title, description, userType }) => {
+const GenericPage: React.FC<GenericPageProps> = ({ title, description, userType, children }) => {
   const navigate = useNavigate();
 
   const getDashboardPath = () => {
@@ -35,15 +37,18 @@ const GenericPage: React.FC<GenericPageProps> = ({ title, description, userType 
         </button>
         <h1>{title}</h1>
       </header>
-      
       <main className="page-content">
         <div className="page-card">
           <h2>{title}</h2>
           <p>{description}</p>
-          <div className="placeholder-content">
-            <p>This page is under development.</p>
-            <p>Content will be added here in future updates.</p>
-          </div>
+          {children ? (
+            <div className="custom-content">{children}</div>
+          ) : (
+            <div className="placeholder-content">
+              <p>This page is under development.</p>
+              <p>Content will be added here in future updates.</p>
+            </div>
+          )}
         </div>
       </main>
     </div>
