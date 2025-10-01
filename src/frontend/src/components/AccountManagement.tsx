@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import UserBookings from './UserBookings';
 
 interface User {
 	Name: string;
@@ -25,6 +26,8 @@ const AccountManagementTable: React.FC = () => {
 	const [selectedUserIdx, setSelectedUserIdx] = useState<number | null>(null);
 	const [editRole, setEditRole] = useState('');
 	const [editDisabled, setEditDisabled] = useState(false);
+	const [showBookings, setShowBookings] = useState(false);
+
 
 	const openModal = (idx: number) => {
 		setSelectedUserIdx(idx);
@@ -33,8 +36,19 @@ const AccountManagementTable: React.FC = () => {
 		setModalOpen(true);
 	};
 
+	const openBookings = (idx: number) => {
+		setSelectedUserIdx(idx);
+		setShowBookings(true);
+	};
+
+
 	const closeModal = () => {
 		setModalOpen(false);
+		setSelectedUserIdx(null);
+	};
+
+	const closeBookings = () => {
+		setShowBookings(false);
 		setSelectedUserIdx(null);
 	};
 
@@ -47,7 +61,7 @@ const AccountManagementTable: React.FC = () => {
 	};
 
 	return (
-		<div style={{ background: 'white', borderRadius: 10, boxShadow: '0 2px 10px rgba(0,0,0,0.1)', padding: 24 }}>
+		<div style={{ background: 'white', borderRadius: 10, boxShadow: '0 2px 10px rgba(0,0,0,0.1)', padding: 24, position: 'relative' }}>
 			<h2>Users</h2>
 			<button style={{ background: '#2257bf', color: 'white', border: 'none', borderRadius: 4, padding: '8px 16px', marginBottom: 16 }}>Add User</button>
 			<div style={{ overflowX: 'auto' }}>
@@ -71,7 +85,10 @@ const AccountManagementTable: React.FC = () => {
 								<td style={{ padding: 8 }}>{user.role}</td>
 								<td style={{ padding: 8 }}>{user.disabled ? 'Yes' : 'No'}</td>
 								<td style={{ padding: 8 }}>
-									<button style={{ marginRight: 4 }}>View Bookings</button>
+									<button style={{ marginRight: 4 }} onClick={() => openBookings(idx)}>View Bookings</button>
+			{showBookings && selectedUserIdx !== null && (
+				<UserBookings userName={users[selectedUserIdx].Name} onClose={closeBookings} />
+			)}
 									<button style={{ marginRight: 4 }}>Edit Info</button>
 									<button style={{ marginRight: 4 }} onClick={() => openModal(idx)}>Change Permissions</button>
 								</td>
