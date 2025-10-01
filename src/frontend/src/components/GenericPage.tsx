@@ -39,7 +39,6 @@ const GenericPage: React.FC<GenericPageProps> = ({ title, description, userType,
       </header>
       <main className="page-content">
         <div className="page-card">
-          <h2>{title}</h2>
           <p>{description}</p>
           {children ? (
             <div className="custom-content">{children}</div>
