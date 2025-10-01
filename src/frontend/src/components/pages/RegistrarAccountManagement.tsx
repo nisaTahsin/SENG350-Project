@@ -1,7 +1,7 @@
 
 import React from 'react';
 import GenericPage from '../GenericPage';
-import AccountManagementTable from '../AccountManagement';
+import RegistrarAccountManagementTable from '../RegistrarAccountManagementTable';
 
 
 const RegistrarAccountManagement: React.FC = () => {
@@ -12,7 +12,7 @@ const RegistrarAccountManagement: React.FC = () => {
       userType="registrar"
     >
       <div style={{ marginTop: 32 }}>
-        <AccountManagementTable />
+        <RegistrarAccountManagementTable />
       </div>
     </GenericPage>
   );
