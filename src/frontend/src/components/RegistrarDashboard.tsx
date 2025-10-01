@@ -21,15 +21,9 @@ const RegistrarDashboard: React.FC = () => {
       
       <main className="dashboard-content">
         <div className="dashboard-card">
-          <h2>Classroom Management</h2>
-          <p>Add, edit, or remove classroom information and settings</p>
+          <h2>Classroom & Time Slot Management</h2>
+          <p>Edit classroom information and configure available time slots</p>
           <button className="action-button" onClick={() => navigate('/registrar/classroom-management')}>Manage Classrooms</button>
-        </div>
-        
-        <div className="dashboard-card">
-          <h2>Time Slot Management</h2>
-          <p>Configure available time slots and scheduling rules</p>
-          <button className="action-button" onClick={() => navigate('/registrar/time-slot-management')}>Manage Time Slots</button>
         </div>
         
         <div className="dashboard-card">
