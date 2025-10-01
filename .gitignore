@@ -1,3 +1,10 @@
-# Populate this .gitignore with the 
-# files, folders and subdirectories you want git 
-# to ignore. This should be build output, packages, etc. 
+# Node modules
+node_modules/
+
+# Env files
+.env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
