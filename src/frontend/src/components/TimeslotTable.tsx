@@ -29,26 +29,28 @@ const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings })
 
   return (
     <div style={{ maxWidth: '900px', overflowX: 'auto', margin: '0 auto' }}>
-      <table style={{ borderCollapse: 'collapse', width: '100%', tableLayout: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
-          <tr>
-            <th style={timeColStyle}>Time</th>
+          <tr style={{ background: '#0a4a7e', color: 'white' }}>
+            <th style={{ ...timeColStyle, border: 'none', padding: 12, textAlign: 'left', fontWeight: 'bold', fontSize: 14 }}>TIME</th>
             {rooms.map(room => (
-              <th key={room} style={{ border: '1px solid #ccc', padding: '4px', whiteSpace: 'nowrap' }}>{room}</th>
+              <th
+                key={room}
+                style={{ border: 'none', padding: 12, whiteSpace: 'nowrap', textAlign: 'left', fontWeight: 'bold', fontSize: 14 }}
+              >
+                {room}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {times.map((time, rowIdx) => (
-            <tr key={time}>
-              <td style={timeColStyle}>{time}</td>
+            <tr key={time} style={{ borderBottom: '1px solid #dee2e6' }}>
+              <td style={{ ...timeColStyle, padding: 12, fontSize: 13, fontFamily: 'monospace', background: '#f8f9fa', textAlign: 'left' }}>{time}</td>
               {rooms.map(room => {
-                // If this cell should be skipped due to rowspan, render nothing
                 if (skipCell[room][time]) return null;
                 const booking = bookings[room]?.[time];
-                // If booking is a BookingCell with span > 1, render with rowspan
                 if (booking && typeof booking === 'object' && 'span' in booking && booking.span > 1) {
-                  // Mark the next (span-1) time slots for this room as skipped
                   for (let i = 1; i < booking.span; i++) {
                     const nextTime = times[rowIdx + i];
                     if (nextTime) skipCell[room][nextTime] = true;
@@ -57,21 +59,19 @@ const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings })
                     <td
                       key={room}
                       rowSpan={booking.span}
-                      style={{ border: '1px solid #ccc', padding: '4px', background: '#bcd', verticalAlign: 'middle' }}
+                      style={{ border: '1px solid #ccc', padding: 12, background: '#bcd', verticalAlign: 'middle', fontWeight: 'bold', fontSize: 13, textAlign: 'center' }}
                     >
                       {booking.label}
                     </td>
                   );
                 }
-                // If booking is a string (single slot), render as before
                 if (typeof booking === 'string') {
                   return (
-                    <td key={room} style={{ border: '1px solid #ccc', padding: '4px', background: '#bcd' }}>{booking}</td>
+                    <td key={room} style={{ border: '1px solid #ccc', padding: 12, background: '#bcd', fontWeight: 'bold', fontSize: 13, textAlign: 'center' }}>{booking}</td>
                   );
                 }
-                // Otherwise, render empty cell
                 return (
-                  <td key={room} style={{ border: '1px solid #ccc', padding: '4px' }} />
+                  <td key={room} style={{ border: '1px solid #ccc', padding: 12, background: '#fff', fontSize: 13, textAlign: 'center' }} />
                 );
               })}
             </tr>
