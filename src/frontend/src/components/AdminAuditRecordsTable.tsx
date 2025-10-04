@@ -188,20 +188,7 @@ const AdminAuditRecordsTable: React.FC = () => {
 		}
 	};
 
-	const getActionIcon = (action: string) => {
-		switch (action) {
-			case 'Sign-in': return '🔐';
-			case 'Booking Created': return '📅';
-			case 'Booking Cancelled': return '❌';
-			case 'Role Changed': return '👤';
-			case 'Account Disabled': return '🚫';
-			case 'Account Enabled': return '✅';
-			case 'Account Blocked': return '🔒';
-			case 'Account Released': return '🔓';
-			case 'Config Changed': return '⚙️';
-			default: return '📝';
-		}
-	};
+	
 
 	const clearFilters = () => {
 		setSearchTerm('');
@@ -398,8 +385,8 @@ const AdminAuditRecordsTable: React.FC = () => {
 									</td>
 									<td style={{ padding: 12 }}>
 										<span style={{
-											background: record.userRole === 'Admin' ? '#dc3545' : 
-														record.userRole === 'Registrar' ? '#ffc107' : '#28a745',
+											background: record.userRole === 'Admin' ? '#000000ff' : 
+														record.userRole === 'Registrar' ? '#6f6f6fff' : '#a3a3a3ff',
 											color: 'white',
 											padding: '2px 6px',
 											borderRadius: 12,
@@ -411,7 +398,6 @@ const AdminAuditRecordsTable: React.FC = () => {
 									</td>
 									<td style={{ padding: 12 }}>
 										<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-											{getActionIcon(record.action)}
 											{record.action}
 										</span>
 									</td>
