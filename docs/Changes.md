@@ -9,6 +9,6 @@ _This document concerns smaller changes made to the design plan discussed during
 **Current Status:** Removed from design of system entirely. 
 
 #### User Story R-4: Registrars can view ratio of students compared to maximum capacity of classroom [See GitLab Issue #24]
-**Reasoning:** Implementation would require access to a database of students as well as their enrolled classes, which was decided to be outside of the baseline requirements of the project over messages between team members. \
+**Reasoning:** Implementation would require access to a database of students as well as their enrolled classes, which was decided to be outside of the requirements baselined during Design I over messages between team members. \
 **Current Status:** Removed from design of system entirely.
 
