@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Post, Patch, Delete, Body } from '@nestjs/common';
 import { RoomsService } from './room.service';
-import { CreateTimeslotDto, UpdateTimeslotDto } from '../timeslot/dto';
+import { CreateTimeslotDto } from '../timeslot/dto/create-timeslot.dto';
+import { UpdateTimeslotDto } from '../timeslot/dto/update-timeslot.dto';
 
 @Controller('rooms')
 export class RoomsController {

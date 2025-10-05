@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Unique, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Timeslot } from '../timeslot/timeslot.entity';
 import { Room } from '../room/room.entity';
 
 @Entity('bookings')
+@Unique(['roomId', 'timeslotId'])
 export class Booking {
   @PrimaryGeneratedColumn('increment', { type: 'bigint' })
   id!: number;
@@ -29,6 +30,9 @@ export class Booking {
 
   @Column({ name: 'room_id', type: 'bigint' })
   roomId!: number;
+
+  @Column({ type: 'varchar', length: 20 })
+  status!: 'pending' | 'confirmed' | 'cancelled';
 
   // timeslot (1h slot) pointer — canonical for room+hour
   @ManyToOne(() => Timeslot, (timeslot) => timeslot.bookings, { onDelete: 'CASCADE' })
