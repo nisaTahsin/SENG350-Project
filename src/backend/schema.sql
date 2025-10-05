@@ -30,14 +30,13 @@ CREATE TABLE rooms (
   capacity INT NOT NULL,
   room_location VARCHAR(255),
   url VARCHAR(255),
-  av_equipment TEXT[] DEFAULT '{}',   -- simplified AV storage
+  av_equipment TEXT[] DEFAULT '{}',
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT uq_room_name_building UNIQUE (room_name, building)
 );
 
--- Faster lookups by name + building
 CREATE INDEX idx_rooms_name_building ON rooms (lower(room_name), lower(building));
 
 -- ===== TIMESLOTS =====
@@ -50,12 +49,11 @@ CREATE TABLE timeslots (
   created_by BIGINT REFERENCES users(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  -- Prevent overlapping timeslots for the same room
+  CONSTRAINT uq_timeslots_room_id_id UNIQUE (room_id, id),
   CONSTRAINT no_overlap_timeslot EXCLUDE USING gist (
     room_id WITH =,
     tstzrange(start_time, end_time, '[]') WITH &&
   ),
-  -- Ensure timeslot length is exactly 1 hour
   CONSTRAINT chk_timeslot_duration CHECK (end_time = start_time + interval '1 hour')
 );
 
@@ -78,11 +76,9 @@ CREATE TABLE bookings (
     ON DELETE CASCADE
 );
 
--- Only one confirmed booking per timeslot
 CREATE UNIQUE INDEX ux_bookings_timeslot_confirmed ON bookings(timeslot_id)
   WHERE (status = 'confirmed');
 
--- Useful indexes
 CREATE INDEX idx_bookings_user ON bookings(user_id);
 CREATE INDEX idx_bookings_timeslot_status ON bookings(timeslot_id, status);
 
@@ -109,7 +105,6 @@ CREATE TABLE room_maintenance (
   reason VARCHAR(255),
   created_by BIGINT REFERENCES users(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  -- Prevent overlapping maintenance windows for the same room
   CONSTRAINT no_overlap_maintenance EXCLUDE USING gist (
     room_id WITH =,
     tstzrange(start_time, end_time, '[]') WITH &&
