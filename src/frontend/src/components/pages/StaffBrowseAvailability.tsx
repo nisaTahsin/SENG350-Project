@@ -48,6 +48,7 @@ const StaffBrowseAvailability: React.FC = () => {
   const [selectedBuilding, setSelectedBuilding] = useState(buildings[0]);
   const [startTime, setStartTime] = useState<string>('');
   const [endTime, setEndTime] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
   const { rooms, bookings } = buildingData[selectedBuilding];
 
@@ -91,6 +92,16 @@ const StaffBrowseAvailability: React.FC = () => {
       userType="staff"
     >
       <div style={{ marginTop: 16, marginBottom: 24, display: 'flex', gap: 24, alignItems: 'center' }}>
+        <div>
+          <label htmlFor="date-filter" style={{ fontWeight: 'bold', marginRight: 8 }}>Date:</label>
+          <input
+            id="date-filter"
+            type="date"
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            style={{ padding: '4px 8px', fontSize: '1rem', marginRight: 8 }}
+          />
+        </div>
         <div>
           <label htmlFor="building-select" style={{ fontWeight: 'bold', marginRight: 8 }}>Select Building:</label>
           <select

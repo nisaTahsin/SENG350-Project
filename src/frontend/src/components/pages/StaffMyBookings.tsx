@@ -34,6 +34,7 @@ const mockBookings: Booking[] = [
 
 const StaffMyBookings: React.FC = () => {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
   // Minimal room details extracted from backend/uvic_rooms.csv
   const roomDetails: Record<string, { capacity: number; av: string; url: string }> = {
@@ -57,15 +58,32 @@ const StaffMyBookings: React.FC = () => {
     });
   };
 
+  // Filter bookings by selected date
+  const filteredBookings = selectedDate
+    ? mockBookings.filter(b => b.date === selectedDate)
+    : mockBookings;
+
   return (
     <GenericPage
       title="My Bookings"
       description="View and manage your current bookings"
       userType="staff"
     >
+      <div style={{ marginTop: 16, marginBottom: 24, display: 'flex', gap: 24, alignItems: 'center' }}>
+        <div>
+          <label htmlFor="date-filter" style={{ fontWeight: 'bold', marginRight: 8 }}>Date:</label>
+          <input
+            id="date-filter"
+            type="date"
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            style={{ padding: '4px 8px', fontSize: '1rem', marginRight: 8 }}
+          />
+        </div>
+      </div>
       <div style={{ marginTop: 16 }}>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-          {mockBookings.map((b) => (
+          {filteredBookings.map((b) => (
             <li
               key={b.id}
               style={{

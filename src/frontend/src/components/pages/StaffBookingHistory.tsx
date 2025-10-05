@@ -66,6 +66,7 @@ const StaffBookingHistory: React.FC = () => {
     []
   );
   const [selectedBuilding, setSelectedBuilding] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>('');
   const roomsForBuilding = useMemo(() => {
     if (!selectedBuilding) return [] as string[];
     return Array.from(
@@ -83,9 +84,10 @@ const StaffBookingHistory: React.FC = () => {
     return pastBookings.filter((b) => {
       if (selectedBuilding && b.building !== selectedBuilding) return false;
       if (selectedRoom && b.room !== selectedRoom) return false;
+      if (selectedDate && b.date !== selectedDate) return false;
       return true;
     });
-  }, [selectedBuilding, selectedRoom]);
+  }, [selectedBuilding, selectedRoom, selectedDate]);
 
   const toggleExpanded = (id: string) => {
     setExpandedIds((prev) => {
@@ -102,6 +104,16 @@ const StaffBookingHistory: React.FC = () => {
       userType="staff"
     >
       <div style={{ marginTop: 16, marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div>
+          <label htmlFor="date-filter" style={{ fontWeight: 'bold', marginRight: 8 }}>Date:</label>
+          <input
+            id="date-filter"
+            type="date"
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            style={{ padding: '4px 8px', fontSize: '1rem', marginRight: 8 }}
+          />
+        </div>
         <div>
           <label htmlFor="hist-building" style={{ fontWeight: 'bold', marginRight: 8 }}>Building:</label>
           <select

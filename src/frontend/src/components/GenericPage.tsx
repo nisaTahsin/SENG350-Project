@@ -44,7 +44,7 @@ const GenericPage: React.FC<GenericPageProps> = ({ title, description, userType,
             <div className="custom-content">{children}</div>
           ) : (
             <div className="placeholder-content">
-              <p>This page is under development.</p>
+              <p>This page has been excluded from the scope of Implementation I.</p>
               <p>Content will be added here in future updates.</p>
             </div>
           )}
