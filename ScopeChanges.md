@@ -17,4 +17,9 @@ Out of all the challenges encountered however, the most time consuming was by fa
 Two out of five group members spent almost all of our first week trying to get the CI/CD working, and as a result only ended up with a week to complete most of the rest of the implementation. 
 
 ## Reduced Scope
+Our first general narrowing of the scope involved focusing primarily on staff functionalities. 
+At the point in the development process when the scope changes where introduced we had already implemented the UI framework for most of the Admin features, and one of the Registrar features. 
+However, since we were constrained by the deadline, we decided not to implement the backend functionality of these features.
+The reduced scope will include all Staff features covered in the [Project Requirements Document](prd.md), but will omit almost all Admin and Registrar features.
 
+For a more granular description of the specific features and requirements which were removed from Implementation I, as well as the motivation behind these decisions, see [Changes.md](Changes.md).
