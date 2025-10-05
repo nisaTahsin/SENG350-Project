@@ -68,11 +68,13 @@ _For all of Design I and most of Implementation I, this document had not been up
 **Topics Discussed:**
 - Development allocation
 - Development process
+- Features to exclude
 
 **Tasks Completed:**
 - Decided on Amanda and Griffin for frontend development
 - Decided on Nisa and Anitta for backend development
 - Decided on Taqdeer for testing and documentation
+- Removed two registrar requirement from Implementation I [see GitLab issue #22], [see GitLab issue #24]
 
 ## Meeting 5 - Out of Lab
 
@@ -92,7 +94,7 @@ _For all of Design I and most of Implementation I, this document had not been up
 - Setup node.js with react for frontend
 - Setup PostGreSQL for backend
 
-## Meeting 4 - Lab 3
+## Meeting 6 - Lab 4
 
 **Date:** Wednesday, October 1st 2025 <br>
 **Time:** 8:30am - 10:20am <br>
