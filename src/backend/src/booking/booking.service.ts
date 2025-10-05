@@ -1,6 +1,17 @@
-import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Booking } from './booking.entity';
 
-/** simple keyed mutex to serialize operations per room+timeslot */
+/**
+ * simple keyed mutex to serialize operations per room+timeslot
+ * (still useful to prevent duplicate inserts before DB unique constraint fires)
+ */
 class KeyedMutex {
   private locks = new Map<string, Promise<void>>();
 
@@ -11,13 +22,10 @@ class KeyedMutex {
     this.locks.set(key, current);
 
     try {
-      // wait for previous to finish, then run callback
       await previous;
       return await fn();
     } finally {
-      // allow next in line to proceed
       release();
-      // remove lock entry if no one else replaced it
       if (this.locks.get(key) === current) {
         this.locks.delete(key);
       }
@@ -25,70 +33,107 @@ class KeyedMutex {
   }
 }
 
-export interface Booking {
-  id: number;
-  userId: number;
-  roomId: number;
-  timeslotId: number;  // timeslot identifier (1h slot)
-  status: 'pending' | 'confirmed' | 'cancelled';
-}
-
 @Injectable()
 export class BookingService {
-  private bookings: Booking[] = [];
-  private idCounter = 1;
   private mutex = new KeyedMutex();
 
-  // make createBooking atomic per room+timeslot to ensure only one booking per room/timeslot
-  async createBooking(userId: number, data: Partial<Booking>) {
+  constructor(
+    @InjectRepository(Booking)
+    private readonly bookingsRepository: Repository<Booking>,
+  ) {}
+
+  /**
+   * Create booking with conflict protection.
+   */
+  async createBooking(userId: number, data: Partial<Booking>): Promise<Booking> {
     if (typeof data.roomId !== 'number' || typeof data.timeslotId !== 'number') {
-      throw new ConflictException('roomId and timeslotId are required');
+      throw new ConflictException('roomId and timeslotId are required (numbers)');
     }
 
     const key = `${data.roomId}:${data.timeslotId}`;
 
-    return await this.mutex.runExclusive(key, async () => {
-      // re-check conflict inside the lock
-      const conflict = this.bookings.find(
-        b => b.roomId === data.roomId && b.timeslotId === data.timeslotId && b.status !== 'cancelled',
-      );
-      if (conflict) {
-        // another request already created a booking for this room+timeslot
-        throw new ConflictException('Timeslot already booked for this room');
-      }
-
-      const booking: Booking = {
-        id: this.idCounter++,
+    return this.mutex.runExclusive(key, async () => {
+      const booking = this.bookingsRepository.create({
         userId,
-        roomId: data.roomId!,      
+        roomId: data.roomId!,
         timeslotId: data.timeslotId!,
-        status: data.status || 'pending',
-      };
-      this.bookings.push(booking);
-      return booking;
+        status: 'pending',
+        title: data.title,
+        description: data.description,
+      });
+
+      try {
+        return await this.bookingsRepository.save(booking);
+      } catch (err: any) {
+        // Postgres unique violation
+        if (err.code === '23505') {
+          throw new ConflictException('Timeslot already booked for this room');
+        }
+        throw err;
+      }
     });
   }
 
-  cancelBooking(id: number, userId: number) {
-    const booking = this.bookings.find(b => b.id === id && b.userId === userId);
-    if (booking) {
-      booking.status = 'cancelled';
+  /**
+   * Cancel a booking
+   */
+  async cancelBooking(id: number, userId: number, userRole: string): Promise<void> {
+    const booking = await this.bookingsRepository.findOne({ where: { id } });
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
     }
-    return booking;
+
+    if (userRole === 'staff' && booking.userId !== userId) {
+      throw new ForbiddenException('You cannot cancel another user’s booking');
+    }
+
+    if (userRole === 'registrar' || userRole === 'admin') {
+      await this.bookingsRepository.delete(id);
+      return;
+    }
+
+    if (userRole === 'staff' && booking.userId === userId) {
+      await this.bookingsRepository.delete(id);
+      return;
+    }
+
+    throw new ForbiddenException('You do not have permission to cancel this booking');
   }
 
-  getMyBookings(userId: number) {
-    return this.bookings.filter(b => b.userId === userId);
+  /**
+   * List bookings for the current user
+   */
+  async getMyBookings(userId: number): Promise<Booking[]> {
+    return this.bookingsRepository.find({ where: { userId } });
   }
 
-  // new: return all bookings (for registrars)
-  getAllBookings() {
-    return this.bookings;
+  /**
+   * For registrars only (controller enforces role)
+   */
+  async getAllBookings(): Promise<Booking[]> {
+    return this.bookingsRepository.find();
   }
 
-  // new: registrars may change room of a booking (not date) if occupancy < 85%
-  updateBookingRoom(id: number, newRoomId: number, actualStudents: number, capacity: number) {
-    const booking = this.bookings.find(b => b.id === id);
+  /**
+   * Check active booking for a room+timeslot
+   */
+  async getActiveBookingForTimeslot(roomId: number, timeslotId: number): Promise<Booking | null> {
+    return this.bookingsRepository.findOne({
+      where: { roomId, timeslotId, status: 'pending' }, // or 'confirmed'
+    });
+  }
+
+  /**
+   * Registrar may update booking's room if occupancy < 85%
+   */
+  async updateBookingRoom(
+    id: number,
+    newRoomId: number,
+    actualStudents: number,
+    capacity: number,
+  ): Promise<Booking> {
+    const booking = await this.bookingsRepository.findOne({ where: { id } });
     if (!booking) {
       throw new NotFoundException('Booking not found');
     }
@@ -100,26 +145,18 @@ export class BookingService {
       throw new ConflictException('actualStudents and capacity must be valid numbers');
     }
 
-    // check occupancy threshold: actual < 85% of capacity
     if (actualStudents >= 0.85 * capacity) {
       throw new ForbiddenException('Cannot change room when occupancy is >= 85% of capacity');
     }
 
-    // do not allow changing the timeslot here (we only change roomId)
-    if (newRoomId === booking.roomId) {
-      return booking; // no-op
-    }
-
-    // ensure target room/timeslot isn't already booked
-    const key = `${newRoomId}:${booking.timeslotId}`;
-    const conflict = this.bookings.find(
-      b => b.roomId === newRoomId && b.timeslotId === booking.timeslotId && b.status !== 'cancelled',
-    );
+    const conflict = await this.bookingsRepository.findOne({
+      where: { roomId: newRoomId, timeslotId: booking.timeslotId, status: 'pending' },
+    });
     if (conflict) {
       throw new ConflictException('Target room is already booked for this timeslot');
     }
 
     booking.roomId = newRoomId;
-    return booking;
+    return this.bookingsRepository.save(booking);
   }
 }
