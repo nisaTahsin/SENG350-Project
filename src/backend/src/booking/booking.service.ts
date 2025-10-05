@@ -60,8 +60,8 @@ export class BookingService {
       const booking: Booking = {
         id: this.idCounter++,
         userId,
-        roomId: data.roomId,
-        timeslotId: data.timeslotId,
+        roomId: data.roomId!,      
+        timeslotId: data.timeslotId!,
         status: data.status || 'pending',
       };
       this.bookings.push(booking);

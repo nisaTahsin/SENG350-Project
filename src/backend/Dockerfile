@@ -1,13 +1,20 @@
-FROM node:20-alpine AS base
-WORKDIR /app
+# Use Node LTS
+FROM node:20
 
-# --- dev (hot reload) ---\
-FROM base AS dev
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy package files
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
-COPY tsconfig.json ./
-COPY src ./src
-# dev server with auto-reload\
-RUN npm install -D ts-node-dev
-EXPOSE 4000
-CMD ["npm", "run", "dev"]
+
+# Copy all source code
+COPY . .
+
+# Expose port 3000
+EXPOSE 3000
+
+# Run NestJS in development mode (with nodemon)
+CMD ["npm", "run", "start:dev"]
