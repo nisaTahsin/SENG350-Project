@@ -20,7 +20,7 @@ Two out of five group members spent almost all of our first week trying to get t
 Our first general narrowing of the scope involved focusing primarily on staff functionalities. 
 At the point in the development process when the scope changes where introduced we had already implemented the UI framework for most of the Admin features, and one of the Registrar features. 
 However, since we were constrained by the deadline, we decided not to implement the backend functionality of these features.
-The reduced scope will include all Staff features covered in the [Project Requirements Document](prd.md), but will omit almost all Admin and Registrar features aside from login functionality.
+The reduced scope will include all Staff features covered in the [Project Requirements Document](prd.md) except for booking history and booking cancellation, but will omit almost all Admin and Registrar features aside from login functionality.
 
 ### Ommited Requirements and User Stories
 - REQ-R-2: Registrars can maintain classrooms and time slots [See GitLab Issue #12]
@@ -35,5 +35,9 @@ The reduced scope will include all Staff features covered in the [Project Requir
 - REQ-A-2: Admin can view system health [See GitLab Issue #17]
 - User Story A-1: Admins can view operation logs and a health page [See GitLab Issue #25]
 - REQ-A-4: Admin are capable of system-level configuration, managing roles, design parameters, etc. [See GitLab Issue #19]
+
+- REQ-S-5: Staff can view their booking history and filter by time of booking [See GitLab Issue #8]
+- REQ-S-4: Staff are able to cancel their own bookings [See GitLab Issue #5]
+- User Story S-3: Staff can view bookings by time to locate and cancel them [See GitLab Issue #20]
 
 _For a more granular description of the specific features and requirements which were removed from Implementation I, as well as the motivation behind these decisions, see [Changes.md](Changes.md)._
