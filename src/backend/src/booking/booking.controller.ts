@@ -36,6 +36,29 @@ export class BookingController {
     return this.bookingService.createBooking(req.user!.id, body);
   }
 
+  // Test endpoint without authentication for development
+  @Post('test')
+  async createTestBooking(
+    @Body()
+    body: {
+      roomId: number;
+      timeslotId: number;
+      title?: string;
+      description?: string;
+    },
+  ) {
+    // For now, just return a success message without actually creating a booking
+    return {
+      message: 'Booking test successful!',
+      data: {
+        roomId: body.roomId,
+        title: body.title,
+        description: body.description,
+        status: 'test_booking'
+      }
+    };
+  }
+
   // staff can cancel their own bookings; registrar/admin can cancel any
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

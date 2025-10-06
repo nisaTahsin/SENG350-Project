@@ -6,11 +6,32 @@ export class Room {
   @PrimaryGeneratedColumn('increment', { type: 'bigint' })
   id!: number;
 
-  @Column({ unique: true, length: 50 })
+  @Column({ name: 'room_name', length: 100 })
   name!: string;
 
-  @Column({ type: 'int', default: 1 })
+  @Column({ length: 100 })
+  building!: string;
+
+  @Column({ type: 'int' })
   capacity!: number;
+
+  @Column({ name: 'room_location', length: 255, nullable: true })
+  location?: string;
+
+  @Column({ length: 255, nullable: true })
+  url?: string;
+
+  @Column({ name: 'av_equipment', type: 'text', array: true, default: [] })
+  avEquipment?: string[];
+
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive!: boolean;
+
+  @Column({ name: 'created_at', type: 'timestamptz', default: () => 'now()' })
+  createdAt!: Date;
+
+  @Column({ name: 'updated_at', type: 'timestamptz', default: () => 'now()' })
+  updatedAt!: Date;
 
   @OneToMany(() => Timeslot, (timeslot) => timeslot.room)
   timeslots!: Timeslot[];

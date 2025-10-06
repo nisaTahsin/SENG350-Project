@@ -7,29 +7,40 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState<UserType>('staff');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
+    
     if (username.trim() && password.trim()) {
-      login(username.trim(), userType);
-      
-      // Navigate to appropriate dashboard based on user type
-      switch (userType) {
-        case 'staff':
-          navigate('/staff-dashboard');
-          break;
-        case 'registrar':
-          navigate('/registrar-dashboard');
-          break;
-        case 'admin':
-          navigate('/admin-dashboard');
-          break;
-        default:
-          navigate('/login');
+      try {
+        await login(username.trim(), userType, password.trim());
+        
+        // Navigate to appropriate dashboard based on user type
+        switch (userType) {
+          case 'staff':
+            navigate('/staff-dashboard');
+            break;
+          case 'registrar':
+            navigate('/registrar-dashboard');
+            break;
+          case 'admin':
+            navigate('/admin-dashboard');
+            break;
+          default:
+            navigate('/login');
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        setError(err instanceof Error ? err.message : 'Login failed');
       }
     }
+    setLoading(false);
   };
 
   return (
@@ -77,9 +88,22 @@ const Login: React.FC = () => {
             </select>
           </div>
           
-          <button type="submit" className="login-button">
-            Login
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </button>
+          
+          {error && (
+            <div className="error-message" style={{ 
+              color: 'red', 
+              marginTop: '10px', 
+              padding: '10px', 
+              backgroundColor: '#ffe6e6', 
+              border: '1px solid #ffcccc', 
+              borderRadius: '4px' 
+            }}>
+              {error}
+            </div>
+          )}
         </form>
       </div>
     </div>
