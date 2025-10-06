@@ -16,16 +16,21 @@ Sept. 20: What subcategories can I create for Modifiability under a quality attr
 
 Sept. 24: where do you put your test script in a project's files?
 
-Links to ChatGPT logs:
-Oct. 3: https://chatgpt.com/share/68e33a5d-9a20-8002-aa74-fc14af4048b6
+Sept. 29: Could you update genericpage to support children?
 
-Oct. 5: https://chatgpt.com/share/68e2bf65-1254-8002-9450-dc747e737275
+Sept. 29: Could you add a dropdown menu above the table to select buildings with?
 
-Oct. 8: https://chatgpt.com/share/68e3383e-7d78-8002-810b-bc9a83d86412
+Sept. 29: Could you have the bookings show up for whichever building is currently selected?
 
-Oct. 8: https://chatgpt.com/share/68e2bf93-9ca0-8002-b7ff-337ebcc62727
+Sept. 29: How could I make it so the width of the times column is always the same across buildings?
 
-Griffin Costello
+Sept. 29: How can I automatically make the room columns fit to the length of the room names?
+
+Sept. 29: how could I make a booking stretch across multiple time slots?
+
+Sept. 29: Can you implement the Change Permissions button to bring up a pop up which allows me to change the user's role and edit whether they are disabled or not?
+
+Sept. 29: Could you add the same interface from StaffMyBookings.tsx to a page that opens when the View Bookings button is pressed?
 
 Sept. 29: How do I initialize a React project with TypeScript
 
@@ -37,9 +42,25 @@ Sept. 30: Can you create a different dashboard for each user typescript
 
 Sept. 30: Can you create a page for x for user y (This got repeated a bunch of times with different users and pages)
 
+Oct. 2: @workspace /explain FROM requires either one or three arguments
+
+Oct. 4: Could you add a 'filter by time slot availability' function to StaffBrowseAvailability.tsx?
+
+Oct. 4: Could you add a filter by date feature in StaffBrowseAvailability.tsx in the same format as the other filters?
+
 Oct 4: How do I link the frontend and backend in Docker Compose?
 
 Oct 4: How do I make sure the frontend connects to the backend running on a different port in Docker?
 
 Oct 5: Can you create a form of authentication using JWT that ensures the user is in the database.
+
+Links to ChatGPT logs:
+Oct. 3: https://chatgpt.com/share/68e33a5d-9a20-8002-aa74-fc14af4048b6
+
+Oct. 5: https://chatgpt.com/share/68e2bf65-1254-8002-9450-dc747e737275
+
+Oct. 8: https://chatgpt.com/share/68e3383e-7d78-8002-810b-bc9a83d86412
+
+Oct. 8: https://chatgpt.com/share/68e2bf93-9ca0-8002-b7ff-337ebcc62727
+
 
