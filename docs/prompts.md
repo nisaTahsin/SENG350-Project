@@ -63,4 +63,8 @@ Oct. 8: https://chatgpt.com/share/68e3383e-7d78-8002-810b-bc9a83d86412
 
 Oct. 8: https://chatgpt.com/share/68e2bf93-9ca0-8002-b7ff-337ebcc62727
 
+Sept. 30: https://chatgpt.com/c/68de00cb-2d5c-832c-b096-2ac7036d9cdf
+
+Oct. 4: https://chatgpt.com/c/68db12e8-534c-832e-a01b-396fd05ab47b
+
 
