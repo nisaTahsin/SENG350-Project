@@ -55,12 +55,12 @@ Oct 4: How do I make sure the frontend connects to the backend running on a diff
 Oct 5: Can you create a form of authentication using JWT that ensures the user is in the database.
 
 Links to ChatGPT logs:
-Oct. 3: https://chatgpt.com/share/68e33a5d-9a20-8002-aa74-fc14af4048b6
+Oct. 1: https://chatgpt.com/share/68e33a5d-9a20-8002-aa74-fc14af4048b6
 
-Oct. 5: https://chatgpt.com/share/68e2bf65-1254-8002-9450-dc747e737275
+Oct. 3: https://chatgpt.com/share/68e2bf65-1254-8002-9450-dc747e737275
 
-Oct. 8: https://chatgpt.com/share/68e3383e-7d78-8002-810b-bc9a83d86412
+Oct. 5: https://chatgpt.com/share/68e3383e-7d78-8002-810b-bc9a83d86412
 
-Oct. 8: https://chatgpt.com/share/68e2bf93-9ca0-8002-b7ff-337ebcc62727
+Oct. 5: https://chatgpt.com/share/68e2bf93-9ca0-8002-b7ff-337ebcc62727
 
 
