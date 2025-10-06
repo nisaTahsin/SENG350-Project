@@ -1,45 +1,165 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface BookingFormProps {
   roomId: number;
   roomName: string;
   selectedTime: string;
+  selectedDate: string;
   onClose: () => void;
   onSuccess: () => void;
 }
 
 interface BookingData {
-  title: string;
-  description: string;
+  notes: string;
 }
 
-const BookingForm: React.FC<BookingFormProps> = ({ roomId, roomName, selectedTime, onClose, onSuccess }) => {
+const BookingForm: React.FC<BookingFormProps> = ({ roomId, roomName, selectedTime, selectedDate, onClose, onSuccess }) => {
+  const { user } = useAuth();
   const [bookingData, setBookingData] = useState<BookingData>({
-    title: '',
-    description: '',
+    notes: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [timeslotId, setTimeslotId] = useState<number | null>(null);
+
+  // Helper function to convert 12-hour time to 24-hour format
+  const convertTo24Hour = (time12: string): string => {
+    const [time, period] = time12.split(' ');
+    const [hours, minutes] = time.split(':');
+    let hour24 = parseInt(hours);
+    if (period === 'PM' && hour24 !== 12) {
+      hour24 += 12;
+    } else if (period === 'AM' && hour24 === 12) {
+      hour24 = 0;
+    }
+    return `${hour24.toString().padStart(2, '0')}:${minutes}`;
+  };
+
+  // Fetch timeslot ID when component mounts
+  React.useEffect(() => {
+    const fetchTimeslotId = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/rooms/${roomId}/timeslots`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch timeslots');
+        }
+        const timeslots = await response.json();
+        console.log('=== TIMESLOT DEBUG START ===');
+        console.log('Looking for timeslot with:', { selectedTime, selectedDate });
+        console.log('Available timeslots:', timeslots);
+        console.log('Timeslots count:', timeslots.length);
+        
+        // Show available dates and times for debugging
+        const availableDates = Array.from(new Set(timeslots.map((ts: any) => {
+          const startTime = new Date(ts.startTime);
+          return startTime.toISOString().split('T')[0];
+        })));
+        console.log('Available dates in timeslots:', availableDates);
+        
+        const availableTimes = timeslots.map((ts: any) => {
+          const startTime = new Date(ts.startTime);
+          return startTime.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+        });
+        console.log('Available times in timeslots:', availableTimes);
+
+        if (!selectedDate) {
+          setError('Please select a date first');
+          return;
+        }
+
+        const targetTimeslot = timeslots.find((ts: any) => {
+          const startTime = new Date(ts.startTime);
+          const endTime = new Date(ts.endTime);
+          
+          // Convert frontend time to a Date object for comparison (in UTC)
+          const frontendTime24 = convertTo24Hour(selectedTime);
+          const [hours, minutes] = frontendTime24.split(':');
+          const selectedDateTime = new Date(selectedDate + 'T' + frontendTime24 + ':00.000Z');
+          
+          console.log('Time conversion debug:', {
+            selectedTime,
+            frontendTime24,
+            hours,
+            minutes,
+            selectedDate,
+            selectedDateTime: selectedDateTime.toISOString()
+          });
+
+          const dateString = startTime.toISOString().split('T')[0];
+          
+          console.log('Checking timeslot:', {
+            timeslotId: ts.id,
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
+            selectedDateTime: selectedDateTime.toISOString(),
+            frontendTime24,
+            dateString,
+            selectedDate,
+            isWithinTimeRange: selectedDateTime >= startTime && selectedDateTime < endTime,
+            matchesDate: dateString === selectedDate
+          });
+          
+          // Check if the selected time falls within this timeslot's time range
+          return selectedDateTime >= startTime && selectedDateTime < endTime && dateString === selectedDate;
+        });
+
+        if (targetTimeslot) {
+          console.log('✅ Found matching timeslot:', targetTimeslot);
+          setTimeslotId(targetTimeslot.id);
+        } else {
+          console.log('❌ No matching timeslot found');
+          setError('No timeslot found for the selected time and date');
+        }
+        console.log('=== TIMESLOT DEBUG END ===');
+      } catch (err) {
+        setError('Failed to fetch timeslot information');
+      }
+    };
+    fetchTimeslotId();
+  }, [roomId, selectedTime, selectedDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    if (!user) {
+      setError('You must be logged in to make a booking');
+      setLoading(false);
+      return;
+    }
+
+    if (!timeslotId) {
+      setError('Timeslot not found. Please try again.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:4000/booking/test', {
+      const token = localStorage.getItem('authToken');
+      
+      const bookingPayload = {
+        roomId: Number(roomId),
+        timeslotId: Number(timeslotId),
+        notes: bookingData.notes,
+      };
+      
+      console.log('Creating booking with payload:', bookingPayload);
+      console.log('roomId type:', typeof roomId, 'value:', roomId);
+      console.log('timeslotId type:', typeof timeslotId, 'value:', timeslotId);
+      
+      const response = await fetch('http://localhost:4000/booking', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // In a real app, you'd include the JWT token here
-          // 'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          roomId,
-          timeslotId: 1, // For now, use a dummy timeslot ID
-          title: bookingData.title,
-          description: bookingData.description,
-        }),
+        body: JSON.stringify(bookingPayload),
       });
 
       if (!response.ok) {
@@ -92,34 +212,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ roomId, roomName, selectedTim
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="title" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              Booking Title:
-            </label>
-            <input
-              id="title"
-              type="text"
-              value={bookingData.title}
-              onChange={(e) => setBookingData({ ...bookingData, title: e.target.value })}
-              required
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                fontSize: '1rem',
-              }}
-              placeholder="e.g., Team Meeting, Study Session"
-            />
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="description" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              Description (Optional):
+            <label htmlFor="notes" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              Notes (Optional):
             </label>
             <textarea
-              id="description"
-              value={bookingData.description}
-              onChange={(e) => setBookingData({ ...bookingData, description: e.target.value })}
+              id="notes"
+              value={bookingData.notes}
+              onChange={(e) => setBookingData({ ...bookingData, notes: e.target.value })}
               style={{
                 width: '100%',
                 padding: '0.5rem',
