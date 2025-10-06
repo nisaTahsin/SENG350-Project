@@ -22,6 +22,12 @@ CREATE TABLE users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+INSERT INTO users (username, email, password_hash, role)
+VALUES
+  ('staff1', 'staff@test.com', 'password123', 'staff'),
+  ('registrar1', 'registrar@test.com', 'password456', 'registrar'),
+  ('admin1', 'admin@test.com', 'password789', 'admin');
+
 -- ===== ROOMS =====
 CREATE TABLE rooms (
   id BIGSERIAL PRIMARY KEY,
@@ -30,7 +36,7 @@ CREATE TABLE rooms (
   capacity INT NOT NULL,
   room_location VARCHAR(255),
   url VARCHAR(255),
-  av_equipment TEXT[] DEFAULT '{}',
+  av_equipment TEXT,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -38,6 +44,12 @@ CREATE TABLE rooms (
 );
 
 CREATE INDEX idx_rooms_name_building ON rooms (lower(room_name), lower(building));
+
+-- Import CSV into rooms
+COPY rooms(room_name, building, capacity, av_equipment, room_location, url)
+FROM '/docker-entrypoint-initdb.d/uvic_rooms.csv'
+DELIMITER ','
+CSV HEADER;
 
 -- ===== TIMESLOTS =====
 CREATE TABLE timeslots (
