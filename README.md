@@ -28,10 +28,12 @@
 
 2. **Start the application**
    ```bash
-   docker-compose up -d
+   docker-compose up
    ```
+   Try again if it doesn't work the first time
 
 3. **Access the application**
+Just go to localhost:3000 on your web browser to begin interacting with the system
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:4000
 
@@ -50,6 +52,7 @@ The following test users are available for testing different user roles:
 
 - **User Authentication**: Login with different user roles
 - **Room Browsing**: View available classrooms by building
+- **Room Booking**: Book classrooms in 30-minute chunks many days into the future
 
 ### Available Buildings
 
