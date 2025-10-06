@@ -158,4 +158,33 @@ export class BookingService {
     booking.roomId = newRoomId;
     return this.bookingsRepository.save(booking);
   }
+
+  /**
+   * Find all bookings for a specific room
+   */
+  async findByRoomId(roomId: number): Promise<Booking[]> {
+    return this.bookingsRepository.find({
+      where: { roomId },
+      relations: ['timeslot', 'user'],
+    });
+  }
+
+  /**
+   * Find all bookings
+   */
+  async findAll(): Promise<Booking[]> {
+    return this.bookingsRepository.find({
+      relations: ['timeslot', 'user'],
+    });
+  }
+
+  /**
+   * Find bookings for a specific room with user details
+   */
+  async findByRoomIdWithUser(roomId: number): Promise<Booking[]> {
+    return this.bookingsRepository.find({
+      where: { roomId },
+      relations: ['timeslot', 'user'],
+    });
+  }
 }

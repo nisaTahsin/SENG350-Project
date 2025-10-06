@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "UVIC Booking",
+  "name": "UVIC Class Booking",
   "icons": [
     {
       "src": "favicon.ico",

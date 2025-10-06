@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import GenericPage from '../GenericPage';
 import TimeslotTable from '../TimeslotTable';
 import BookingForm from '../BookingForm';
@@ -44,6 +44,7 @@ const StaffBrowseAvailability: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<{ id: number; name: string; time: string } | null>(null);
+  const bookingStateRef = useRef<{[key: string]: boolean}>({});
   const [bookingState, setBookingState] = useState<{[key: string]: boolean}>({});
 
   // Fetch rooms from API
@@ -80,6 +81,7 @@ const StaffBrowseAvailability: React.FC = () => {
         setBuildingData(buildingDataMap);
         console.log('Buildings:', Array.from(buildingsSet));
         console.log('Building data:', buildingDataMap);
+        console.log('Current booking state when fetching rooms:', bookingState);
         
         // Set default selected building
         if (buildingsSet.size > 0) {
@@ -102,6 +104,38 @@ const StaffBrowseAvailability: React.FC = () => {
   // Use all rooms for the selected building
   const filteredRooms = buildingRooms;
   const filteredBookings = bookings;
+
+  // Load existing bookings from localStorage on component mount
+  useEffect(() => {
+    const savedBookings = localStorage.getItem('uvic-bookings');
+    if (savedBookings) {
+      try {
+        const parsedBookings = JSON.parse(savedBookings);
+        console.log('Loaded bookings from localStorage:', parsedBookings);
+        setBookingState(parsedBookings);
+        bookingStateRef.current = parsedBookings;
+      } catch (error) {
+        console.error('Error parsing saved bookings:', error);
+      }
+    }
+  }, []);
+
+  // Save bookings to localStorage whenever bookingState changes
+  useEffect(() => {
+    if (Object.keys(bookingState).length > 0) {
+      localStorage.setItem('uvic-bookings', JSON.stringify(bookingState));
+      console.log('Saved bookings to localStorage:', bookingState);
+    }
+  }, [bookingState]);
+
+  // For now, we'll work with the existing timeslots and just allow booking for any date
+  // The backend will handle the timeslot lookup based on the selected date
+
+  // Sync ref with state when state changes
+  useEffect(() => {
+    bookingStateRef.current = bookingState;
+    console.log('Synced booking state ref:', bookingStateRef.current);
+  }, [bookingState]);
 
   if (loading) {
     return (
@@ -136,17 +170,29 @@ const StaffBrowseAvailability: React.FC = () => {
            setShowBookingForm(true);
          };
 
-         const handleBookingSuccess = () => {
-           // Mark the room-time slot as booked
-           if (selectedRoom) {
-             const bookingKey = `${selectedRoom.id}-${selectedRoom.time}`;
-             setBookingState(prev => ({
-               ...prev,
-               [bookingKey]: true
-             }));
-           }
-           console.log('Booking created successfully!');
-         };
+        const handleBookingSuccess = () => {
+          // Mark the room-time slot as booked
+          if (selectedRoom) {
+            const bookingKey = `${selectedRoom.id}-${selectedRoom.time}-${selectedDate}`;
+            console.log('Setting booking state for key:', bookingKey);
+            
+            // Update both ref and state
+            bookingStateRef.current = {
+              ...bookingStateRef.current,
+              [bookingKey]: true
+            };
+            
+            setBookingState(prev => {
+              const newState = {
+                ...prev,
+                [bookingKey]: true
+              };
+              console.log('New booking state:', newState);
+              return newState;
+            });
+          }
+          console.log('Booking created successfully!');
+        };
 
   return (
     <GenericPage
@@ -162,8 +208,7 @@ const StaffBrowseAvailability: React.FC = () => {
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
-            max={new Date().toISOString().split('T')[0]}
+            min={new Date().toISOString().split('T')[0]} // Allow today and future dates
             style={{ padding: '4px 8px', fontSize: '1rem', marginRight: 8 }}
           />
         </div>
@@ -187,7 +232,8 @@ const StaffBrowseAvailability: React.FC = () => {
                  rooms={filteredRooms} 
                  bookings={filteredBookings}
                  onBookRoom={handleBookRoom}
-                 bookingState={bookingState}
+                 bookingState={bookingStateRef.current}
+                 selectedDate={selectedDate}
                />
              </div>
              
