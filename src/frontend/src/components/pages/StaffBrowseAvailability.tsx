@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GenericPage from '../GenericPage';
 import TimeslotTable from '../TimeslotTable';
+import BookingForm from '../BookingForm';
 
 
 const times = [
@@ -22,44 +23,92 @@ type BuildingData = {
   };
 };
 
-const buildingData: BuildingData = {
-  'Elliot Building': {
-    rooms: ['ELL 060 – Classroom', 'ELL 162 – Classroom', 'ELL 168 – Lecture theatre', 'ELL 167 – Lecture theatre'],
-    bookings: {
-      'ELL 060 – Classroom': {
-        '10:00 AM': { label: 'Example Booking', span: 3 },
-      },
-    },
-  },
-  'Maclaurin Building': {
-    rooms: ['MAC D116 – Classroom', 'MAC D115 – Classroom'],
-    bookings: {
-      
-    },
-  },
+type Room = {
+  id: number;
+  name: string;
+  building: string;
+  capacity: number;
+  location?: string;
+  url?: string;
+  avEquipment?: string[];
+  isActive: boolean;
 };
 
-const buildings = [
-  'Elliot Building',
-  'Maclaurin Building',
-];
-
 const StaffBrowseAvailability: React.FC = () => {
-  const [selectedBuilding, setSelectedBuilding] = useState(buildings[0]);
+  const [rooms, setRooms] = useState<Room[]>([]); // Used for API data
+  const [buildings, setBuildings] = useState<string[]>([]);
+  const [buildingData, setBuildingData] = useState<BuildingData>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedBuilding, setSelectedBuilding] = useState<string>('');
   const [startTime, setStartTime] = useState<string>('');
   const [endTime, setEndTime] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<{ id: number; name: string; time: string } | null>(null);
+  const [bookingState, setBookingState] = useState<{[key: string]: boolean}>({});
 
-  const { rooms, bookings } = buildingData[selectedBuilding];
+  // Fetch rooms from API
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:4000/rooms?' + new Date().getTime());
+        if (!response.ok) {
+          throw new Error('Failed to fetch rooms');
+        }
+        const roomsData: Room[] = await response.json();
+        console.log('Fetched rooms:', roomsData.length, 'rooms');
+        setRooms(roomsData);
+        
+        // Group rooms by building
+        const buildingsSet = new Set<string>();
+        const buildingDataMap: BuildingData = {};
+        
+        roomsData.forEach(room => {
+          if (room.isActive) {
+            buildingsSet.add(room.building);
+            if (!buildingDataMap[room.building]) {
+              buildingDataMap[room.building] = {
+                rooms: [],
+                bookings: {}
+              };
+            }
+            buildingDataMap[room.building].rooms.push(room.name);
+          }
+        });
+        
+        setBuildings(Array.from(buildingsSet));
+        setBuildingData(buildingDataMap);
+        console.log('Buildings:', Array.from(buildingsSet));
+        console.log('Building data:', buildingDataMap);
+        
+        // Set default selected building
+        if (buildingsSet.size > 0) {
+          setSelectedBuilding(Array.from(buildingsSet)[0]);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch rooms');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, []);
+
+  // Get rooms and bookings for selected building
+  const currentBuildingData = buildingData[selectedBuilding] || { rooms: [], bookings: {} };
+  const { rooms: buildingRooms, bookings } = currentBuildingData;
 
   // Filter rooms by availability in the selected time slot range
-  let filteredRooms = rooms;
+  let filteredRooms = buildingRooms;
   let filteredBookings = bookings;
   if (startTime && endTime) {
     const startIdx = times.indexOf(startTime);
     const endIdx = times.indexOf(endTime);
     if (startIdx !== -1 && endIdx !== -1 && startIdx <= endIdx) {
-      filteredRooms = rooms.filter(room => {
+      filteredRooms = buildingRooms.filter(room => {
         for (let i = startIdx; i <= endIdx; i++) {
           const t = times[i];
           const booking = bookings[room]?.[t];
@@ -75,7 +124,7 @@ const StaffBrowseAvailability: React.FC = () => {
   } else if (startTime || endTime) {
     // If only one is selected, treat as single slot filter
     const filterSlot = startTime || endTime;
-    filteredRooms = rooms.filter(room => {
+    filteredRooms = buildingRooms.filter(room => {
       const booking = bookings[room]?.[filterSlot];
       return !booking;
     });
@@ -84,6 +133,51 @@ const StaffBrowseAvailability: React.FC = () => {
       filteredBookings[room] = bookings[room] || {};
     });
   }
+
+  if (loading) {
+    return (
+      <GenericPage
+        title="Browse Availability"
+        description="View available classrooms and time slots for booking"
+        userType="staff"
+      >
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>Loading rooms...</p>
+        </div>
+      </GenericPage>
+    );
+  }
+
+         if (error) {
+           return (
+             <GenericPage
+               title="Browse Availability"
+               description="View available classrooms and time slots for booking"
+               userType="staff"
+             >
+               <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>
+                 <p>Error: {error}</p>
+               </div>
+             </GenericPage>
+           );
+         }
+
+         const handleBookRoom = (roomId: number, roomName: string, time: string) => {
+           setSelectedRoom({ id: roomId, name: roomName, time });
+           setShowBookingForm(true);
+         };
+
+         const handleBookingSuccess = () => {
+           // Mark the room-time slot as booked
+           if (selectedRoom) {
+             const bookingKey = `${selectedRoom.id}-${selectedRoom.time}`;
+             setBookingState(prev => ({
+               ...prev,
+               [bookingKey]: true
+             }));
+           }
+           console.log('Booking created successfully!');
+         };
 
   return (
     <GenericPage
@@ -144,11 +238,30 @@ const StaffBrowseAvailability: React.FC = () => {
           </select>
         </div>
       </div>
-      <div style={{ marginTop: 8 }}>
-        <TimeslotTable times={times} rooms={filteredRooms} bookings={filteredBookings} />
-      </div>
-    </GenericPage>
-  );
-};
+             <div style={{ marginTop: 8 }}>
+               <TimeslotTable 
+                 times={times} 
+                 rooms={filteredRooms} 
+                 bookings={filteredBookings}
+                 onBookRoom={handleBookRoom}
+                 bookingState={bookingState}
+               />
+             </div>
+             
+             {showBookingForm && selectedRoom && (
+               <BookingForm
+                 roomId={selectedRoom.id}
+                 roomName={selectedRoom.name}
+                 selectedTime={selectedRoom.time}
+                 onClose={() => {
+                   setShowBookingForm(false);
+                   setSelectedRoom(null);
+                 }}
+                 onSuccess={handleBookingSuccess}
+               />
+             )}
+           </GenericPage>
+         );
+       };
 
 export default StaffBrowseAvailability;

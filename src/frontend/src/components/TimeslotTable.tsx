@@ -8,11 +8,12 @@ interface BookingCell {
 interface TimeslotTableProps {
   times: string[];
   rooms: string[];
-  // bookings: { [room: string]: { [time: string]: string } };
   bookings: { [room: string]: { [time: string]: string | BookingCell } };
+  onBookRoom?: (roomId: number, roomName: string, time: string) => void;
+  bookingState?: {[key: string]: boolean};
 }
 
-const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings }) => {
+const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, onBookRoom, bookingState = {} }) => {
   const timeColStyle: React.CSSProperties = {
     border: '1px solid #ccc',
     padding: '4px',
@@ -70,8 +71,33 @@ const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings })
                     <td key={room} style={{ border: '1px solid #ccc', padding: 12, background: '#bcd', fontWeight: 'bold', fontSize: 13, textAlign: 'center' }}>{booking}</td>
                   );
                 }
+                // Check if this room-time slot is booked
+                const bookingKey = `1-${time}`; // Using room ID 1 for now
+                const isBooked = bookingState[bookingKey] || false;
+                
                 return (
-                  <td key={room} style={{ border: '1px solid #ccc', padding: 12, background: '#fff', fontSize: 13, textAlign: 'center' }} />
+                  <td key={room} style={{ border: '1px solid #ccc', padding: 12, background: isBooked ? '#d4edda' : '#fff', fontSize: 13, textAlign: 'center' }}>
+                    {isBooked ? (
+                      <span style={{ color: '#155724', fontWeight: 'bold', fontSize: '12px' }}>
+                        ✓ Booked
+                      </span>
+                    ) : onBookRoom ? (
+                      <button
+                        onClick={() => onBookRoom(1, room, time)} // Pass the time slot
+                        style={{
+                          background: '#007bff',
+                          color: 'white',
+                          border: 'none',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                        }}
+                      >
+                        Book
+                      </button>
+                    ) : null}
+                  </td>
                 );
               })}
             </tr>

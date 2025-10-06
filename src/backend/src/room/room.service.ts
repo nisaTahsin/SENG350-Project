@@ -22,11 +22,11 @@ export class RoomsService {
 
   // Rooms (mostly static)
   findAllRooms(): Promise<Room[]> {
-    return this.roomRepository.find({ relations: ['timeslots'] });
+    return this.roomRepository.find();
   }
 
   findRoomById(id: number): Promise<Room | null> {
-    return this.roomRepository.findOne({ where: { id }, relations: ['timeslots'] });
+    return this.roomRepository.findOne({ where: { id } });
   }
 
   // Timeslots (dynamic)
@@ -100,18 +100,66 @@ export class RoomsService {
       order: { startTime: 'ASC' },
     });
 
-    return timeslots.map(ts => {
-      const activeBooking = this.bookingService.getActiveBookingForTimeslot(roomId, Number(ts.id));
-      return {
-        ...ts,
-        isBooked: !!activeBooking,
-        bookedByUserId: activeBooking ? activeBooking.userId : null,
-      };
-    });
+    const timeslotsWithAvailability = await Promise.all(
+      timeslots.map(async (ts) => {
+        const activeBooking = await this.bookingService.getActiveBookingForTimeslot(roomId, Number(ts.id));
+        return {
+          ...ts,
+          isBooked: !!activeBooking,
+          bookedByUserId: activeBooking ? activeBooking.userId : null,
+        };
+      })
+    );
+
+    return timeslotsWithAvailability;
   }
 
   async findAvailableRooms(start: Date, end: Date) {
     // ...existing implementation if any...
     return this.roomRepository.find();
+  }
+
+  /**
+   * Generate sample timeslots for all rooms for the next 7 days
+   */
+  async generateSampleTimeslots(): Promise<Timeslot[]> {
+    const rooms = await this.roomRepository.find();
+    const timeslots: Timeslot[] = [];
+
+    // Generate timeslots for the next 7 days
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let day = 0; day < 7; day++) {
+      const currentDate = new Date(today);
+      currentDate.setDate(today.getDate() + day);
+
+      // Skip weekends (Saturday = 6, Sunday = 0)
+      if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+        continue;
+      }
+
+      // Generate timeslots from 8:00 AM to 6:00 PM (10 hours)
+      for (let hour = 8; hour < 18; hour++) {
+        const startTime = new Date(currentDate);
+        startTime.setHours(hour, 0, 0, 0);
+
+        const endTime = new Date(currentDate);
+        endTime.setHours(hour + 1, 0, 0, 0);
+
+        for (const room of rooms) {
+          const timeslot = this.timeslotRepository.create({
+            roomId: room.id,
+            startTime,
+            endTime,
+          });
+
+          timeslots.push(timeslot);
+        }
+      }
+    }
+
+    // Save all timeslots
+    return await this.timeslotRepository.save(timeslots);
   }
 }

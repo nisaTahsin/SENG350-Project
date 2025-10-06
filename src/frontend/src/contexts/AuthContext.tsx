@@ -10,7 +10,7 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, userType: UserType) => void;
+  login: (username: string, userType: UserType, password?: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -32,13 +32,37 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = (username: string, userType: UserType) => {
-    const newUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      username,
-      userType,
-    };
-    setUser(newUser);
+  const login = async (username: string, userType: UserType, password?: string) => {
+    try {
+      // Call the backend login API
+      const response = await fetch('http://localhost:4000/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const newUser: User = {
+          id: data.user.id.toString(),
+          username: data.user.username,
+          userType: data.user.role as UserType,
+        };
+        setUser(newUser);
+        // Store the token for future API calls
+        localStorage.setItem('authToken', data.access_token);
+      } else {
+        throw new Error(data.message || 'Login failed');
+      }
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Login failed');
+    }
   };
 
   const logout = () => {
