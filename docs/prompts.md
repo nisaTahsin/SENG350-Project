@@ -25,5 +25,21 @@ Oct. 8: https://chatgpt.com/share/68e3383e-7d78-8002-810b-bc9a83d86412
 
 Oct. 8: https://chatgpt.com/share/68e2bf93-9ca0-8002-b7ff-337ebcc62727
 
+Griffin Costello
 
+Sept. 29: How do I initialize a React project with TypeScript
+
+Sept. 29: What’s the difference between npm start and npm run dev in a React
+
+Sept. 29: Can you create a login page for me. And how do I make it the default page
+
+Sept. 30: Can you create a different dashboard for each user typescript
+
+Sept. 30: Can you create a page for x for user y (This got repeated a bunch of times with different users and pages)
+
+Oct 4: How do I link the frontend and backend in Docker Compose?
+
+Oct 4: How do I make sure the frontend connects to the backend running on a different port in Docker?
+
+Oct 5: Can you create a form of authentication using JWT that ensures the user is in the database.
 
