@@ -1,11 +1,20 @@
-FROM node:20-alpine AS base
+FROM node:20-alpine
+
 WORKDIR /app
 
-FROM base AS dev
+# Copy dependencies and install
 COPY package*.json ./
 RUN npm install
-COPY tsconfig.json vite.config.ts public/index.html ./
-COPY src ./src
-EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
+# Copy config & public
+COPY tsconfig.json ./
+COPY public ./public
+
+# Copy source code
+COPY src ./src
+
+# Expose frontend port
+EXPOSE 5173
+
+# Start frontend dev server
+CMD ["npm", "run", "dev"]
