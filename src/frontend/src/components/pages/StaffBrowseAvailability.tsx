@@ -18,7 +18,7 @@ type BookingCell = { label: string; span: number };
 type BookingMap = { [room: string]: { [time: string]: string | BookingCell } };
 type BuildingData = {
   [building: string]: {
-    rooms: string[];
+    rooms: Room[];
     bookings: BookingMap;
   };
 };
@@ -41,9 +41,7 @@ const StaffBrowseAvailability: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<string>('');
-  const [startTime, setStartTime] = useState<string>('');
-  const [endTime, setEndTime] = useState<string>('');
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<{ id: number; name: string; time: string } | null>(null);
   const [bookingState, setBookingState] = useState<{[key: string]: boolean}>({});
@@ -74,7 +72,7 @@ const StaffBrowseAvailability: React.FC = () => {
                 bookings: {}
               };
             }
-            buildingDataMap[room.building].rooms.push(room.name);
+            buildingDataMap[room.building].rooms.push(room);
           }
         });
         
@@ -101,38 +99,9 @@ const StaffBrowseAvailability: React.FC = () => {
   const currentBuildingData = buildingData[selectedBuilding] || { rooms: [], bookings: {} };
   const { rooms: buildingRooms, bookings } = currentBuildingData;
 
-  // Filter rooms by availability in the selected time slot range
-  let filteredRooms = buildingRooms;
-  let filteredBookings = bookings;
-  if (startTime && endTime) {
-    const startIdx = times.indexOf(startTime);
-    const endIdx = times.indexOf(endTime);
-    if (startIdx !== -1 && endIdx !== -1 && startIdx <= endIdx) {
-      filteredRooms = buildingRooms.filter(room => {
-        for (let i = startIdx; i <= endIdx; i++) {
-          const t = times[i];
-          const booking = bookings[room]?.[t];
-          if (booking) return false;
-        }
-        return true;
-      });
-      filteredBookings = {};
-      filteredRooms.forEach(room => {
-        filteredBookings[room] = bookings[room] || {};
-      });
-    }
-  } else if (startTime || endTime) {
-    // If only one is selected, treat as single slot filter
-    const filterSlot = startTime || endTime;
-    filteredRooms = buildingRooms.filter(room => {
-      const booking = bookings[room]?.[filterSlot];
-      return !booking;
-    });
-    filteredBookings = {};
-    filteredRooms.forEach(room => {
-      filteredBookings[room] = bookings[room] || {};
-    });
-  }
+  // Use all rooms for the selected building
+  const filteredRooms = buildingRooms;
+  const filteredBookings = bookings;
 
   if (loading) {
     return (
@@ -193,6 +162,8 @@ const StaffBrowseAvailability: React.FC = () => {
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
+            min={new Date().toISOString().split('T')[0]}
+            max={new Date().toISOString().split('T')[0]}
             style={{ padding: '4px 8px', fontSize: '1rem', marginRight: 8 }}
           />
         </div>
@@ -209,34 +180,6 @@ const StaffBrowseAvailability: React.FC = () => {
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor="start-time-filter" style={{ fontWeight: 'bold', marginRight: 8 }}>Start Time:</label>
-          <select
-            id="start-time-filter"
-            value={startTime}
-            onChange={e => setStartTime(e.target.value)}
-            style={{ padding: '4px 8px', fontSize: '1rem', marginRight: 8 }}
-          >
-            <option value="">Any</option>
-            {times.map(t => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="end-time-filter" style={{ fontWeight: 'bold', marginRight: 8 }}>End Time:</label>
-          <select
-            id="end-time-filter"
-            value={endTime}
-            onChange={e => setEndTime(e.target.value)}
-            style={{ padding: '4px 8px', fontSize: '1rem' }}
-          >
-            <option value="">Any</option>
-            {times.map(t => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-        </div>
       </div>
              <div style={{ marginTop: 8 }}>
                <TimeslotTable 
@@ -248,18 +191,19 @@ const StaffBrowseAvailability: React.FC = () => {
                />
              </div>
              
-             {showBookingForm && selectedRoom && (
-               <BookingForm
-                 roomId={selectedRoom.id}
-                 roomName={selectedRoom.name}
-                 selectedTime={selectedRoom.time}
-                 onClose={() => {
-                   setShowBookingForm(false);
-                   setSelectedRoom(null);
-                 }}
-                 onSuccess={handleBookingSuccess}
-               />
-             )}
+              {showBookingForm && selectedRoom && (
+                <BookingForm
+                  roomId={selectedRoom.id}
+                  roomName={selectedRoom.name}
+                  selectedTime={selectedRoom.time}
+                  selectedDate={selectedDate}
+                  onClose={() => {
+                    setShowBookingForm(false);
+                    setSelectedRoom(null);
+                  }}
+                  onSuccess={handleBookingSuccess}
+                />
+              )}
            </GenericPage>
          );
        };

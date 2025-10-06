@@ -1,4 +1,4 @@
-import { Entity, Unique, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Unique, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Timeslot } from '../timeslot/timeslot.entity';
 import { Room } from '../room/room.entity';
@@ -9,11 +9,8 @@ export class Booking {
   @PrimaryGeneratedColumn('increment', { type: 'bigint' })
   id!: number;
 
-  @Column({ length: 100 })
-  title!: string;
-
-  @Column({ type: 'text', nullable: true })
-  description?: string;
+  @Column({ name: 'notes', type: 'varchar', length: 500, nullable: true })
+  notes?: string;
 
   // link to user who made the booking
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
@@ -44,8 +41,5 @@ export class Booking {
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
-
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
-  updatedAt!: Date;
 }
 

@@ -14,10 +14,10 @@ export class Timeslot {
   @Column({ name: 'room_id', type: 'bigint' })
   roomId!: number;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ name: 'start_time', type: 'timestamptz' })
   startTime!: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ name: 'end_time', type: 'timestamptz' })
   endTime!: Date;
 
   @OneToMany(() => Booking, (booking) => booking.timeslot)

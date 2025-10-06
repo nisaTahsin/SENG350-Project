@@ -5,9 +5,15 @@ interface BookingCell {
   span: number; // number of time slots this booking covers
 }
 
+interface Room {
+  id: number;
+  name: string;
+  building: string;
+}
+
 interface TimeslotTableProps {
   times: string[];
-  rooms: string[];
+  rooms: Room[];
   bookings: { [room: string]: { [time: string]: string | BookingCell } };
   onBookRoom?: (roomId: number, roomName: string, time: string) => void;
   bookingState?: {[key: string]: boolean};
@@ -25,7 +31,7 @@ const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, o
   // Track which cells should be skipped due to rowspan
   const skipCell: { [room: string]: { [time: string]: boolean } } = {};
   rooms.forEach(room => {
-    skipCell[room] = {};
+    skipCell[room.name] = {};
   });
 
   return (
@@ -36,10 +42,10 @@ const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, o
             <th style={{ ...timeColStyle, border: 'none', padding: 12, textAlign: 'left', fontWeight: 'bold', fontSize: 14 }}>TIME</th>
             {rooms.map(room => (
               <th
-                key={room}
+                key={room.id}
                 style={{ border: 'none', padding: 12, whiteSpace: 'nowrap', textAlign: 'left', fontWeight: 'bold', fontSize: 14 }}
               >
-                {room}
+                {room.name}
               </th>
             ))}
           </tr>
@@ -49,16 +55,16 @@ const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, o
             <tr key={time} style={{ borderBottom: '1px solid #dee2e6' }}>
               <td style={{ ...timeColStyle, padding: 12, fontSize: 13, fontFamily: 'monospace', background: '#f8f9fa', textAlign: 'left' }}>{time}</td>
               {rooms.map(room => {
-                if (skipCell[room][time]) return null;
-                const booking = bookings[room]?.[time];
+                if (skipCell[room.name][time]) return null;
+                const booking = bookings[room.name]?.[time];
                 if (booking && typeof booking === 'object' && 'span' in booking && booking.span > 1) {
                   for (let i = 1; i < booking.span; i++) {
                     const nextTime = times[rowIdx + i];
-                    if (nextTime) skipCell[room][nextTime] = true;
+                    if (nextTime) skipCell[room.name][nextTime] = true;
                   }
                   return (
                     <td
-                      key={room}
+                      key={room.id}
                       rowSpan={booking.span}
                       style={{ border: '1px solid #ccc', padding: 12, background: '#bcd', verticalAlign: 'middle', fontWeight: 'bold', fontSize: 13, textAlign: 'center' }}
                     >
@@ -68,22 +74,22 @@ const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, o
                 }
                 if (typeof booking === 'string') {
                   return (
-                    <td key={room} style={{ border: '1px solid #ccc', padding: 12, background: '#bcd', fontWeight: 'bold', fontSize: 13, textAlign: 'center' }}>{booking}</td>
+                    <td key={room.id} style={{ border: '1px solid #ccc', padding: 12, background: '#bcd', fontWeight: 'bold', fontSize: 13, textAlign: 'center' }}>{booking}</td>
                   );
                 }
                 // Check if this room-time slot is booked
-                const bookingKey = `1-${time}`; // Using room ID 1 for now
+                const bookingKey = `${room.id}-${time}`;
                 const isBooked = bookingState[bookingKey] || false;
                 
                 return (
-                  <td key={room} style={{ border: '1px solid #ccc', padding: 12, background: isBooked ? '#d4edda' : '#fff', fontSize: 13, textAlign: 'center' }}>
+                  <td key={room.id} style={{ border: '1px solid #ccc', padding: 12, background: isBooked ? '#d4edda' : '#fff', fontSize: 13, textAlign: 'center' }}>
                     {isBooked ? (
                       <span style={{ color: '#155724', fontWeight: 'bold', fontSize: '12px' }}>
                         ✓ Booked
                       </span>
                     ) : onBookRoom ? (
                       <button
-                        onClick={() => onBookRoom(1, room, time)} // Pass the time slot
+                        onClick={() => onBookRoom(room.id, room.name, time)} // Pass the actual room ID and name
                         style={{
                           background: '#007bff',
                           color: 'white',

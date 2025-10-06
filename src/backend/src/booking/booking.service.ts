@@ -58,8 +58,7 @@ export class BookingService {
         roomId: data.roomId!,
         timeslotId: data.timeslotId!,
         status: 'pending',
-        title: data.title,
-        description: data.description,
+        notes: data.notes,
       });
 
       try {
