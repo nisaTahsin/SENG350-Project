@@ -17,9 +17,10 @@ interface TimeslotTableProps {
   bookings: { [room: string]: { [time: string]: string | BookingCell } };
   onBookRoom?: (roomId: number, roomName: string, time: string) => void;
   bookingState?: {[key: string]: boolean};
+  selectedDate?: string;
 }
 
-const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, onBookRoom, bookingState = {} }) => {
+const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, onBookRoom, bookingState = {}, selectedDate = '' }) => {
   console.log('TimeslotTable received bookingState:', bookingState);
   
   const timeColStyle: React.CSSProperties = {
@@ -80,7 +81,7 @@ const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, o
                   );
                 }
                 // Check if this room-time slot is booked
-                const bookingKey = `${room.id}-${time}`;
+                const bookingKey = `${room.id}-${time}-${selectedDate}`;
                 const isBooked = bookingState[bookingKey] || false;
                 
                 return (

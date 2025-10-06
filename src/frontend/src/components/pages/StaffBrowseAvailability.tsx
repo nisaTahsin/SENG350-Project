@@ -173,7 +173,7 @@ const StaffBrowseAvailability: React.FC = () => {
         const handleBookingSuccess = () => {
           // Mark the room-time slot as booked
           if (selectedRoom) {
-            const bookingKey = `${selectedRoom.id}-${selectedRoom.time}`;
+            const bookingKey = `${selectedRoom.id}-${selectedRoom.time}-${selectedDate}`;
             console.log('Setting booking state for key:', bookingKey);
             
             // Update both ref and state
@@ -233,6 +233,7 @@ const StaffBrowseAvailability: React.FC = () => {
                  bookings={filteredBookings}
                  onBookRoom={handleBookRoom}
                  bookingState={bookingStateRef.current}
+                 selectedDate={selectedDate}
                />
              </div>
              
