@@ -20,6 +20,8 @@ interface TimeslotTableProps {
 }
 
 const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, onBookRoom, bookingState = {} }) => {
+  console.log('TimeslotTable received bookingState:', bookingState);
+  
   const timeColStyle: React.CSSProperties = {
     border: '1px solid #ccc',
     padding: '4px',

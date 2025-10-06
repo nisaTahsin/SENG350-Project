@@ -62,4 +62,32 @@ export class RoomsController {
     const timeslots = await this.roomsService.generateSampleTimeslots();
     return { message: `Generated ${timeslots.length} timeslots`, timeslots };
   }
+
+  // Simple endpoint to get bookings using raw SQL
+  @Get('bookings/simple')
+  async getSimpleBookings() {
+    try {
+      console.log('Getting simple bookings...');
+      const bookings = await this.roomsService.getSimpleBookings();
+      console.log('Found simple bookings:', bookings.length);
+      return { success: true, count: bookings.length, bookings };
+    } catch (error) {
+      console.log('Error getting simple bookings:', error);
+      return { success: false, message: 'Failed to get simple bookings', error: error.message };
+    }
+  }
+
+  // Generate timeslots for a specific date
+  @Post('timeslots/generate-for-date')
+  async generateTimeslotsForDate(@Body() body: { date: string }) {
+    try {
+      console.log('Generating timeslots for date:', body.date);
+      const timeslots = await this.roomsService.generateTimeslotsForDate(body.date);
+      console.log('Generated timeslots:', timeslots.length);
+      return { success: true, count: timeslots.length, timeslots };
+    } catch (error) {
+      console.log('Error generating timeslots for date:', error);
+      return { success: false, message: 'Failed to generate timeslots', error: error.message };
+    }
+  }
 }

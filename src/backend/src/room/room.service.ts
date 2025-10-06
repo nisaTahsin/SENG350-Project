@@ -162,4 +162,87 @@ export class RoomsService {
     // Save all timeslots
     return await this.timeslotRepository.save(timeslots);
   }
+
+  // Get all bookings with room and timeslot info
+  async getAllBookings() {
+    return this.roomRepository.query(`
+      SELECT 
+        b.id,
+        b.user_id,
+        b.room_id,
+        b.timeslot_id,
+        b.status,
+        b.notes,
+        b.created_at,
+        r.room_name,
+        r.building,
+        t.start_time,
+        t.end_time
+      FROM bookings b
+      JOIN rooms r ON b.room_id = r.id
+      JOIN timeslots t ON b.timeslot_id = t.id
+      ORDER BY b.created_at DESC
+    `);
+  }
+
+  // Simple bookings query
+  async getSimpleBookings() {
+    return this.roomRepository.query(`
+      SELECT 
+        b.id,
+        b.user_id,
+        b.room_id,
+        b.timeslot_id,
+        b.status,
+        r.room_name,
+        t.start_time
+      FROM bookings b
+      JOIN rooms r ON b.room_id = r.id
+      JOIN timeslots t ON b.timeslot_id = t.id
+      ORDER BY b.created_at DESC
+    `);
+  }
+
+  // Generate timeslots for a specific date
+  async generateTimeslotsForDate(date: string) {
+    // Check if timeslots already exist for this date
+    const existingTimeslots = await this.timeslotRepository.query(`
+      SELECT COUNT(*) as count FROM timeslots WHERE DATE(start_time) = $1
+    `, [date]);
+
+    if (existingTimeslots[0].count > 0) {
+      console.log(`Timeslots already exist for ${date}, skipping generation`);
+      return [];
+    }
+
+    // Get all active rooms
+    const rooms = await this.roomRepository.find({ where: { isActive: true } });
+    
+    // Define time slots (7:30 AM to 7:00 PM, 30-minute intervals)
+    const timeSlots = [
+      '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+      '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00',
+      '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
+    ];
+
+    const timeslots = [];
+
+    for (const room of rooms) {
+      for (const timeSlot of timeSlots) {
+        const startTime = new Date(`${date}T${timeSlot}:00.000Z`);
+        const endTime = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minutes later
+
+        const timeslot = this.timeslotRepository.create({
+          roomId: room.id,
+          startTime,
+          endTime,
+        });
+
+        timeslots.push(timeslot);
+      }
+    }
+
+    // Save all timeslots
+    return await this.timeslotRepository.save(timeslots);
+  }
 }
