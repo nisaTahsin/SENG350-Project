@@ -1,6 +1,6 @@
 # Frontend Scripting Language
 ## Status
-Proposed
+Accepted
 
 ## Context
 We need to choose a scripting language for our frontend which will be both reliable and scalable in order to fulfill frontend requirements (e.g. system logic and UI consistency).
