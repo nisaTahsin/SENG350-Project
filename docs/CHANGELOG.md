@@ -132,7 +132,14 @@ _For all of Design I and most of Implementation I, this document had not been up
 - [ ] Allocate work for Design II deliverables
 
 **Topics Discussed:**
-- 
+- AI usage during the project
 
 **Tasks Completed:**
 - Filled out AI usage survey
+- Completed in-lab activity
+- Allocated work for Design II: 
+    - Griffin is making a backlog document which includes technical debt and gitlab issues
+    - Taqdeer will add tests which were not completed in cycle I as well as technical debt associated with testing to the backlog document
+    - Anitta will make the module view diagram
+    - Nisa and Amanda will make the C&C diagram
+    - Amanda will revise the ADRs
