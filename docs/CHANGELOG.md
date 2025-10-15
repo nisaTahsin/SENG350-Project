@@ -63,7 +63,7 @@ _For all of Design I and most of Implementation I, this document had not been up
 **Date:** Wednesday, September 24th 2025 <br>
 **Time:** 8:30am - 10:20am <br>
 **Agenda:** 
-- [ ] Get Dockerfile working
+- [x] Get Dockerfile working
 
 **Topics Discussed:**
 - Development allocation
@@ -82,7 +82,7 @@ _For all of Design I and most of Implementation I, this document had not been up
 **Time:** 11:30am - 1:30pm <br>
 **Agenda:** 
 - [x] Review completed work so far
-- [ ] Get Dockerfile working
+- [x] Get Dockerfile working
 - [ ] Get CI/CD working
 
 **Topics Discussed:**
@@ -99,7 +99,7 @@ _For all of Design I and most of Implementation I, this document had not been up
 **Date:** Wednesday, October 1st 2025 <br>
 **Time:** 8:30am - 10:20am <br>
 **Agenda:** 
-- [ ] Get Dockerfile working
+- [x] Get Dockerfile working
 - [ ] Get CI/CD working
 
 **Topics Discussed:**
@@ -114,7 +114,7 @@ _For all of Design I and most of Implementation I, this document had not been up
 **Date:** Wednesday, October 8th 2025 <br>
 **Time:** 8:30am - 10:20am <br>
 **Agenda:** 
-- [ ] Debrief on Implementation I results
+- [x] Debrief on Implementation I results
 
 **Topics Discussed:**
 - Ways to improve developement process/assignment structure
@@ -128,8 +128,8 @@ _For all of Design I and most of Implementation I, this document had not been up
 **Date:** Wednesday, October 15th 2025 <br>
 **Time:** 8:30am - 10:20am <br>
 **Agenda:** 
-- [ ] Plan approach for Design II
-- [ ] Allocate work for Design II deliverables
+- [x] Plan approach for Design II
+- [x] Allocate work for Design II deliverables
 
 **Topics Discussed:**
 - AI usage during the project
@@ -138,8 +138,8 @@ _For all of Design I and most of Implementation I, this document had not been up
 - Filled out AI usage survey
 - Completed in-lab activity
 - Allocated work for Design II: 
-    - Griffin is making a backlog document which includes technical debt and gitlab issues
-    - Taqdeer will add tests which were not completed in cycle I as well as technical debt associated with testing to the backlog document
+    - Griffin is making a work plan document which includes: delayed features, technical debt, and improvements needed (new features from Cycle 2, i.e. API stuff etc.) linked as GitLab issues.
+    - Taqdeer will add tests which were not completed in cycle I as well as technical debt associated with testing to the work plan document
     - Anitta will make the module view diagram
     - Nisa and Amanda will make the C&C diagram
     - Amanda will revise the ADRs
