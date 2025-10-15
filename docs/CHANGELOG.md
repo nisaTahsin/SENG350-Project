@@ -108,3 +108,31 @@ _For all of Design I and most of Implementation I, this document had not been up
 
 **Tasks Completed:**
 - Continued to progress with frontend and backend development
+
+## Meeting 7 - Lab 5
+
+**Date:** Wednesday, October 8th 2025 <br>
+**Time:** 8:30am - 10:20am <br>
+**Agenda:** 
+- [ ] Debrief on Implementation I results
+
+**Topics Discussed:**
+- Ways to improve developement process/assignment structure
+- Things to improve on for the next cycle
+
+**Tasks Completed:**
+- Completed self and group evaluations
+
+## Meeting 8 - Lab 6
+
+**Date:** Wednesday, October 15th 2025 <br>
+**Time:** 8:30am - 10:20am <br>
+**Agenda:** 
+- [ ] Plan approach for Design II
+- [ ] Allocate work for Design II deliverables
+
+**Topics Discussed:**
+- 
+
+**Tasks Completed:**
+- Filled out AI usage survey
