@@ -1,7 +1,7 @@
 # Database Technology
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 We need to store classrooms, bookings, users, and audit logs. Concurrency correctness is a must, and there must be exactly one successful booking.
