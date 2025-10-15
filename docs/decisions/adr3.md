@@ -1,7 +1,7 @@
 # Testing and Demo Tools
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 We need to choose a testing framework compatible with our system.
