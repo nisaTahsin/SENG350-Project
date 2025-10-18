@@ -1,6 +1,6 @@
 # Booking Subsystem - Element Catalog
 
-| Element               | Type       | Responsibilities / Notes |
+| Element               | Type       | Responsibilities  |
 |-----------------------|------------|-------------------------|
 | BookingController     | Component  | Exposes REST endpoints for creating, updating, cancelling, and fetching bookings (all/by room/by user) |
 | BookingService        | Component  | Handles business logic, manages booking persistence, checks conflicts and permissions |
