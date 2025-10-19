@@ -1,8 +1,8 @@
-#Backlog of Features for Implementation 2
+# Backlog of Features for Implementation II
 
 This file contains a list of features needed to be done by the end of Implementation 2.
 
-##Ommited Requirements and User Stories from Implementation 1
+## Ommited Requirements and User Stories from Implementation II
 
 
 REQ-R-2: Registrars can maintain classrooms and time slots [See GitLab Issue #12]
@@ -49,7 +49,7 @@ REQ-S-4: Staff are able to cancel their own bookings [See GitLab Issue #5]
 
 User Story S-3: Staff can view bookings by time to locate and cancel them [See GitLab Issue #20]
 
-##New Requirements and User Stories for Implementation 2
+## New Requirements and User Stories for Implementation II
 
 REQ-R-6: AI Agent (MCP) can autonomously book rooms [See GitLab Issue #48]
 
@@ -59,7 +59,7 @@ REQ-R-7: External API endpoint for third-party integrations [See GitLab Issue #5
 
 User Story X-2: External API endpoint for third-party integrations [See GitLab Issue #51]
 
-##Technical Debt to be Resolved for Implementation 2
+## Technical Debt from Implementation I to be Resolved for Implementation II
 
 TD-1: Duplicate Data Files in Multiple Locations [See Gitlab Issue #52]
 
