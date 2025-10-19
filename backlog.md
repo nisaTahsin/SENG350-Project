@@ -66,3 +66,7 @@ TD-1: Duplicate Data Files in Multiple Locations [See Gitlab Issue #52]
 TD-2: Unused Files in Repository [See Gitlab Issue #53]
 
 TD-3: Inconsistent Project Structure [See Gitlab Issue #54]
+
+TD-4: AdminDashboard test fail [See GitLab Issue #55]
+
+TD-5: Vitest frontend configuration path error [See GitLab Issue #56]
