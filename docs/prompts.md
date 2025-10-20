@@ -67,4 +67,10 @@ Sept. 30: https://chatgpt.com/c/68de00cb-2d5c-832c-b096-2ac7036d9cdf
 
 Oct. 4: https://chatgpt.com/c/68db12e8-534c-832e-a01b-396fd05ab47b
 
+Oct. 17: Give a comprehensive description of the flow for the staff booking process
+
+Oct. 19: Confirm whether or not the frontend and backend is connected by a REST architecture
+
+Oct. 19: What are the benefits and downsides of using a REST architecture?
+
 
