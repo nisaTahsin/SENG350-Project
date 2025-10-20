@@ -22,3 +22,6 @@
 | Arrow | **Dependency** - indicates “uses” or “calls” relationship between components |
 | Cylinder | **Database** - represents data persistence layer |
 
+
+## Reasoning
+See [adr4.md](docs/decisions/adr4.md)
