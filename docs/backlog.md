@@ -70,3 +70,5 @@ TD-3: Inconsistent Project Structure [See Gitlab Issue #54]
 TD-4: AdminDashboard test fail [See GitLab Issue #55]
 
 TD-5: Vitest frontend configuration path error [See GitLab Issue #56]
+
+TD-6: Get CI/CD pipeline working [See GitLab Issue #57]
