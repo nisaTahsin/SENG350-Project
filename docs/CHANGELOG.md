@@ -143,3 +143,21 @@ _For all of Design I and most of Implementation I, this document had not been up
     - Anitta will make the module view diagram
     - Nisa and Amanda will make the C&C diagram
     - Amanda will revise the ADRs
+
+## Meeting 9 - Lab 7
+
+**Date:** Wednesday, October 22nd 2025 <br>
+**Time:** 8:30am - 10:20am <br>
+**Agenda:** 
+- [ ] Plan approach for Implementation II
+- [ ] Allocate work for Implementation II deliverables
+    - [ ] Nisa and Anitta make a list of remaining backend tasks and allocate between themselves
+    - [ ] Griffin and Amanda decide (Online due to missing lab for sickness and injury respectively) who will be finishing up the frontend and who will focus on linking up the backend and frontend
+    - [ ] Taqdeer will get started on the two new deliverables (API and AI agent support)
+    
+    (documentation and debugging will be handled next week)
+
+**Topics Discussed:**
+- Grade received for Implementation I
+
+**Tasks Completed:**
