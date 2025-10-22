@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Patch, Delete, Body } from '@nestjs/common';
+import { Controller, Get, Param, Post, Patch, Delete, Body, Put, Query } from '@nestjs/common';
 import { RoomsService } from './room.service';
 import { RoomImportService } from './room-import.service';
 import { CreateTimeslotDto } from '../timeslot/dto/create-timeslot.dto';
@@ -11,59 +11,14 @@ export class RoomsController {
     private readonly roomImportService: RoomImportService,
   ) {}
 
-  // Rooms
-  @Get()
-  findAllRooms() {
-    return this.roomsService.findAllRooms();
-  }
-
-  @Get(':id')
-  findRoom(@Param('id') id: string) {
-    return this.roomsService.findRoomById(+id);
-  }
-
-  // Timeslots
-  @Post(':id/timeslots')
-  createTimeslot(@Param('id') roomId: string, @Body() dto: CreateTimeslotDto) {
-    return this.roomsService.createTimeslot({ ...dto, roomId: +roomId });
-  }
-
-  @Patch('timeslots/:id')
-  updateTimeslot(@Param('id') id: string, @Body() dto: UpdateTimeslotDto) {
-    return this.roomsService.updateTimeslot(+id, dto);
-  }
-
-  @Delete('timeslots/:id')
-  deleteTimeslot(@Param('id') id: string) {
-    return this.roomsService.deleteTimeslot(+id);
-  }
-
-  @Get(':id/timeslots')
-  findTimeslots(@Param('id') roomId: string) {
-    return this.roomsService.findTimeslotsByRoom(+roomId);
-  }
-
-  // Import CSV data
-  @Post('import')
-  async importRooms() {
-    const rooms = await this.roomImportService.importRoomsFromCSV();
-    return { message: `Successfully imported ${rooms.length} rooms`, rooms };
-  }
-
+  // ========== GET ROUTES (specific paths first) ==========
+  
   @Get('count')
   async getRoomCount() {
     const count = await this.roomImportService.getRoomCount();
     return { count };
   }
 
-  // Generate sample timeslots for all rooms
-  @Post('generate-timeslots')
-  async generateTimeslots() {
-    const timeslots = await this.roomsService.generateSampleTimeslots();
-    return { message: `Generated ${timeslots.length} timeslots`, timeslots };
-  }
-
-  // Simple endpoint to get bookings using raw SQL
   @Get('bookings/simple')
   async getSimpleBookings() {
     try {
@@ -73,11 +28,80 @@ export class RoomsController {
       return { success: true, count: bookings.length, bookings };
     } catch (error) {
       console.log('Error getting simple bookings:', error);
-      return { success: false, message: 'Failed to get simple bookings', error: error.message };
+      return { success: false, message: 'Failed to get simple bookings', error: (error as Error).message };
     }
   }
 
-  // Generate timeslots for a specific date
+  @Get()
+  findAllRooms() {
+    return this.roomsService.findAllRooms();
+  }
+
+  // ========== NEW REGISTRAR ENDPOINTS (before :id routes) ==========
+  
+  @Get(':id/utilization')
+  async getRoomUtilization(
+    @Param('id') id: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string
+  ) {
+    return this.roomsService.getRoomUtilization(+id, startDate, endDate);
+  }
+
+  @Get(':id/timeslots')
+  findTimeslots(@Param('id') roomId: string) {
+    return this.roomsService.findTimeslotsByRoom(+roomId);
+  }
+
+  @Get(':id')
+  findRoom(@Param('id') id: string) {
+    return this.roomsService.findRoomById(+id);
+  }
+
+  @Put(':id')
+  async updateRoom(
+    @Param('id') id: string,
+    @Body() body: {
+      capacity?: number;
+      isActive?: boolean;
+      openHours?: string;
+      roomName?: string;
+      building?: string;
+    }
+  ) {
+    return this.roomsService.updateRoom(+id, body);
+  }
+
+  @Patch(':id/capacity')
+  async updateCapacity(
+    @Param('id') id: string,
+    @Body() body: { capacity: number }
+  ) {
+    return this.roomsService.updateCapacity(+id, body.capacity);
+  }
+
+  @Patch(':id/status')
+  async toggleRoomStatus(
+    @Param('id') id: string,
+    @Body() body: { isActive: boolean }
+  ) {
+    return this.roomsService.toggleStatus(+id, body.isActive);
+  }
+
+  // ========== POST ROUTES ==========
+
+  @Post('import')
+  async importRooms() {
+    const rooms = await this.roomImportService.importRoomsFromCSV();
+    return { message: `Successfully imported ${rooms.length} rooms`, rooms };
+  }
+
+  @Post('generate-timeslots')
+  async generateTimeslots() {
+    const timeslots = await this.roomsService.generateSampleTimeslots();
+    return { message: `Generated ${timeslots.length} timeslots`, timeslots };
+  }
+
   @Post('timeslots/generate-for-date')
   async generateTimeslotsForDate(@Body() body: { date: string }) {
     try {
@@ -87,7 +111,24 @@ export class RoomsController {
       return { success: true, count: timeslots.length, timeslots };
     } catch (error) {
       console.log('Error generating timeslots for date:', error);
-      return { success: false, message: 'Failed to generate timeslots', error: error.message };
+      return { success: false, message: 'Failed to generate timeslots', error: (error as Error).message };
     }
+  }
+
+  @Post(':id/timeslots')
+  createTimeslot(@Param('id') roomId: string, @Body() dto: CreateTimeslotDto) {
+    return this.roomsService.createTimeslot({ ...dto, roomId: +roomId });
+  }
+
+  // ========== TIMESLOT MANAGEMENT ==========
+
+  @Patch('timeslots/:id')
+  updateTimeslot(@Param('id') id: string, @Body() dto: UpdateTimeslotDto) {
+    return this.roomsService.updateTimeslot(+id, dto);
+  }
+
+  @Delete('timeslots/:id')
+  deleteTimeslot(@Param('id') id: string) {
+    return this.roomsService.deleteTimeslot(+id);
   }
 }

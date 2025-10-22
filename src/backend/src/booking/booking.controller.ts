@@ -130,7 +130,7 @@ export class BookingController {
       return { success: true, count: bookings.length, bookings };
     } catch (error) {
       console.log('Error getting test bookings:', error);
-      return { success: false, message: 'Failed to get test bookings', error: error.message };
+      return { success: false, message: 'Failed to get test bookings', error: (error as Error).message };
     }
   }
 

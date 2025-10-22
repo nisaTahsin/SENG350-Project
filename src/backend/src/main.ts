@@ -1,8 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { RoomImportService } from './room/room-import.service';
+import { AppDataSource } from './data-source';
 
 async function bootstrap() {
+  // Initialize TypeORM DataSource FIRST
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+    console.log(' Data Source has been initialized!');
+  }
+
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   
