@@ -1,0 +1,219 @@
+
+Registrar features Test
+- Update capacity
+- Toggle room status
+- Maintenance windows (create, view, delete)
+- Room utilization stats
+
+PS C:\group_2_proj\src\backend> docker-compose up --build
+time="2025-10-22T22:14:00-07:00" level=warning msg="C:\\group_2_proj\\src\\backend\\docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+[+] Building 3.8s (12/12) FINISHED
+ => [internal] load local bake definitions                                             0.0s
+ => => reading from stdin 518B                                                         0.0s
+ => [internal] load build definition from Dockerfile                                   0.1s
+ => => transferring dockerfile: 363B                                                   0.0s
+ => [internal] load metadata for docker.io/library/node:20                             0.8s
+ => [internal] load .dockerignore                                                      0.1s
+ => => transferring context: 2B                                                        0.0s
+ => [1/5] FROM docker.io/library/node:20@sha256:c11ae157cdd9f8b522d5a65e7f3f5f5c34cf4  0.1s
+ => => resolve docker.io/library/node:20@sha256:c11ae157cdd9f8b522d5a65e7f3f5f5c34cf4  0.1s
+ => [internal] load build context                                                      1.3s
+ => => transferring context: 877.53kB                                                  1.2s
+ => CACHED [2/5] WORKDIR /usr/src/app                                                  0.0s
+ => CACHED [3/5] COPY package*.json ./                                                 0.0s
+ => CACHED [4/5] RUN npm install                                                       0.0s
+ => CACHED [5/5] COPY . .                                                              0.0s
+ => exporting to image                                                                 0.3s
+ => => exporting layers                                                                0.0s
+ => => exporting manifest sha256:61da327490f97b6acde5ebb7f05331bd25d840682d456b6cbb3c  0.0s
+ => => exporting config sha256:19f22cb275c6db222c62ad4fec3eebfbc97353c16c79047c6f32bc  0.0s
+ => => exporting attestation manifest sha256:72a2a6f50018fb16c30e3263c4003b637b5a2f22  0.1s
+ => => exporting manifest list sha256:786887811f15dd72d8d2c99de101b060d12cd83347817a6  0.0s
+ => => naming to docker.io/library/backend-backend:latest                              0.0s
+ => => unpacking to docker.io/library/backend-backend:latest                           0.0s
+ => resolving provenance for metadata file                                             0.0s
+[+] Running 3/3
+ ✔ backend-backend            Built                                                    0.0s
+ ✔ Container seng350_db       Running                                                  0.0s
+ ✔ Container seng350_backend  Recreated                                                1.7s
+Attaching to seng350_backend, seng350_db
+seng350_backend  |
+seng350_backend  | > backend@1.0.0 dev
+seng350_backend  | > nodemon --watch src --ext ts,json --exec ts-node src/main.ts - ./:/usr/src/app - /usr/src/app/node_modules
+seng350_backend  |
+seng350_backend  | [nodemon] 3.1.10
+seng350_backend  | [nodemon] to restart at any time, enter `rs`
+seng350_backend  | [nodemon] watching path(s): src/**/*
+seng350_backend  | [nodemon] watching extensions: ts,json
+seng350_backend  | [nodemon] starting `ts-node src/main.ts - ./:/usr/src/app - /usr/src/app/node_modules`
+seng350_backend  | [dotenv@17.2.3] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+seng350_backend  |  Data Source has been initialized!
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [NestFactory] Starting Nest application...
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [InstanceLoader] AppModule dependencies initialized +20ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [InstanceLoader] TypeOrmModule dependencies initialized +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [InstanceLoader] MaintenanceModule dependencies initialized +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [InstanceLoader] TypeOrmCoreModule dependencies initialized +24ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [InstanceLoader] TypeOrmModule dependencies initialized +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [InstanceLoader] TypeOrmModule dependencies initialized +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [InstanceLoader] TypeOrmModule dependencies initialized +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [InstanceLoader] UsersModule dependencies initialized +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [InstanceLoader] BookingModule dependencies initialized +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [InstanceLoader] RoomsModule dependencies initialized +0ms
+seng350_backend  | Database already contains 122 rooms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RoutesResolver] UsersController {/users}: +17ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/users, GET} route +4ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/users/debug-login, GET} route +2ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/users/:id, GET} route +2ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/users/:id/block, PATCH} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/users/:id, DELETE} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/users/login, POST} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RoutesResolver] BookingController {/booking}: +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/booking, POST} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/booking/test, POST} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/booking/room/:roomId, GET} route +2ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/booking/room/:roomId/with-user, GET} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/booking, GET} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/booking/me, GET} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/booking/test-all, GET} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/booking/:id, DELETE} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RoutesResolver] RoomsController {/rooms}: +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/count, GET} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/bookings/simple, GET} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms, GET} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/:id/utilization, GET} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/:id/timeslots, GET} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/:id, GET} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/:id, PUT} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/:id/capacity, PATCH} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/:id/status, PATCH} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/import, POST} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/generate-timeslots, POST} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/timeslots/generate-for-date, POST} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/:id/timeslots, POST} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/timeslots/:id, PATCH} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/rooms/timeslots/:id, DELETE} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RoutesResolver] MaintenanceController {/maintenance}: +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/maintenance, POST} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/maintenance, GET} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/maintenance/room/:roomId, GET} route +1ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/maintenance/upcoming, GET} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/maintenance/:id, DELETE} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [RouterExplorer] Mapped {/maintenance/check, POST} route +0ms
+seng350_backend  | [Nest] 39  - 10/23/2025, 5:14:15 AM     LOG [NestApplication] Nest application successfully started +4ms
+seng350_backend  | Server running on http://localhost:4000
+seng350_db       | 2025-10-23 05:16:30.622 UTC [28] LOG:  checkpoint starting: time
+seng350_db       | 2025-10-23 05:16:43.793 UTC [28] LOG:  checkpoint complete: wrote 128 buffers (0.8%); 0 WAL file(s) added, 0 removed, 0 recycled; write=12.927 s, sync=0.155 s, total=13.171 s; sync files=78, longest=0.017 s, average=0.002 s; distance=448 kB, estimate=448 kB
+
+
+v View in Docker Desktop   o View Config   w Enable WatchPS C:\group_2_proj\src\backend> curl -Method POST -Uri http://localhost:4000/maintenance -ContentType "application/json" -Body '{"roomId":133,"startTime":"2025-10-25T09:00:00Z","endTime":"2025-10-25T17:00:00Z","reason":"Annual maintenance"}'
+
+
+StatusCode        : 201
+StatusDescription : Created
+Content           : {"success":true,"message":"Maintenance window
+                    created successfully","maintenance":{"id":"1","room
+                    _id":"133","start_time":"2025-10-25T09:00:00.000Z",
+                    "end_time":"2025-10-25T17:00:00.000Z","reason":"Ann
+                    u...
+RawContent        : HTTP/1.1 201 Created
+                    Access-Control-Allow-Origin: *
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 275
+                    Content-Type: application/json; charset=utf-8
+                    Date: Thu, 23 Oct 2025 05:15:47...
+Forms             : {}
+Headers           : {[Access-Control-Allow-Origin, *], [Connection,
+                    keep-alive], [Keep-Alive, timeout=5],
+                    [Content-Length, 275]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 275
+
+
+
+PS C:\group_2_proj\src\backend> curl http://localhost:4000/maintenance
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"success":true,"count":1,"maintenance":[{"id":"1",
+                    "room_id":"133","start_time":"2025-10-25T09:00:00.0
+                    00Z","end_time":"2025-10-25T17:00:00.000Z","reason"
+                    :"Annual maintenance","created_by":null,"create...
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 323
+                    Content-Type: application/json; charset=utf-8
+                    Date: Thu, 23 Oct 2025 05:15:54 GMT...
+Forms             : {}
+Headers           : {[Access-Control-Allow-Origin, *], [Connection,
+                    keep-alive], [Keep-Alive, timeout=5],
+                    [Content-Length, 323]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 323
+
+
+
+PS C:\group_2_proj\src\backend> curl -Method PATCH -Uri http://localhost:4000/rooms/133/capacity -ContentType "application/json" -Body '{"capacity":75}'
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"success":true,"message":"Room capacity updated
+                    to 75","room":[{"id":"133","room_name":"ELL 060 –
+                    Classroom","building":"Elliot
+                    Building","capacity":75,"room_location":"of the
+                    Elliot Building","url":...
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 600
+                    Content-Type: application/json; charset=utf-8
+                    Date: Thu, 23 Oct 2025 05:16:11 GMT...
+Forms             : {}
+Headers           : {[Access-Control-Allow-Origin, *], [Connection,
+                    keep-alive], [Keep-Alive, timeout=5],
+                    [Content-Length, 600]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 600
+
+
+
+PS C:\group_2_proj\src\backend> curl http://localhost:4000/rooms/133/utilization
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"success":true,"room":{"id":"133","name":"ELL 060
+                    – Classroom","building":"Elliot Building","capacity
+                    ":75},"period":{"startDate":"2025-09-23T05:16:15.60
+                    9Z","endDate":"2025-10-23T05:16:15.609Z"},"stat...
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 277
+                    Content-Type: application/json; charset=utf-8
+                    Date: Thu, 23 Oct 2025 05:16:15 GMT...
+Forms             : {}
+Headers           : {[Access-Control-Allow-Origin, *], [Connection,
+                    keep-alive], [Keep-Alive, timeout=5],
+                    [Content-Length, 277]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 277
+
