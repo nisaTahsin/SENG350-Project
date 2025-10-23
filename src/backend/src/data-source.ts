@@ -15,5 +15,5 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'your_password_here',
   database: process.env.DB_NAME || 'mydb',
   entities: [User, Booking, Room, Timeslot],
-  synchronize: true, // set true for dev only
+  synchronize: false, // set true for dev only
 });

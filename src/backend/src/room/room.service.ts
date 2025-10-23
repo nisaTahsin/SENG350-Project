@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Room } from './room.entity';
 import { Timeslot } from '../timeslot/timeslot.entity';
 import { BookingService } from '../booking/booking.service';
+import { AppDataSource } from '../data-source';
 
 export type TimeslotWithAvailability = Timeslot & {
   isBooked: boolean;
@@ -17,10 +18,11 @@ export class RoomsService {
     private readonly roomRepository: Repository<Room>,
     @InjectRepository(Timeslot)
     private readonly timeslotRepository: Repository<Timeslot>,
-    private readonly bookingService: BookingService, // injected from BookingModule
+    private readonly bookingService: BookingService,
   ) {}
 
-  // Rooms (mostly static)
+  // ========== EXISTING METHODS ==========
+
   findAllRooms(): Promise<Room[]> {
     return this.roomRepository.find();
   }
@@ -29,27 +31,21 @@ export class RoomsService {
     return this.roomRepository.findOne({ where: { id } });
   }
 
-  // Timeslots (dynamic)
   async createTimeslot(dto: { roomId: number; startTime: string | Date; endTime: string | Date; }): Promise<Timeslot> {
-    // validate room exists
     const room = await this.roomRepository.findOne({ where: { id: dto.roomId } });
     if (!room) throw new NotFoundException('Room not found');
 
-    // normalize times
     const start = new Date(dto.startTime);
     const end = new Date(dto.endTime);
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       throw new BadRequestException('startTime and endTime must be valid dates');
     }
 
-    // enforce 1 hour length (timeslots are 1h)
     const ONE_HOUR_MS = 60 * 60 * 1000;
     if (end.getTime() - start.getTime() !== ONE_HOUR_MS) {
       throw new BadRequestException('Timeslot must be exactly 1 hour long');
     }
 
-    // optional: if Room has open hours fields (e.g. room.openStartTime / room.openEndTime),
-    // ensure the timeslot falls within them. Skip if fields are not present.
     const anyRoom = room as any;
     if (anyRoom.openStartTime && anyRoom.openEndTime) {
       const openStart = new Date(anyRoom.openStartTime);
@@ -59,12 +55,11 @@ export class RoomsService {
       }
     }
 
-    // ensure no overlapping timeslot exists for this room
     const existingForRoom = await this.timeslotRepository.find({ where: { roomId: dto.roomId } });
     const overlaps = existingForRoom.some(ts => {
       const s = new Date(ts.startTime).getTime();
       const e = new Date(ts.endTime).getTime();
-      return s < end.getTime() && e > start.getTime(); // overlap test
+      return s < end.getTime() && e > start.getTime();
     });
     if (overlaps) {
       throw new ConflictException('Overlapping timeslot exists for this room');
@@ -79,7 +74,6 @@ export class RoomsService {
   }
 
   async updateTimeslot(id: number, dto: any): Promise<Timeslot> {
-    // ...existing implementation...
     await this.timeslotRepository.update(id, dto);
     const updated = await this.timeslotRepository.findOne({ where: { id } });
     if (!updated) throw new NotFoundException('Timeslot not found');
@@ -90,7 +84,6 @@ export class RoomsService {
     await this.timeslotRepository.delete(id);
   }
 
-  // returns timeslots for a room with availability metadata
   async findTimeslotsByRoom(roomId: number): Promise<TimeslotWithAvailability[]> {
     const room = await this.roomRepository.findOne({ where: { id: roomId } });
     if (!room) throw new NotFoundException('Room not found');
@@ -115,18 +108,13 @@ export class RoomsService {
   }
 
   async findAvailableRooms(start: Date, end: Date) {
-    // ...existing implementation if any...
     return this.roomRepository.find();
   }
 
-  /**
-   * Generate sample timeslots for all rooms for the next 7 days
-   */
   async generateSampleTimeslots(): Promise<Timeslot[]> {
     const rooms = await this.roomRepository.find();
     const timeslots: Timeslot[] = [];
 
-    // Generate timeslots for the next 7 days
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -134,12 +122,10 @@ export class RoomsService {
       const currentDate = new Date(today);
       currentDate.setDate(today.getDate() + day);
 
-      // Skip weekends (Saturday = 6, Sunday = 0)
       if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
         continue;
       }
 
-      // Generate timeslots from 8:00 AM to 6:00 PM (10 hours)
       for (let hour = 8; hour < 18; hour++) {
         const startTime = new Date(currentDate);
         startTime.setHours(hour, 0, 0, 0);
@@ -159,11 +145,9 @@ export class RoomsService {
       }
     }
 
-    // Save all timeslots
     return await this.timeslotRepository.save(timeslots);
   }
 
-  // Get all bookings with room and timeslot info
   async getAllBookings() {
     return this.roomRepository.query(`
       SELECT 
@@ -185,7 +169,6 @@ export class RoomsService {
     `);
   }
 
-  // Simple bookings query
   async getSimpleBookings() {
     return this.roomRepository.query(`
       SELECT 
@@ -203,9 +186,7 @@ export class RoomsService {
     `);
   }
 
-  // Generate timeslots for a specific date
   async generateTimeslotsForDate(date: string) {
-    // Check if timeslots already exist for this date
     const existingTimeslots = await this.timeslotRepository.query(`
       SELECT COUNT(*) as count FROM timeslots WHERE DATE(start_time) = $1
     `, [date]);
@@ -215,10 +196,8 @@ export class RoomsService {
       return [];
     }
 
-    // Get all active rooms
     const rooms = await this.roomRepository.find({ where: { isActive: true } });
     
-    // Define time slots (7:30 AM to 7:00 PM, 30-minute intervals)
     const timeSlots = [
       '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
       '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00',
@@ -230,7 +209,7 @@ export class RoomsService {
     for (const room of rooms) {
       for (const timeSlot of timeSlots) {
         const startTime = new Date(`${date}T${timeSlot}:00.000Z`);
-        const endTime = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minutes later
+        const endTime = new Date(startTime.getTime() + 30 * 60 * 1000);
 
         const timeslot = this.timeslotRepository.create({
           roomId: room.id,
@@ -242,7 +221,202 @@ export class RoomsService {
       }
     }
 
-    // Save all timeslots
     return await this.timeslotRepository.save(timeslots);
+  }
+
+  // ========== NEW REGISTRAR MAINTENANCE METHODS ==========
+
+  /**
+   * Update room details (capacity, status, name, building)
+   */
+  async updateRoom(
+    roomId: number,
+    updates: {
+      capacity?: number;
+      isActive?: boolean;
+      openHours?: string;
+      roomName?: string;
+      building?: string;
+    }
+  ) {
+    try {
+      const setClauses = [];
+      const params = [];
+      let paramIndex = 1;
+
+      if (updates.capacity !== undefined) {
+        setClauses.push(`capacity = $${paramIndex++}`);
+        params.push(updates.capacity);
+      }
+
+      if (updates.isActive !== undefined) {
+        setClauses.push(`is_active = $${paramIndex++}`);
+        params.push(updates.isActive);
+      }
+
+      if (updates.roomName !== undefined) {
+        setClauses.push(`room_name = $${paramIndex++}`);
+        params.push(updates.roomName);
+      }
+
+      if (updates.building !== undefined) {
+        setClauses.push(`building = $${paramIndex++}`);
+        params.push(updates.building);
+      }
+
+      setClauses.push(`updated_at = NOW()`);
+      params.push(roomId);
+
+      const query = `
+        UPDATE rooms 
+        SET ${setClauses.join(', ')}
+        WHERE id = $${paramIndex}
+        RETURNING *
+      `;
+
+      const result = await AppDataSource.query(query, params);
+
+      if (result.length === 0) {
+        return { success: false, message: 'Room not found' };
+      }
+
+      return { success: true, message: 'Room updated successfully', room: result[0] };
+    } catch (error) {
+      console.error('Error updating room:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, message: 'Failed to update room', error: message };
+    }
+  }
+
+  /**
+   * Update room capacity specifically
+   */
+  async updateCapacity(roomId: number, capacity: number) {
+    try {
+      if (capacity < 1) {
+        return { success: false, message: 'Capacity must be at least 1' };
+      }
+
+      const result = await AppDataSource.query(
+        `UPDATE rooms 
+         SET capacity = $1, updated_at = NOW()
+         WHERE id = $2
+         RETURNING *`,
+        [capacity, roomId]
+      );
+
+      if (result.length === 0) {
+        return { success: false, message: 'Room not found' };
+      }
+
+      return { 
+        success: true, 
+        message: `Room capacity updated to ${capacity}`, 
+        room: result[0] 
+      };
+    } catch (error) {
+      console.error('Error updating capacity:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, message: 'Failed to update capacity', error: message };
+    }
+  }
+
+  /**
+   * Toggle room active status (for maintenance/deactivation)
+   */
+  async toggleStatus(roomId: number, isActive: boolean) {
+    try {
+      const result = await AppDataSource.query(
+        `UPDATE rooms 
+         SET is_active = $1, updated_at = NOW()
+         WHERE id = $2
+         RETURNING *`,
+        [isActive, roomId]
+      );
+
+      if (result.length === 0) {
+        return { success: false, message: 'Room not found' };
+      }
+
+      const status = isActive ? 'activated' : 'deactivated';
+      return { 
+        success: true, 
+        message: `Room ${status} successfully`, 
+        room: result[0] 
+      };
+    } catch (error) {
+      console.error('Error toggling room status:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, message: 'Failed to update room status', error: message };
+    }
+  }
+
+  /**
+   * Get room utilization statistics for a date range
+   */
+  async getRoomUtilization(roomId: number, startDate?: string, endDate?: string) {
+    try {
+      const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const end = endDate || new Date().toISOString();
+
+      const roomResult = await AppDataSource.query(
+        'SELECT * FROM rooms WHERE id = $1',
+        [roomId]
+      );
+
+      if (roomResult.length === 0) {
+        return { success: false, message: 'Room not found' };
+      }
+
+      const room = roomResult[0];
+
+      const totalSlotsResult = await AppDataSource.query(
+        `SELECT COUNT(*) as total
+         FROM timeslots
+         WHERE room_id = $1
+         AND start_time >= $2
+         AND end_time <= $3`,
+        [roomId, start, end]
+      );
+
+      const bookedSlotsResult = await AppDataSource.query(
+        `SELECT COUNT(*) as booked
+         FROM bookings b
+         JOIN timeslots t ON b.timeslot_id = t.id
+         WHERE b.room_id = $1
+         AND b.status = 'confirmed'
+         AND t.start_time >= $2
+         AND t.end_time <= $3`,
+        [roomId, start, end]
+      );
+
+      const totalSlots = parseInt(totalSlotsResult[0].total);
+      const bookedSlots = parseInt(bookedSlotsResult[0].booked);
+      const utilizationRate = totalSlots > 0 ? (bookedSlots / totalSlots) * 100 : 0;
+
+      return {
+        success: true,
+        room: {
+          id: room.id,
+          name: room.room_name,
+          building: room.building,
+          capacity: room.capacity,
+        },
+        period: {
+          startDate: start,
+          endDate: end,
+        },
+        stats: {
+          totalSlots,
+          bookedSlots,
+          availableSlots: totalSlots - bookedSlots,
+          utilizationRate: parseFloat(utilizationRate.toFixed(2)),
+        },
+      };
+    } catch (error) {
+      console.error('Error getting room utilization:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, message: 'Failed to get utilization stats', error: message };
+    }
   }
 }
