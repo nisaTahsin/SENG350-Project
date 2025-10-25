@@ -1,0 +1,150 @@
+# 1. Test audit logs
+curl http://localhost:4000/audit
+
+# 2. Test user blocking
+curl -Method PATCH -Uri http://localhost:4000/users/1/block -ContentType "application/json" -Body '{"blockedBy":2,"reason":"Suspected abuse"}'
+
+# 3. Test unblocking
+curl -Method PATCH -Uri http://localhost:4000/users/1/unblock -ContentType "application/json" -Body '{"unblockedBy":2}'
+
+# 4. Test get user bookings (for abuse detection)
+curl http://localhost:4000/users/1/bookings
+
+# 5. Test analytics dashboard
+curl http://localhost:4000/analytics/dashboard
+PS C:\group_2_proj\src\backend> curl http://localhost:4000/audit
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"success":true,"count":0,"logs":[]}
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 36
+                    Content-Type: application/json; charset=utf-8
+                    Date: Sat, 25 Oct 2025 05:04:33 GMT
+                    ...
+Forms             : {}
+Headers           : {[Access-Control-Allow-Origin, *], [Connection,
+                    keep-alive], [Keep-Alive, timeout=5],
+                    [Content-Length, 36]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 36
+
+
+
+PS C:\group_2_proj\src\backend> curl -Method PATCH -Uri http://localhost:4000/users/1/block -ContentType "application/json" -Body '{"blockedBy":2,"reason":"Suspected abuse"}'
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"success":true,"message":"User staff1 has been
+                    blocked","userId":1,"reason":"Suspected abuse"}
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 95
+                    Content-Type: application/json; charset=utf-8
+                    Date: Sat, 25 Oct 2025 05:04:42 GMT
+                    ...
+Forms             : {}
+Headers           : {[Access-Control-Allow-Origin, *], [Connection,
+                    keep-alive], [Keep-Alive, timeout=5],
+                    [Content-Length, 95]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 95
+
+
+
+PS C:\group_2_proj\src\backend> curl -Method PATCH -Uri http://localhost:4000/users/1/unblock -ContentType "application/json" -Body '{"unblockedBy":2}'
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"success":true,"message":"User staff1 has been
+                    unblocked","userId":1}
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 70
+                    Content-Type: application/json; charset=utf-8
+                    Date: Sat, 25 Oct 2025 05:04:49 GMT
+                    ...
+Forms             : {}
+Headers           : {[Access-Control-Allow-Origin, *], [Connection,
+                    keep-alive], [Keep-Alive, timeout=5],
+                    [Content-Length, 70]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 70
+
+
+
+PS C:\group_2_proj\src\backend> curl http://localhost:4000/users/1/bookings
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"success":true,"userId":1,"stats":{"total":0,"conf
+                    irmed":0,"cancelled":0},"bookings":[]}
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 89
+                    Content-Type: application/json; charset=utf-8
+                    Date: Sat, 25 Oct 2025 05:04:58 GMT
+                    ...
+Forms             : {}
+Headers           : {[Access-Control-Allow-Origin, *], [Connection,
+                    keep-alive], [Keep-Alive, timeout=5],
+                    [Content-Length, 89]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 89
+
+
+
+PS C:\group_2_proj\src\backend> curl http://localhost:4000/analytics/dashboard
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"success":true,"timestamp":"2025-10-25T05:05:04.37
+                    0Z","dashboard":{"dailyBookings":{"success":true,"p
+                    eriod":{"days":7,"startDate":"2025-10-18T05:05:04.3
+                    37Z","endDate":"2025-10-25T05:05:04.351Z"},"dat...
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 2760
+                    Content-Type: application/json; charset=utf-8
+                    Date: Sat, 25 Oct 2025 05:05:04 GMT...
+Forms             : {}
+Headers           : {[Access-Control-Allow-Origin, *], [Connection,
+                    keep-alive], [Keep-Alive, timeout=5],
+                    [Content-Length, 2760]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 2760
+
+
+
+PS C:\group_2_proj\src\backend>

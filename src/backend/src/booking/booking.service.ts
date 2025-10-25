@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Booking } from './booking.entity';
+import { AppDataSource } from '../data-source';
 
 /**
  * simple keyed mutex to serialize operations per room+timeslot
@@ -64,7 +65,6 @@ export class BookingService {
       try {
         return await this.bookingsRepository.save(booking);
       } catch (err: any) {
-        // Postgres unique violation
         if (err.code === '23505') {
           throw new ConflictException('Timeslot already booked for this room');
         }
@@ -84,7 +84,7 @@ export class BookingService {
     }
 
     if (userRole === 'staff' && booking.userId !== userId) {
-      throw new ForbiddenException('You cannot cancel another user’s booking');
+      throw new ForbiddenException('You cannot cancel another user booking');
     }
 
     if (userRole === 'registrar' || userRole === 'admin') {
@@ -99,6 +99,165 @@ export class BookingService {
 
     throw new ForbiddenException('You do not have permission to cancel this booking');
   }
+
+  // ========== CANCELLATION & ROLLBACK METHODS ==========
+
+  /**
+   * Cancel a booking (soft delete with status change)
+   */
+  async cancelBookingWithStatus(bookingId: number, userId: number) {
+    try {
+      const bookingResult = await AppDataSource.query(
+        'SELECT * FROM bookings WHERE id = $1',
+        [bookingId]
+      );
+
+      if (bookingResult.length === 0) {
+        return { success: false, message: 'Booking not found' };
+      }
+
+      const booking = bookingResult[0];
+
+      if (booking.user_id !== userId) {
+        return { success: false, message: 'Unauthorized: This booking does not belong to you' };
+      }
+
+      if (booking.status === 'cancelled') {
+        return { success: false, message: 'Booking is already cancelled' };
+      }
+
+      await AppDataSource.query(
+        `UPDATE bookings 
+         SET status = 'cancelled', cancelled_at = NOW()
+         WHERE id = $1`,
+        [bookingId]
+      );
+
+      return {
+        success: true,
+        message: 'Booking cancelled successfully',
+        bookingId,
+        canRollback: true,
+        rollbackWindowMinutes: 10,
+      };
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, message: 'Failed to cancel booking', error: message };
+    }
+  }
+
+  /**
+   * Rollback/undo a cancellation (within 10 minute window)
+   */
+  async rollbackCancellation(bookingId: number, userId: number) {
+    try {
+      const bookingResult = await AppDataSource.query(
+        'SELECT * FROM bookings WHERE id = $1',
+        [bookingId]
+      );
+
+      if (bookingResult.length === 0) {
+        return { success: false, message: 'Booking not found' };
+      }
+
+      const booking = bookingResult[0];
+
+      if (booking.user_id !== userId) {
+        return { success: false, message: 'Unauthorized: This booking does not belong to you' };
+      }
+
+      if (booking.status !== 'cancelled') {
+        return { success: false, message: 'Booking is not cancelled' };
+      }
+
+      // Check if within rollback window (10 minutes)
+      const cancelledAt = new Date(booking.cancelled_at);
+      const now = new Date();
+      const minutesSinceCancellation = (now.getTime() - cancelledAt.getTime()) / 1000 / 60;
+
+      if (minutesSinceCancellation > 10) {
+        return {
+          success: false,
+          message: 'Rollback window expired (10 minutes)',
+          minutesSinceCancellation: Math.round(minutesSinceCancellation),
+        };
+      }
+
+      // Check if timeslot is still available
+      const conflictCheck = await AppDataSource.query(
+        `SELECT id FROM bookings 
+         WHERE timeslot_id = $1 
+         AND status = 'confirmed' 
+         AND id != $2`,
+        [booking.timeslot_id, bookingId]
+      );
+
+      if (conflictCheck.length > 0) {
+        return {
+          success: false,
+          message: 'Cannot rollback: Time slot has been booked by someone else',
+        };
+      }
+
+      // Rollback the cancellation
+      await AppDataSource.query(
+        `UPDATE bookings 
+         SET status = 'confirmed', cancelled_at = NULL
+         WHERE id = $1`,
+        [bookingId]
+      );
+
+      return {
+        success: true,
+        message: 'Booking restored successfully',
+        bookingId,
+      };
+    } catch (error) {
+      console.error('Error rolling back cancellation:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, message: 'Failed to rollback cancellation', error: message };
+    }
+  }
+
+  /**
+   * Force release a booking (Registrar only)
+   */
+  async forceReleaseBooking(bookingId: number, registrarId: number, reason: string) {
+    try {
+      const bookingResult = await AppDataSource.query(
+        'SELECT * FROM bookings WHERE id = $1',
+        [bookingId]
+      );
+
+      if (bookingResult.length === 0) {
+        return { success: false, message: 'Booking not found' };
+      }
+
+      const booking = bookingResult[0];
+
+      await AppDataSource.query(
+        `UPDATE bookings 
+         SET status = 'cancelled', cancelled_at = NOW()
+         WHERE id = $1`,
+        [bookingId]
+      );
+
+      return {
+        success: true,
+        message: 'Booking force released by registrar',
+        bookingId,
+        reason,
+        releasedBy: registrarId,
+        originalUserId: booking.user_id,
+      };
+    } catch (error) {
+      console.error('Error force releasing booking:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, message: 'Failed to force release booking', error: message };
+    }
+  }
+
 
   /**
    * List bookings for the current user
@@ -119,7 +278,7 @@ export class BookingService {
    */
   async getActiveBookingForTimeslot(roomId: number, timeslotId: number): Promise<Booking | null> {
     return this.bookingsRepository.findOne({
-      where: { roomId, timeslotId, status: 'pending' }, // or 'confirmed'
+      where: { roomId, timeslotId, status: 'pending' },
     });
   }
 
