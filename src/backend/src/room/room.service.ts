@@ -5,6 +5,7 @@ import { Room } from './room.entity';
 import { Timeslot } from '../timeslot/timeslot.entity';
 import { BookingService } from '../booking/booking.service';
 import { AppDataSource } from '../data-source';
+import { AuditService } from '../audit/audit.service';
 
 export type TimeslotWithAvailability = Timeslot & {
   isBooked: boolean;
@@ -19,6 +20,7 @@ export class RoomsService {
     @InjectRepository(Timeslot)
     private readonly timeslotRepository: Repository<Timeslot>,
     private readonly bookingService: BookingService,
+    private readonly auditService: AuditService,
   ) {}
 
   // ========== EXISTING METHODS ==========
@@ -70,18 +72,54 @@ export class RoomsService {
       startTime: start,
       endTime: end,
     });
-    return this.timeslotRepository.save(ts);
+    
+    const savedTimeslot = await this.timeslotRepository.save(ts);
+    
+    // Log timeslot creation
+    await this.auditService.logAction(
+      undefined,
+      'TIMESLOT_CREATED',
+      'timeslot',
+      savedTimeslot.id,
+      { roomId: dto.roomId, startTime: start, endTime: end }
+    );
+    
+    return savedTimeslot;
   }
 
   async updateTimeslot(id: number, dto: any): Promise<Timeslot> {
+    const existingTimeslot = await this.timeslotRepository.findOne({ where: { id } });
+    if (!existingTimeslot) throw new NotFoundException('Timeslot not found');
+    
     await this.timeslotRepository.update(id, dto);
     const updated = await this.timeslotRepository.findOne({ where: { id } });
-    if (!updated) throw new NotFoundException('Timeslot not found');
-    return updated;
+    
+    // Log timeslot update
+    await this.auditService.logAction(
+      undefined,
+      'TIMESLOT_UPDATED',
+      'timeslot',
+      id,
+      { originalData: existingTimeslot, updates: dto }
+    );
+    
+    return updated!;
   }
 
   async deleteTimeslot(id: number): Promise<void> {
+    const existingTimeslot = await this.timeslotRepository.findOne({ where: { id } });
+    if (!existingTimeslot) throw new NotFoundException('Timeslot not found');
+    
     await this.timeslotRepository.delete(id);
+    
+    // Log timeslot deletion
+    await this.auditService.logAction(
+      undefined,
+      'TIMESLOT_DELETED',
+      'timeslot',
+      id,
+      { roomId: existingTimeslot.roomId, startTime: existingTimeslot.startTime, endTime: existingTimeslot.endTime }
+    );
   }
 
   async findTimeslotsByRoom(roomId: number): Promise<TimeslotWithAvailability[]> {
@@ -280,6 +318,15 @@ export class RoomsService {
         return { success: false, message: 'Room not found' };
       }
 
+      // Log room update
+      await this.auditService.logAction(
+        undefined,
+        'ROOM_UPDATED',
+        'room',
+        roomId,
+        { updates }
+      );
+
       return { success: true, message: 'Room updated successfully', room: result[0] };
     } catch (error) {
       console.error('Error updating room:', error);
@@ -309,6 +356,15 @@ export class RoomsService {
         return { success: false, message: 'Room not found' };
       }
 
+      // Log capacity update
+      await this.auditService.logAction(
+        undefined,
+        'ROOM_CAPACITY_UPDATED',
+        'room',
+        roomId,
+        { newCapacity: capacity, previousCapacity: result[0].capacity }
+      );
+
       return { 
         success: true, 
         message: `Room capacity updated to ${capacity}`, 
@@ -337,6 +393,15 @@ export class RoomsService {
       if (result.length === 0) {
         return { success: false, message: 'Room not found' };
       }
+
+      // Log status toggle
+      await this.auditService.logAction(
+        undefined,
+        'ROOM_STATUS_TOGGLED',
+        'room',
+        roomId,
+        { newStatus: isActive, previousStatus: !isActive }
+      );
 
       const status = isActive ? 'activated' : 'deactivated';
       return { 

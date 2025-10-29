@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { AppDataSource } from '../data-source';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly auditService: AuditService,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -23,16 +25,73 @@ export class UsersService {
     return this.userRepository.findOne({ where: { username } });
   }
 
+  async create(userData: { username: string; email: string; password: string; role: 'staff' | 'registrar' | 'admin' }): Promise<User> {
+    try {
+      const user = this.userRepository.create({
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+        role: userData.role,
+      });
+      const savedUser = await this.userRepository.save(user);
+      
+      // Log user creation
+      await this.auditService.logAction(
+        savedUser.id,
+        'USER_CREATED',
+        'user',
+        savedUser.id,
+        { username: savedUser.username, email: savedUser.email, role: savedUser.role }
+      );
+      
+      return savedUser;
+    } catch (error) {
+      // Log failed user creation
+      await this.auditService.logAction(
+        undefined,
+        'USER_CREATION_FAILED',
+        'user',
+        undefined,
+        { username: userData.username, error: error instanceof Error ? error.message : 'Unknown error' }
+      );
+      throw error;
+    }
+  }
+
   async blockUser(id: number): Promise<User> {
     const user = await this.findById(id);
     if (!user) throw new NotFoundException(`User ${id} not found`);
+    
     await this.userRepository.update(id, { isBlocked: true });
-    return this.findById(id) as Promise<User>;
+    const updatedUser = await this.findById(id) as User;
+    
+    // Log user blocking
+    await this.auditService.logAction(
+      undefined, // No specific actor for this basic block method
+      'USER_BLOCKED',
+      'user',
+      id,
+      { username: user.username, previousState: { isBlocked: user.isBlocked } }
+    );
+    
+    return updatedUser;
   }
 
   async delete(id: number): Promise<void> {
+    const user = await this.findById(id);
+    if (!user) throw new NotFoundException(`User ${id} not found`);
+    
     const result = await this.userRepository.delete(id);
     if (result.affected === 0) throw new NotFoundException(`User ${id} not found`);
+    
+    // Log user deletion
+    await this.auditService.logAction(
+      undefined, // No specific actor for this basic delete method
+      'USER_DELETED',
+      'user',
+      id,
+      { username: user.username, email: user.email, role: user.role }
+    );
   }
 
   // ========== METHODS FOR REGISTRAR ==========
@@ -60,6 +119,15 @@ export class UsersService {
       await AppDataSource.query(
         'UPDATE users SET is_blocked = true, updated_at = NOW() WHERE id = $1',
         [userId]
+      );
+
+      // Log user blocking with reason
+      await this.auditService.logAction(
+        blockedBy,
+        'USER_BLOCKED_WITH_REASON',
+        'user',
+        userId,
+        { username: user.username, reason, blockedBy }
       );
 
       return {
@@ -98,6 +166,15 @@ export class UsersService {
       await AppDataSource.query(
         'UPDATE users SET is_blocked = false, updated_at = NOW() WHERE id = $1',
         [userId]
+      );
+
+      // Log user unblocking
+      await this.auditService.logAction(
+        unblockedBy,
+        'USER_UNBLOCKED',
+        'user',
+        userId,
+        { username: user.username, unblockedBy }
       );
 
       return {

@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Booking } from './booking.entity';
 import { AppDataSource } from '../data-source';
+import { AuditService } from '../audit/audit.service';
 
 /**
  * simple keyed mutex to serialize operations per room+timeslot
@@ -41,6 +42,7 @@ export class BookingService {
   constructor(
     @InjectRepository(Booking)
     private readonly bookingsRepository: Repository<Booking>,
+    private readonly auditService: AuditService,
   ) {}
 
   /**
@@ -63,8 +65,28 @@ export class BookingService {
       });
 
       try {
-        return await this.bookingsRepository.save(booking);
+        const savedBooking = await this.bookingsRepository.save(booking);
+        
+        // Log successful booking creation
+        await this.auditService.logAction(
+          userId,
+          'BOOKING_CREATED',
+          'booking',
+          savedBooking.id,
+          { roomId: savedBooking.roomId, timeslotId: savedBooking.timeslotId, status: savedBooking.status }
+        );
+        
+        return savedBooking;
       } catch (err: any) {
+        // Log failed booking creation
+        await this.auditService.logAction(
+          userId,
+          'BOOKING_CREATION_FAILED',
+          'booking',
+          undefined,
+          { roomId: data.roomId, timeslotId: data.timeslotId, error: err.message }
+        );
+        
         if (err.code === '23505') {
           throw new ConflictException('Timeslot already booked for this room');
         }
@@ -89,11 +111,29 @@ export class BookingService {
 
     if (userRole === 'registrar' || userRole === 'admin') {
       await this.bookingsRepository.delete(id);
+      
+      // Log booking cancellation by registrar/admin
+      await this.auditService.logAction(
+        userId,
+        'BOOKING_CANCELLED_BY_ADMIN',
+        'booking',
+        id,
+        { originalUserId: booking.userId, cancelledBy: userId, userRole }
+      );
       return;
     }
 
     if (userRole === 'staff' && booking.userId === userId) {
       await this.bookingsRepository.delete(id);
+      
+      // Log booking cancellation by owner
+      await this.auditService.logAction(
+        userId,
+        'BOOKING_CANCELLED',
+        'booking',
+        id,
+        { roomId: booking.roomId, timeslotId: booking.timeslotId }
+      );
       return;
     }
 
@@ -131,6 +171,15 @@ export class BookingService {
          SET status = 'cancelled', cancelled_at = NOW()
          WHERE id = $1`,
         [bookingId]
+      );
+
+      // Log booking cancellation with status
+      await this.auditService.logAction(
+        userId,
+        'BOOKING_CANCELLED_WITH_STATUS',
+        'booking',
+        bookingId,
+        { previousStatus: booking.status, roomId: booking.room_id, timeslotId: booking.timeslot_id }
       );
 
       return {
@@ -208,6 +257,15 @@ export class BookingService {
         [bookingId]
       );
 
+      // Log booking rollback
+      await this.auditService.logAction(
+        userId,
+        'BOOKING_ROLLBACK',
+        'booking',
+        bookingId,
+        { roomId: booking.room_id, timeslotId: booking.timeslot_id, minutesSinceCancellation: Math.round(minutesSinceCancellation) }
+      );
+
       return {
         success: true,
         message: 'Booking restored successfully',
@@ -241,6 +299,15 @@ export class BookingService {
          SET status = 'cancelled', cancelled_at = NOW()
          WHERE id = $1`,
         [bookingId]
+      );
+
+      // Log force release by registrar
+      await this.auditService.logAction(
+        registrarId,
+        'BOOKING_FORCE_RELEASED',
+        'booking',
+        bookingId,
+        { reason, originalUserId: booking.user_id, roomId: booking.room_id, timeslotId: booking.timeslot_id }
       );
 
       return {
@@ -315,7 +382,24 @@ export class BookingService {
     }
 
     booking.roomId = newRoomId;
-    return this.bookingsRepository.save(booking);
+    const updatedBooking = await this.bookingsRepository.save(booking);
+    
+    // Log booking room update
+    await this.auditService.logAction(
+      undefined, // No specific actor provided in this method
+      'BOOKING_ROOM_UPDATED',
+      'booking',
+      id,
+      { 
+        previousRoomId: booking.roomId, 
+        newRoomId, 
+        actualStudents, 
+        capacity, 
+        occupancyRate: actualStudents / capacity 
+      }
+    );
+    
+    return updatedBooking;
   }
 
   /**

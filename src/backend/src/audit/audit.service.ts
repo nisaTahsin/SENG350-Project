@@ -7,10 +7,10 @@ export class AuditService {
    * Log an action to the audit trail
    */
   async logAction(
-    actorId: number,
+    actorId: number | undefined,
     action: string,
     targetType: string,
-    targetId: number,
+    targetId: number | undefined,
     metadata?: any
   ) {
     try {
