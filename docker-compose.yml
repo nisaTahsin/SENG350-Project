@@ -7,7 +7,7 @@ services:
     ports:
       - "4000:4000"
     env_file:
-      - ./src/backend/.env.example
+      - ./src/backend/.env
     volumes:
       - ./src/backend:/app
     depends_on:
