@@ -149,11 +149,11 @@ _For all of Design I and most of Implementation I, this document had not been up
 **Date:** Wednesday, October 22nd 2025 <br>
 **Time:** 8:30am - 10:20am <br>
 **Agenda:** 
-- [ ] Plan approach for Implementation II
-- [ ] Allocate work for Implementation II deliverables
-    - [ ] Nisa and Anitta make a list of remaining backend tasks and allocate between themselves
-    - [ ] Griffin and Amanda decide (Online due to missing lab for sickness and injury respectively) who will be finishing up the frontend and who will focus on linking up the backend and frontend
-    - [ ] Taqdeer will get started on the two new deliverables (API and AI agent support)
+- [x] Plan approach for Implementation II
+- [x] Allocate work for Implementation II deliverables
+    - [x] Nisa and Anitta make a list of remaining backend tasks and allocate between themselves
+    - [x] Griffin and Amanda decide (Online due to missing lab for sickness and injury respectively) who will be finishing up the frontend and who will focus on linking up the backend and frontend
+    - [x] Taqdeer will get started on the two new deliverables (API and AI agent support)
     
     (documentation and debugging will be handled next week)
 
@@ -161,3 +161,24 @@ _For all of Design I and most of Implementation I, this document had not been up
 - Grade received for Implementation I
 
 **Tasks Completed:**
+- Allocated work:
+    - Anitta will handle Registrar escaltion handling, Registrar maintenance, and Registrar View stats/logs
+    - Nisa will handle Staff cancellation and rollback and Admin config and audit
+    - Griffin will handle finishing up the frontend 
+    - Amanda will handle linking up the frontend and the backend
+    - Taqdeer will get started on the two new deliverables (API and AI agent support)
+
+## Meeting 10 - Lab 8
+
+**Date:** Wednesday, October 29th 2025 <br>
+**Time:** 8:30am - 10:20am <br>
+**Agenda:** 
+- [ ] Check in on progress for Implementation II
+- [ ] Allocate work for documentation
+- [ ] Decide how debugging will be handled
+
+**Topics Discussed:**
+- 
+
+**Tasks Completed:**
+- 
