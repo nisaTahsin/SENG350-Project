@@ -13,7 +13,7 @@ export class RoomImportService {
   ) {}
 
   async importRoomsFromCSV(): Promise<Room[]> {
-    const csvPath = path.join(process.cwd(), 'data', 'uvic_rooms.csv');
+    const csvPath = path.join(process.cwd(), '..', '..', 'data', 'uvic_rooms.csv');
     
     if (!fs.existsSync(csvPath)) {
       throw new Error(`CSV file not found at ${csvPath}`);
