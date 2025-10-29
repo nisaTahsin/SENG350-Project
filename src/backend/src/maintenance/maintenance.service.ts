@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { AppDataSource } from '../data-source';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class MaintenanceService {
+  constructor(private readonly auditService: AuditService) {}
   /**
    * Create a maintenance window
    */
@@ -55,6 +57,20 @@ export class MaintenanceService {
          WHERE room_id = $1
          AND tstzrange(start_time, end_time, '[]') && tstzrange($2::timestamptz, $3::timestamptz, '[]')`,
         [data.roomId, data.startTime, data.endTime]
+      );
+
+      // Log maintenance window creation
+      await this.auditService.logAction(
+        data.createdBy,
+        'MAINTENANCE_WINDOW_CREATED',
+        'maintenance',
+        result[0].id,
+        { 
+          roomId: data.roomId, 
+          startTime: data.startTime, 
+          endTime: data.endTime, 
+          reason: data.reason 
+        }
       );
 
       return {
@@ -181,6 +197,20 @@ export class MaintenanceService {
       await AppDataSource.query(
         'DELETE FROM room_maintenance WHERE id = $1',
         [id]
+      );
+
+      // Log maintenance window deletion
+      await this.auditService.logAction(
+        undefined, // No specific actor provided in this method
+        'MAINTENANCE_WINDOW_DELETED',
+        'maintenance',
+        id,
+        { 
+          roomId: maintenance.room_id, 
+          startTime: maintenance.start_time, 
+          endTime: maintenance.end_time, 
+          reason: maintenance.reason 
+        }
       );
 
       // Re-enable affected timeslots if no other maintenance overlaps
