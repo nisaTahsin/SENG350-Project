@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import GenericPage from '../GenericPage';
 
 type PastBooking = {
@@ -11,35 +11,7 @@ type PastBooking = {
   endTime: string;
 };
 
-const pastBookings: PastBooking[] = [
-  {
-    id: 'h1',
-    title: 'Guest Lecture',
-    building: 'Elliot Building',
-    room: 'ELL 060 – Classroom',
-    date: '2025-09-12',
-    startTime: '9:00 AM',
-    endTime: '10:30 AM',
-  },
-  {
-    id: 'h2',
-    title: 'TA Meeting',
-    building: 'Elliot Building',
-    room: 'ELL 162 – Classroom',
-    date: '2025-09-18',
-    startTime: '2:00 PM',
-    endTime: '3:00 PM',
-  },
-  {
-    id: 'h3',
-    title: 'Practice Session',
-    building: 'Maclaurin Building',
-    room: 'MAC D116 – Classroom',
-    date: '2025-08-29',
-    startTime: '11:00 AM',
-    endTime: '12:00 PM',
-  },
-];
+const [pastBookings, setPastBookings] = useState<PastBooking[]>([]);
 
 // Minimal room details derived from backend/uvic_rooms.csv for known rooms
 const roomDetails: Record<string, { capacity: number; av: string; url: string }> = {
@@ -61,10 +33,48 @@ const roomDetails: Record<string, { capacity: number; av: string; url: string }>
 };
 
 const StaffBookingHistory: React.FC = () => {
+  const [pastBookings, setPastBookings] = useState<PastBooking[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
   const buildings = useMemo(
     () => Array.from(new Set(pastBookings.map((b) => b.building))),
-    []
+    [pastBookings]
   );
+  useEffect(() => {
+    const fetchBookings = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch('http://localhost:4000/booking/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = await response.json();
+        if (data.success && Array.isArray(data.bookings)) {
+          // Map backend booking objects to PastBooking shape
+          const mapped = data.bookings.map((b: any) => ({
+            id: b.id.toString(),
+            title: b.notes || 'Booking',
+            building: b.room?.building || 'Unknown',
+            room: b.room?.name || 'Unknown',
+            date: b.timeslot?.date || 'Unknown',
+            startTime: b.timeslot?.startTime || 'Unknown',
+            endTime: b.timeslot?.endTime || 'Unknown',
+          }));
+          setPastBookings(mapped);
+        } else {
+          setError(data.message || 'Failed to fetch bookings');
+        }
+      } catch (err) {
+        setError('Error fetching booking history');
+      }
+      setLoading(false);
+    };
+    fetchBookings();
+  }, []);
   const [selectedBuilding, setSelectedBuilding] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const roomsForBuilding = useMemo(() => {
@@ -79,6 +89,35 @@ const StaffBookingHistory: React.FC = () => {
   }, [selectedBuilding]);
   const [selectedRoom, setSelectedRoom] = useState<string>('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [cancellingId, setCancellingId] = useState<string>('');
+  const [cancelError, setCancelError] = useState<string>('');
+  const [cancelSuccess, setCancelSuccess] = useState<string>('');
+  const handleCancelBooking = async (id: string) => {
+    setCancellingId(id);
+    setCancelError('');
+    setCancelSuccess('');
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`http://localhost:4000/booking/${id}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setCancelSuccess('Booking cancelled successfully.');
+        // Optionally refresh bookings after cancel
+        setPastBookings(prev => prev.filter(b => b.id !== id));
+      } else {
+        setCancelError(data.message || 'Failed to cancel booking');
+      }
+    } catch (err) {
+      setCancelError('Error cancelling booking');
+    }
+    setCancellingId('');
+  };
 
   const filtered = useMemo(() => {
     return pastBookings.filter((b) => {
@@ -147,78 +186,100 @@ const StaffBookingHistory: React.FC = () => {
           </select>
         </div>
       </div>
-
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        {filtered.map((b) => (
-          <li
-            key={b.id}
-            style={{
-              border: '1px solid #ddd',
-              borderRadius: 8,
-              padding: '12px 16px',
-              marginBottom: 12,
-              background: '#fff',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <h3 style={{ margin: 0 }}>{b.title}</h3>
-              <span style={{ color: '#555' }}>{b.date}</span>
-            </div>
-            <div style={{ marginTop: 6, color: '#333' }}>
-              <div>
-                <strong>Location:</strong> {b.building} — {b.room}
+      {loading ? (
+        <div>Loading booking history...</div>
+      ) : error ? (
+        <div style={{ color: 'red' }}>{error}</div>
+      ) : (
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          {filtered.map((b) => (
+            <li
+              key={b.id}
+              style={{
+                border: '1px solid #ddd',
+                borderRadius: 8,
+                padding: '12px 16px',
+                marginBottom: 12,
+                background: '#fff',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <h3 style={{ margin: 0 }}>{b.title}</h3>
+                <span style={{ color: '#555' }}>{b.date}</span>
               </div>
-              <div>
-                <strong>Time:</strong> {b.startTime} – {b.endTime}
+              <div style={{ marginTop: 6, color: '#333' }}>
+                <div>
+                  <strong>Location:</strong> {b.building} — {b.room}
+                </div>
+                <div>
+                  <strong>Time:</strong> {b.startTime} – {b.endTime}
+                </div>
               </div>
-            </div>
-            <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
-              <button
-                type="button"
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: 6,
-                  border: '1px solid #bbb',
-                  background: '#f7f7f7',
-                  cursor: 'pointer',
-                }}
-                onClick={() => toggleExpanded(b.id)}
-              >
-                {expandedIds.has(b.id) ? 'Hide details' : 'Details'}
-              </button>
-            </div>
-            {expandedIds.has(b.id) && (
-              <div
-                style={{
-                  marginTop: 12,
-                  padding: '10px 12px',
-                  background: '#fafafa',
-                  border: '1px solid #eee',
-                  borderRadius: 6,
-                }}
-              >
-                <div style={{ marginBottom: 6 }}>
-                  <strong>Capacity:</strong>{' '}
-                  {roomDetails[b.room]?.capacity ?? 'N/A'}
-                </div>
-                <div style={{ marginBottom: 6 }}>
-                  <strong>AV Equipment:</strong>{' '}
-                  <span style={{ color: '#444' }}>{roomDetails[b.room]?.av ?? 'N/A'}</span>
-                </div>
-                {roomDetails[b.room]?.url && (
-                  <div>
-                    <strong>More info:</strong>{' '}
-                    <a href={roomDetails[b.room].url} target="_blank" rel="noreferrer">
-                      View room details (uvic.ca)
-                    </a>
+              <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+                <button
+                  type="button"
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 6,
+                    border: '1px solid #bbb',
+                    background: '#f7f7f7',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => toggleExpanded(b.id)}
+                >
+                  {expandedIds.has(b.id) ? 'Hide details' : 'Details'}
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 6,
+                    border: '1px solid #e66',
+                    background: '#ffeaea',
+                    color: '#c00',
+                    cursor: cancellingId === b.id ? 'wait' : 'pointer',
+                  }}
+                  disabled={cancellingId === b.id}
+                  onClick={() => handleCancelBooking(b.id)}
+                >
+                  {cancellingId === b.id ? 'Cancelling...' : 'Cancel'}
+                </button>
+              </div>
+  {cancelError && <div style={{ color: 'red', marginBottom: 8 }}>{cancelError}</div>}
+  {cancelSuccess && <div style={{ color: 'green', marginBottom: 8 }}>{cancelSuccess}</div>}
+              {expandedIds.has(b.id) && (
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: '10px 12px',
+                    background: '#fafafa',
+                    border: '1px solid #eee',
+                    borderRadius: 6,
+                  }}
+                >
+                  <div style={{ marginBottom: 6 }}>
+                    <strong>Capacity:</strong>{' '}
+                    {roomDetails[b.room]?.capacity ?? 'N/A'}
                   </div>
-                )}
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+                  <div style={{ marginBottom: 6 }}>
+                    <strong>AV Equipment:</strong>{' '}
+                    <span style={{ color: '#444' }}>{roomDetails[b.room]?.av ?? 'N/A'}</span>
+                  </div>
+                  {roomDetails[b.room]?.url && (
+                    <div>
+                      <strong>More info:</strong>{' '}
+                      <a href={roomDetails[b.room].url} target="_blank" rel="noreferrer">
+                        View room details (uvic.ca)
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </GenericPage>
   );
 };

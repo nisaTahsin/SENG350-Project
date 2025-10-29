@@ -54,6 +54,28 @@ Oct 4: How do I make sure the frontend connects to the backend running on a diff
 
 Oct 5: Can you create a form of authentication using JWT that ensures the user is in the database.
 
+Oct. 28: How and where are the backend and frontend linked up currently? Which features are currently linked up?
+
+Oct. 28: Is the backend setup for staff users to be able to cancel bookings? Is the backend setup for staff users being able to view their booking history?
+
+Oct. 28: Could you fully implement the booking history endpoint?
+
+Oct. 28: Can you link up this [booking history] endpoint to the frontend in the same way that User Authentication, Room Booking, and Room Availability Browsing are linked?
+
+Oct. 28: Could you link this [booking cancellation] up to the frontend the same way you just did with the booking history feature?
+
+Oct. 28: Which registrar user features are implemented in the backend and/or frontend respectively?
+
+Oct. 28: How is account management for registrars implemented in the backend?
+
+Oct. 28: Could you link up the backend and frontend for the following features (in the same way you have been with booking history and cancellation): Registrar user: Room/classroom management; Registrar user: Timeslot management; Registrar user: Account management
+
+Oct. 28: Could you locate the implementation for the following features in the backend and frontend (if any): Registrar users: Force release booking; Registrar users: Booking escalation/approval
+
+Oct. 28: Is the registrar feature: Statistics/logs fully implemented in the backend and frontend? Could you link up the backend and frontend for the Statistics/logs feature the same way you have been doing so far?
+
+Oct. 28: Which specific admin features and endpoints are implemented currently? (backend and frontend)
+
 Links to ChatGPT logs:
 Oct. 1: https://chatgpt.com/share/68e33a5d-9a20-8002-aa74-fc14af4048b6
 

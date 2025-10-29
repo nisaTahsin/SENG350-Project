@@ -192,9 +192,27 @@ export class BookingController {
     }
   }
 
+  /**
+   * Get booking history for the current user (staff)
+   */
   @Get('me')
-  getMyBookings() {
-    return { message: 'My bookings endpoint', bookings: [] };
+  async getMyBookings(@Req() req: any) {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return { success: false, message: 'No authorization token provided' };
+      }
+
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultSecret') as any;
+      const userId = decoded.sub;
+
+      const bookings = await this.bookingService.getMyBookings(userId);
+      return { success: true, bookings };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid token';
+      return { success: false, message };
+    }
   }
 
   @Get('test-all')
