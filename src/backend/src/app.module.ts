@@ -5,6 +5,8 @@ import { BookingModule } from './booking/booking.module';
 import { RoomsModule } from './room/room.module';
 import { AppDataSource } from './data-source';
 import { MaintenanceModule } from './maintenance/maintenance.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { MaintenanceModule } from './maintenance/maintenance.module';
     BookingModule,
     RoomsModule,
     MaintenanceModule,
+    AnalyticsModule,
+    AuditModule,
   ],
 })
 export class AppModule {}

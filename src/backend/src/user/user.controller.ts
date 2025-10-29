@@ -27,8 +27,24 @@ export class UsersController {
   }
 
   @Patch(':id/block')
-  async block(@Param('id') id: string) {
-    return this.usersService.blockUser(Number(id));
+  async block(
+    @Param('id') id: string,
+    @Body() body: { blockedBy: number; reason?: string }
+  ) {
+    return this.usersService.blockUserWithReason(Number(id), body.blockedBy, body.reason);
+  }
+
+  @Patch(':id/unblock')
+  async unblock(
+    @Param('id') id: string,
+    @Body() body: { unblockedBy: number }
+  ) {
+    return this.usersService.unblockUser(Number(id), body.unblockedBy);
+  }
+
+  @Get(':id/bookings')
+  async getUserBookings(@Param('id') id: string) {
+    return this.usersService.getUserBookings(Number(id));
   }
 
   @Delete(':id')
@@ -47,7 +63,6 @@ export class UsersController {
         return { success: false, message: 'User not found' };
       }
 
-      // Temporary: use plain text comparison for testing
       const isMatch = body.password === user.password;
       console.log('Password match:', isMatch, 'provided:', body.password, 'stored:', user.password);
       if (!isMatch) {
@@ -62,7 +77,7 @@ export class UsersController {
 
       return { 
         success: true, 
-        access_token: token, 
+        token: token,  // ← Changed from access_token to token for consistency
         user: { id: user.id, username: user.username, role: user.role } 
       };
     } catch (error: unknown) {

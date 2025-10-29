@@ -29,7 +29,6 @@ export class BookingController {
     try {
       console.log('Creating booking with body:', body);
       
-      // Extract user ID from JWT token
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         console.log('No authorization token provided');
@@ -47,7 +46,8 @@ export class BookingController {
       return result;
     } catch (error) {
       console.log('Error creating booking:', error);
-      return { success: false, message: 'Invalid or expired token' };
+      const message = error instanceof Error ? error.message : 'Invalid or expired token';
+      return { success: false, message };
     }
   }
 
@@ -61,7 +61,6 @@ export class BookingController {
       notes?: string;
     },
   ) {
-    // For now, just return a success message without actually creating a booking
     return {
       message: 'Booking test successful!',
       data: {
@@ -73,7 +72,87 @@ export class BookingController {
     };
   }
 
-  // Get bookings for a specific room
+  // ========== CANCELLATION & ROLLBACK ENDPOINTS ==========
+
+  /**
+   * Cancel a booking (staff can cancel own bookings)
+   */
+  @Post(':id/cancel')
+  async cancelBookingWithStatus(
+    @Param('id') id: string,
+    @Req() req: any
+  ) {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return { success: false, message: 'No authorization token provided' };
+      }
+
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultSecret') as any;
+      const userId = decoded.sub;
+
+      return this.bookingService.cancelBookingWithStatus(Number(id), userId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid token';
+      return { success: false, message };
+    }
+  }
+
+  /**
+   * Rollback/undo a cancellation (within 10 minute window)
+   */
+  @Post(':id/rollback')
+  async rollbackCancellation(
+    @Param('id') id: string,
+    @Req() req: any
+  ) {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return { success: false, message: 'No authorization token provided' };
+      }
+
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultSecret') as any;
+      const userId = decoded.sub;
+
+      return this.bookingService.rollbackCancellation(Number(id), userId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid token';
+      return { success: false, message };
+    }
+  }
+
+  /**
+   * Force release a booking (Registrar only)
+   */
+  @Post(':id/force-release')
+  async forceRelease(
+    @Param('id') id: string,
+    @Body() body: { reason: string },
+    @Req() req: any
+  ) {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return { success: false, message: 'No authorization token provided' };
+      }
+
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultSecret') as any;
+      const registrarId = decoded.sub;
+
+      // TODO: Add role check here to ensure user is registrar
+
+      return this.bookingService.forceReleaseBooking(Number(id), registrarId, body.reason);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid token';
+      return { success: false, message };
+    }
+  }
+
+
   @Get('room/:roomId')
   async getBookingsForRoom(@Param('roomId') roomId: string) {
     try {
@@ -87,7 +166,6 @@ export class BookingController {
     }
   }
 
-  // Get bookings for a specific room with user details
   @Get('room/:roomId/with-user')
   async getBookingsForRoomWithUser(@Param('roomId') roomId: string) {
     try {
@@ -101,7 +179,6 @@ export class BookingController {
     }
   }
 
-  // Get all bookings
   @Get()
   async getAllBookings() {
     try {
@@ -120,7 +197,6 @@ export class BookingController {
     return { message: 'My bookings endpoint', bookings: [] };
   }
 
-  // Simple test endpoint to get raw bookings
   @Get('test-all')
   async getTestBookings() {
     try {
