@@ -36,7 +36,7 @@ const StaffMyBookings: React.FC = () => {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [selectedDate, setSelectedDate] = useState<string>('');
 
-  // Minimal room details extracted from backend/uvic_rooms.csv
+  // Minimal room details extracted from data/uvic_rooms.csv
   const roomDetails: Record<string, { capacity: number; av: string; url: string }> = {
     'ELL 060 – Classroom': {
       capacity: 68,

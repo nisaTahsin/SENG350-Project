@@ -13,7 +13,7 @@ type PastBooking = {
 
 const [pastBookings, setPastBookings] = useState<PastBooking[]>([]);
 
-// Minimal room details derived from backend/uvic_rooms.csv for known rooms
+// Minimal room details derived from data/uvic_rooms.csv for known rooms
 const roomDetails: Record<string, { capacity: number; av: string; url: string }> = {
   'ELL 060 – Classroom': {
     capacity: 68,
