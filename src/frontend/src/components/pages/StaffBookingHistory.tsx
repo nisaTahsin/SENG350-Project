@@ -11,7 +11,7 @@ type PastBooking = {
   endTime: string;
 };
 
-const [pastBookings, setPastBookings] = useState<PastBooking[]>([]);
+// removed invalid top-level useState
 
 // Minimal room details derived from data/uvic_rooms.csv for known rooms
 const roomDetails: Record<string, { capacity: number; av: string; url: string }> = {
@@ -86,7 +86,7 @@ const StaffBookingHistory: React.FC = () => {
           .map((b) => b.room)
       )
     );
-  }, [selectedBuilding]);
+  }, [selectedBuilding, pastBookings]);
   const [selectedRoom, setSelectedRoom] = useState<string>('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [cancellingId, setCancellingId] = useState<string>('');
@@ -126,7 +126,7 @@ const StaffBookingHistory: React.FC = () => {
       if (selectedDate && b.date !== selectedDate) return false;
       return true;
     });
-  }, [selectedBuilding, selectedRoom, selectedDate]);
+  }, [pastBookings, selectedBuilding, selectedRoom, selectedDate]);
 
   const toggleExpanded = (id: string) => {
     setExpandedIds((prev) => {
