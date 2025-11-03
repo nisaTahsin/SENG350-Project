@@ -28,6 +28,9 @@ export class BookingController {
   ) {
     try {
       console.log('Creating booking with body:', body);
+      console.log('Authorization header received:', req.headers.authorization);
+      console.log('Authorization header received:', req.headers.authorization);
+
       
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {

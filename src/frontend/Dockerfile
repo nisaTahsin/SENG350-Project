@@ -5,20 +5,14 @@ WORKDIR /app
 # Copy dependencies and install
 COPY package*.json ./
 RUN npm install
-COPY tsconfig.json public/index.html ./
-COPY src ./src
-EXPOSE 3000
-CMD ["npm", "start"]
 
-# Copy config & public
-COPY tsconfig.json ./
+# Copy rest of the app
 COPY public ./public
-
-# Copy source code
 COPY src ./src
+COPY tsconfig.json ./
 
-# Expose frontend port
-EXPOSE 5173
+# Expose port 3000 (react-scripts default)
+EXPOSE 3000
 
-# Start frontend dev server
-CMD ["npm", "run", "dev"]
+# Start the React app
+CMD ["npm", "start"]

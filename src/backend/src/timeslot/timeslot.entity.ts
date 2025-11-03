@@ -11,8 +11,8 @@ export class Timeslot {
   @JoinColumn({ name: 'room_id' })
   room!: Room;
 
-  @Column({ name: 'room_id', type: 'bigint' })
-  roomId!: number;
+  @Column({ type: 'date' })
+  date!: Date;
 
   @Column({ name: 'start_time', type: 'timestamptz' })
   startTime!: Date;
@@ -20,6 +20,18 @@ export class Timeslot {
   @Column({ name: 'end_time', type: 'timestamptz' })
   endTime!: Date;
 
+  @Column({ name: 'is_available', type: 'boolean', default: true })
+  isAvailable!: boolean;
+
   @OneToMany(() => Booking, (booking) => booking.timeslot)
   bookings!: Booking[];
+
+  @Column({ name: 'created_by', type: 'bigint', nullable: true })
+  createdBy?: number;
+
+  @Column({ name: 'created_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt!: Date;
+
+  @Column({ name: 'updated_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt!: Date;
 }
