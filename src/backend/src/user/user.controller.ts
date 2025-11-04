@@ -77,7 +77,7 @@ export class UsersController {
 
       return { 
         success: true, 
-        token: token,  // ← Changed from access_token to token for consistency
+        access_token: token, 
         user: { id: user.id, username: user.username, role: user.role } 
       };
     } catch (error: unknown) {

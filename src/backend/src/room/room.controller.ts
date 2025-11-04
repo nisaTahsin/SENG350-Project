@@ -120,6 +120,29 @@ export class RoomsController {
     return this.roomsService.createTimeslot({ ...dto, roomId: +roomId });
   }
 
+  @Post()
+async createRoom(
+  @Body() body: { name: string; building: string; capacity: number }
+) {
+  try {
+    console.log('Creating room:', body);
+    const room = await this.roomsService.createRoom({
+      name: body.name,
+      building: body.building,
+      capacity: Number(body.capacity), // ensure numeric
+    });
+    return { success: true, room };
+  } catch (error) {
+    console.log('Error creating room:', error);
+    return {
+      success: false,
+      message: 'Failed to create room',
+      error: (error as Error).message,
+    };
+  }
+}
+
+
   // ========== TIMESLOT MANAGEMENT ==========
 
   @Patch('timeslots/:id')
