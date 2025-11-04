@@ -60,7 +60,7 @@ export class BookingService {
         userId,
         roomId: data.roomId!,
         timeslotId: data.timeslotId!,
-        status: 'pending',
+        status: 'confirmed',
         notes: data.notes,
       });
 
@@ -345,7 +345,7 @@ export class BookingService {
    */
   async getActiveBookingForTimeslot(roomId: number, timeslotId: number): Promise<Booking | null> {
     return this.bookingsRepository.findOne({
-      where: { roomId, timeslotId, status: 'pending' },
+      where: { roomId, timeslotId, status: 'confirmed' },
     });
   }
 
@@ -375,7 +375,7 @@ export class BookingService {
     }
 
     const conflict = await this.bookingsRepository.findOne({
-      where: { roomId: newRoomId, timeslotId: booking.timeslotId, status: 'pending' },
+      where: { roomId: newRoomId, timeslotId: booking.timeslotId, status: 'confirmed' },
     });
     if (conflict) {
       throw new ConflictException('Target room is already booked for this timeslot');
