@@ -114,11 +114,11 @@ const RegistrarAccountManagementTable: React.FC = () => {
 	};
 
 	// Filter users based on search term
-	const filteredUsers = users.filter(user =>
-		user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-		user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-		user.phone.includes(searchTerm)
-	);
+		const filteredUsers = users.filter(user =>
+			(user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+			(user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+			(user.phone || '').includes(searchTerm)
+		);
 
 	return (
 		<div style={{ background: 'white', borderRadius: 10, boxShadow: '0 2px 10px rgba(0,0,0,0.1)', padding: 24, position: 'relative' }}>
