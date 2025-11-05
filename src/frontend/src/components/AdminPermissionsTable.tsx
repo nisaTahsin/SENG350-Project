@@ -28,15 +28,13 @@ const AdminPermissionsTable: React.FC = () => {
 				const response = await fetch('http://localhost:4000/users');
 				const data = await response.json();
 				const mapped: AdminUser[] = Array.isArray(data)
-					? data
-						.map((u: any) => ({
-							id: u.id,
-							username: u.username || '',
-							email: u.email || '',
-							role: u.role || '',
-							disabled: u.isBlocked || false,
-						}))
-						.filter((u: AdminUser) => u.role.toLowerCase() !== 'admin')
+					? data.map((u: any) => ({
+						id: u.id,
+						username: u.username || '',
+						email: u.email || '',
+						role: u.role || '',
+						disabled: u.isBlocked || false,
+					}))
 					: [];
 				setUsers(mapped);
 			} catch {
@@ -73,7 +71,7 @@ const AdminPermissionsTable: React.FC = () => {
 
 	const handleSave = () => {
 		if (selectedUserId === null) return;
-		setUsers(prev => prev.map(u => u.id === selectedUserId ? { ...u, role: editRole, disabled: editDisabled } : u));
+		setUsers(prev => prev.map(u => u.id === selectedUserId ? { ...u, disabled: editDisabled } : u));
 		closeModal();
 	};
 
@@ -130,7 +128,7 @@ const AdminPermissionsTable: React.FC = () => {
 									<td style={{ padding: 8 }}>{user.role}</td>
 									<td style={{ padding: 8 }}>{user.disabled ? 'Yes' : 'No'}</td>
 									<td style={{ padding: 8 }}>
-											<button 
+							<button 
 												style={{ 
 													marginRight: 4, 
 													background: '#2257bf', 
@@ -144,7 +142,7 @@ const AdminPermissionsTable: React.FC = () => {
 											>
 												View Bookings
 											</button>
-											<button 
+							<button 
 												style={{ 
 													marginRight: 4, 
 													background: '#dc3545', 
@@ -156,7 +154,7 @@ const AdminPermissionsTable: React.FC = () => {
 												}}
 											onClick={() => openModal(user.id)}
 											>
-												Change Permissions
+								Block User
 											</button>
 								</td>
 							</tr>
@@ -187,17 +185,11 @@ const AdminPermissionsTable: React.FC = () => {
 					background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
 				}}>
 					<div style={{ background: 'white', borderRadius: 8, padding: 32, minWidth: 320, boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
-						<h3>Change Permissions</h3>
-						<div style={{ marginBottom: 16 }}>
-							<label style={{ fontWeight: 'bold' }}>Role:&nbsp;</label>
-							<select value={editRole} onChange={e => setEditRole(e.target.value)} style={{ padding: 4, width: '100%', marginTop: 4 }}>
-								<option value="staff">Staff</option>
-								<option value="registrar">Registrar</option>
-							</select>
-						</div>
-						<div style={{ marginBottom: 16 }}>
-							<label style={{ fontWeight: 'bold' }}>Disabled:&nbsp;</label>
-							<input type="checkbox" checked={editDisabled} onChange={e => setEditDisabled(e.target.checked)} style={{ marginLeft: 8 }} />
+						<h3>Block User</h3>
+						<p style={{ marginTop: 8, marginBottom: 12 }}>Tick the box to block this user, then press Confirm.</p>
+						<div style={{ marginBottom: 16, display: 'flex', alignItems: 'center' }}>
+							<input id="block-user-checkbox" type="checkbox" checked={editDisabled} onChange={e => setEditDisabled(e.target.checked)} />
+							<label htmlFor="block-user-checkbox" style={{ marginLeft: 8 }}>Block this user</label>
 						</div>
 						<div style={{ textAlign: 'right' }}>
 							<button 
@@ -225,7 +217,7 @@ const AdminPermissionsTable: React.FC = () => {
 									cursor: 'pointer'
 								}}
 							>
-								Save
+								Confirm
 							</button>
 						</div>
 					</div>
