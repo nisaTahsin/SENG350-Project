@@ -58,7 +58,15 @@ const RegistrarAccountManagementTable: React.FC = () => {
 			try {
 				const response = await fetch('http://localhost:4000/users');
 				const data = await response.json();
-				setUsers(Array.isArray(data) ? data : []);
+				// Map backend data to frontend format
+				const mappedUsers = Array.isArray(data) ? data.map((user: any) => ({
+					id: user.id,
+					name: user.username || user.name || '',
+					phone: user.phone || '',
+					email: user.email || '',
+					disabled: user.isBlocked || user.disabled || false
+				})) : [];
+				setUsers(mappedUsers);
 			} catch {
 				setError('Failed to fetch users');
 			}
@@ -115,9 +123,9 @@ const RegistrarAccountManagementTable: React.FC = () => {
 
 	// Filter users based on search term
 	const filteredUsers = users.filter(user =>
-		user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-		user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-		user.phone.includes(searchTerm)
+		(user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+		(user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+		(user.phone || '').includes(searchTerm)
 	);
 
 	return (
@@ -239,8 +247,8 @@ const RegistrarAccountManagementTable: React.FC = () => {
 			<div style={{ marginTop: 12, textAlign: 'right', color: '#666' }}>
 				Showing {filteredUsers.length} of {users.length} users
 			</div>
-			{showBookings && selectedUserIdx !== null && (
-				<UserBookings userName={users[selectedUserIdx].name} onClose={closeBookings} />
+			{showBookings && selectedUserIdx !== null && filteredUsers[selectedUserIdx] && (
+				<UserBookings userName={filteredUsers[selectedUserIdx].name} onClose={closeBookings} />
 			)}
 		</div>
 	);
