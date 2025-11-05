@@ -28,13 +28,15 @@ const AdminPermissionsTable: React.FC = () => {
 				const response = await fetch('http://localhost:4000/users');
 				const data = await response.json();
 				const mapped: AdminUser[] = Array.isArray(data)
-					? data.map((u: any) => ({
-						id: u.id,
-						username: u.username || '',
-						email: u.email || '',
-						role: u.role || '',
-						disabled: u.isBlocked || false,
-					}))
+					? data
+						.map((u: any) => ({
+							id: u.id,
+							username: u.username || '',
+							email: u.email || '',
+							role: u.role || '',
+							disabled: u.isBlocked || false,
+						}))
+						.filter((u: AdminUser) => u.role.toLowerCase() !== 'admin')
 					: [];
 				setUsers(mapped);
 			} catch {
@@ -191,7 +193,6 @@ const AdminPermissionsTable: React.FC = () => {
 							<select value={editRole} onChange={e => setEditRole(e.target.value)} style={{ padding: 4, width: '100%', marginTop: 4 }}>
 								<option value="staff">Staff</option>
 								<option value="registrar">Registrar</option>
-								<option value="admin">Admin</option>
 							</select>
 						</div>
 						<div style={{ marginBottom: 16 }}>
