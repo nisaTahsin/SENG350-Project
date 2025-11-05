@@ -20,28 +20,29 @@ const AdminPermissionsTable: React.FC = () => {
 	const [editDisabled, setEditDisabled] = useState(false);
 	const [showBookings, setShowBookings] = useState(false);
 
+	const fetchUsers = async () => {
+		setLoading(true);
+		setError('');
+		try {
+			const response = await fetch('http://localhost:4000/users');
+			const data = await response.json();
+			const mapped: AdminUser[] = Array.isArray(data)
+				? data.map((u: any) => ({
+					id: u.id,
+					username: u.username || '',
+					email: u.email || '',
+					role: u.role || '',
+					disabled: u.isBlocked || false,
+				}))
+				: [];
+			setUsers(mapped);
+		} catch {
+			setError('Failed to fetch users');
+		}
+		setLoading(false);
+	};
+
 	useEffect(() => {
-		const fetchUsers = async () => {
-			setLoading(true);
-			setError('');
-			try {
-				const response = await fetch('http://localhost:4000/users');
-				const data = await response.json();
-				const mapped: AdminUser[] = Array.isArray(data)
-					? data.map((u: any) => ({
-						id: u.id,
-						username: u.username || '',
-						email: u.email || '',
-						role: u.role || '',
-						disabled: u.isBlocked || false,
-					}))
-					: [];
-				setUsers(mapped);
-			} catch {
-				setError('Failed to fetch users');
-			}
-			setLoading(false);
-		};
 		fetchUsers();
 	}, []);
 
@@ -69,9 +70,35 @@ const AdminPermissionsTable: React.FC = () => {
 		setSelectedUserId(null);
 	};
 
-	const handleSave = () => {
+	const handleSave = async () => {
 		if (selectedUserId === null) return;
-		setUsers(prev => prev.map(u => u.id === selectedUserId ? { ...u, disabled: editDisabled } : u));
+		const currentUser = users.find(u => u.id === selectedUserId);
+		if (!currentUser) return;
+
+		// Only make API call if the disabled state actually changed
+		if (currentUser.disabled !== editDisabled) {
+			try {
+				if (editDisabled) {
+					// Block the user
+					await fetch(`http://localhost:4000/users/${selectedUserId}/block`, {
+						method: 'PATCH',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ blockedBy: 1 }),
+					});
+				} else {
+					// Unblock the user
+					await fetch(`http://localhost:4000/users/${selectedUserId}/unblock`, {
+						method: 'PATCH',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ unblockedBy: 1 }),
+					});
+				}
+				// Refresh the user list to get the updated state from backend
+				await fetchUsers();
+			} catch {
+				setError('Failed to update user status');
+			}
+		}
 		closeModal();
 	};
 
