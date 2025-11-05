@@ -39,9 +39,9 @@ const AdminDashboard: React.FC = () => {
         </div>
         
         <div className="dashboard-card">
-          <h2>User Roles & Permissions</h2>
-          <p>Manage user roles and system permissions</p>
-          <button className="action-button" onClick={() => navigate('/admin/permissions')}>Manage Permissions</button>
+          <h2>Block Users</h2>
+          <p>Block users who are potentially causing harm to the system</p>
+          <button className="action-button" onClick={() => navigate('/admin/permissions')}>Block Users</button>
         </div>
 
       </main>

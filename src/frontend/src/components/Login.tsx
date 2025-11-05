@@ -37,7 +37,12 @@ const Login: React.FC = () => {
         }
       } catch (err) {
         console.error('Login error:', err);
-        setError(err instanceof Error ? err.message : 'Login failed');
+        // Check if account is blocked and navigate to blocked account page
+        if (err instanceof Error && err.message === 'BLOCKED_ACCOUNT') {
+          navigate('/blocked-account');
+        } else {
+          setError(err instanceof Error ? err.message : 'Login failed');
+        }
       }
     }
     setLoading(false);

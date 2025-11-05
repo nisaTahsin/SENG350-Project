@@ -58,6 +58,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Store the token for future API calls
         localStorage.setItem('authToken', data.access_token);
       } else {
+        // If account is blocked, throw a special error that can be caught
+        if (data.blocked) {
+          throw new Error('BLOCKED_ACCOUNT');
+        }
         throw new Error(data.message || 'Login failed');
       }
     } catch (error) {
