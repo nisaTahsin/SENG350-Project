@@ -63,6 +63,11 @@ export class UsersController {
         return { success: false, message: 'User not found' };
       }
 
+      // Check if user is blocked before checking password
+      if (user.isBlocked) {
+        return { success: false, message: 'Account blocked', blocked: true };
+      }
+
       const isMatch = body.password === user.password;
       console.log('Password match:', isMatch, 'provided:', body.password, 'stored:', user.password);
       if (!isMatch) {

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
+import BlockedAccount from './components/BlockedAccount';
 import StaffDashboard from './components/StaffDashboard';
 import RegistrarDashboard from './components/RegistrarDashboard';
 import AdminDashboard from './components/AdminDashboard';
@@ -52,6 +53,7 @@ const AppContent: React.FC = () => {
       <div className="App">
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/blocked-account" element={<BlockedAccount />} />
           <Route 
             path="/staff-dashboard" 
             element={
