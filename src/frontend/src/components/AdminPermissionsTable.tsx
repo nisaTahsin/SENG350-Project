@@ -1,96 +1,85 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import UserBookings from './UserBookings';
 
-interface User {
-	Name: string;
-	phone: string;
+interface AdminUser {
+	id: number;
+	username: string;
 	email: string;
 	role: string;
 	disabled: boolean;
 }
 
-const users: User[] = [
-	{
-		Name: 'FirstName LastName',
-		phone: '123-456-7890',
-		email: 'staff@example.com',
-		role: 'Staff',
-		disabled: false,
-	},
-	{
-		Name: 'John Smith',
-		phone: '234-567-8901',
-		email: 'john.smith@example.com',
-		role: 'Staff',
-		disabled: false,
-	},
-	{
-		Name: 'Jane Doe',
-		phone: '345-678-9012',
-		email: 'jane.doe@example.com',
-		role: 'Registrar',
-		disabled: false,
-	},
-	{
-		Name: 'Bob Johnson',
-		phone: '456-789-0123',
-		email: 'bob.johnson@example.com',
-		role: 'Admin',
-		disabled: true,
-	},
-	{
-		Name: 'Alice Brown',
-		phone: '567-890-1234',
-		email: 'alice.brown@example.com',
-		role: 'Staff',
-		disabled: false,
-	},
-];
-
 const AdminPermissionsTable: React.FC = () => {
+	const [users, setUsers] = useState<AdminUser[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState('');
 	const [searchTerm, setSearchTerm] = useState('');
 	const [modalOpen, setModalOpen] = useState(false);
-	const [selectedUserIdx, setSelectedUserIdx] = useState<number | null>(null);
+	const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 	const [editRole, setEditRole] = useState('');
 	const [editDisabled, setEditDisabled] = useState(false);
 	const [showBookings, setShowBookings] = useState(false);
 
-	const openModal = (idx: number) => {
-		setSelectedUserIdx(idx);
-		setEditRole(users[idx].role);
-		setEditDisabled(users[idx].disabled);
+	useEffect(() => {
+		const fetchUsers = async () => {
+			setLoading(true);
+			setError('');
+			try {
+				const response = await fetch('http://localhost:4000/users');
+				const data = await response.json();
+				const mapped: AdminUser[] = Array.isArray(data)
+					? data.map((u: any) => ({
+						id: u.id,
+						username: u.username || '',
+						email: u.email || '',
+						role: u.role || '',
+						disabled: u.isBlocked || false,
+					}))
+					: [];
+				setUsers(mapped);
+			} catch {
+				setError('Failed to fetch users');
+			}
+			setLoading(false);
+		};
+		fetchUsers();
+	}, []);
+
+	const openModal = (userId: number) => {
+		const u = users.find(x => x.id === userId);
+		if (!u) return;
+		setSelectedUserId(userId);
+		setEditRole(u.role);
+		setEditDisabled(u.disabled);
 		setModalOpen(true);
 	};
 
-	const openBookings = (idx: number) => {
-		setSelectedUserIdx(idx);
+	const openBookings = (userId: number) => {
+		setSelectedUserId(userId);
 		setShowBookings(true);
 	};
 
 	const closeModal = () => {
 		setModalOpen(false);
-		setSelectedUserIdx(null);
+		setSelectedUserId(null);
 	};
 
 	const closeBookings = () => {
 		setShowBookings(false);
-		setSelectedUserIdx(null);
+		setSelectedUserId(null);
 	};
 
 	const handleSave = () => {
-		if (selectedUserIdx !== null) {
-			users[selectedUserIdx].role = editRole;
-			users[selectedUserIdx].disabled = editDisabled;
-		}
+		if (selectedUserId === null) return;
+		setUsers(prev => prev.map(u => u.id === selectedUserId ? { ...u, role: editRole, disabled: editDisabled } : u));
 		closeModal();
 	};
 
-	// Filter users based on search term
+	// Filter users based on search term (only existing fields)
 	const filteredUsers = users.filter(user =>
-		user.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-		user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-		user.phone.includes(searchTerm) ||
-		user.role.toLowerCase().includes(searchTerm.toLowerCase())
+		(user.username?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+		(user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+		(user.role?.toLowerCase() || '').includes(searchTerm.toLowerCase())
 	);
 
 	return (
@@ -114,12 +103,16 @@ const AdminPermissionsTable: React.FC = () => {
 				/>
 			</div>
 
+			{loading ? (
+				<div>Loading users...</div>
+			) : error ? (
+				<div style={{ color: 'red' }}>{error}</div>
+			) : (
 			<div style={{ overflowX: 'auto' }}>
 				<table style={{ width: '100%', borderCollapse: 'collapse' }}>
 					<thead>
 						<tr style={{ background: '#0a4a7e', color: 'white' }}>
-							<th style={{ padding: 8 }}>NAME</th>
-							<th style={{ padding: 8 }}>PHONE</th>
+							<th style={{ padding: 8 }}>USERNAME</th>
 							<th style={{ padding: 8 }}>E-MAIL</th>
 							<th style={{ padding: 8 }}>ROLE</th>
 							<th style={{ padding: 8 }}>DISABLED</th>
@@ -128,16 +121,13 @@ const AdminPermissionsTable: React.FC = () => {
 					</thead>
 					<tbody>
 						{filteredUsers.length > 0 ? (
-							filteredUsers.map((user, idx) => {
-								const originalIdx = users.findIndex(u => u === user);
-								return (
-									<tr key={originalIdx} style={{ borderBottom: '1px solid #eee' }}>
-										<td style={{ padding: 8 }}>{user.Name}</td>
-										<td style={{ padding: 8 }}>{user.phone}</td>
-										<td style={{ padding: 8 }}>{user.email}</td>
-										<td style={{ padding: 8 }}>{user.role}</td>
-										<td style={{ padding: 8 }}>{user.disabled ? 'Yes' : 'No'}</td>
-										<td style={{ padding: 8 }}>
+							filteredUsers.map((user) => (
+								<tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
+									<td style={{ padding: 8 }}>{user.username}</td>
+									<td style={{ padding: 8 }}>{user.email}</td>
+									<td style={{ padding: 8 }}>{user.role}</td>
+									<td style={{ padding: 8 }}>{user.disabled ? 'Yes' : 'No'}</td>
+									<td style={{ padding: 8 }}>
 											<button 
 												style={{ 
 													marginRight: 4, 
@@ -148,22 +138,9 @@ const AdminPermissionsTable: React.FC = () => {
 													padding: '4px 8px',
 													cursor: 'pointer'
 												}} 
-												onClick={() => openBookings(originalIdx)}
+											onClick={() => openBookings(user.id)}
 											>
 												View Bookings
-											</button>
-											<button 
-												style={{ 
-													marginRight: 4, 
-													background: '#28a745', 
-													color: 'white', 
-													border: 'none', 
-													borderRadius: 4, 
-													padding: '4px 8px',
-													cursor: 'pointer'
-												}}
-											>
-												Edit Info
 											</button>
 											<button 
 												style={{ 
@@ -175,17 +152,16 @@ const AdminPermissionsTable: React.FC = () => {
 													padding: '4px 8px',
 													cursor: 'pointer'
 												}}
-												onClick={() => openModal(originalIdx)}
+											onClick={() => openModal(user.id)}
 											>
 												Change Permissions
 											</button>
-										</td>
-									</tr>
-								);
-							})
+								</td>
+							</tr>
+							))
 						) : (
 							<tr>
-								<td colSpan={6} style={{ padding: 16, textAlign: 'center', color: '#666' }}>
+								<td colSpan={5} style={{ padding: 16, textAlign: 'center', color: '#666' }}>
 									No users found matching your search.
 								</td>
 							</tr>
@@ -193,16 +169,17 @@ const AdminPermissionsTable: React.FC = () => {
 					</tbody>
 				</table>
 			</div>
+			)}
 			
 			<div style={{ marginTop: 12, textAlign: 'right', color: '#666' }}>
 				Showing {filteredUsers.length} of {users.length} users
 			</div>
 
-			{showBookings && selectedUserIdx !== null && (
-				<UserBookings userName={users[selectedUserIdx].Name} onClose={closeBookings} />
+			{showBookings && selectedUserId !== null && (
+				<UserBookings userName={(users.find(u => u.id === selectedUserId)?.username) || ''} onClose={closeBookings} />
 			)}
 
-			{modalOpen && selectedUserIdx !== null && (
+			{modalOpen && selectedUserId !== null && (
 				<div style={{
 					position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
 					background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
@@ -212,9 +189,9 @@ const AdminPermissionsTable: React.FC = () => {
 						<div style={{ marginBottom: 16 }}>
 							<label style={{ fontWeight: 'bold' }}>Role:&nbsp;</label>
 							<select value={editRole} onChange={e => setEditRole(e.target.value)} style={{ padding: 4, width: '100%', marginTop: 4 }}>
-								<option value="Staff">Staff</option>
-								<option value="Registrar">Registrar</option>
-								<option value="Admin">Admin</option>
+								<option value="staff">Staff</option>
+								<option value="registrar">Registrar</option>
+								<option value="admin">Admin</option>
 							</select>
 						</div>
 						<div style={{ marginBottom: 16 }}>
