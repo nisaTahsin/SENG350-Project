@@ -1,4 +1,3 @@
-
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -26,52 +25,46 @@ export class RoomsService {
 
   // ===== ROOM METHODS =====
 
- async createRoom(data: { name: string; building: string; capacity: number }) {
-  // Trim inputs
-  const name = data.name?.trim();
-  const building = data.building?.trim();
-  const capacity = data.capacity;
+  async createRoom(data: { room_name: string; building: string; capacity: number }) {
+    const room_name = data.room_name?.trim();
+    const building = data.building?.trim();
+    const capacity = data.capacity;
 
-  // Validate inputs
-  if (!name || !building || !capacity) {
-    throw new BadRequestException('Missing required room fields');
+    if (!room_name || !building || !capacity) {
+      throw new BadRequestException('Missing required room fields');
+    }
+
+    const existing = await this.roomRepository
+      .createQueryBuilder('room')
+      .where('LOWER(room.room_name) = LOWER(:room_name)', { room_name })
+      .andWhere('LOWER(room.building) = LOWER(:building)', { building })
+      .getOne();
+
+    if (existing) {
+      throw new ConflictException('Room with the same name already exists in this building');
+    }
+
+    const room = this.roomRepository.create({
+      room_name,
+      building,
+      capacity,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const savedRoom = await this.roomRepository.save(room);
+
+    await this.auditService.logAction(
+      undefined,
+      'ROOM_CREATED',
+      'room',
+      savedRoom.id,
+      { room_name: savedRoom.room_name, building: savedRoom.building, capacity: savedRoom.capacity }
+    );
+
+    return savedRoom;
   }
-
-  // Check for duplicate room (case-insensitive)
-  const existing = await this.roomRepository
-    .createQueryBuilder('room')
-    .where('LOWER(room.name) = LOWER(:name)', { name })
-    .andWhere('LOWER(room.building) = LOWER(:building)', { building })
-    .getOne();
-
-  if (existing) {
-    throw new ConflictException('Room with the same name already exists in this building');
-  }
-
-  // Create new room
-  const room = this.roomRepository.create({
-    name,
-    building,
-    capacity,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-
-  const savedRoom = await this.roomRepository.save(room);
-
-  // Log action in audit
-  await this.auditService.logAction(
-    undefined,
-    'ROOM_CREATED',
-    'room',
-    savedRoom.id,
-    { name: savedRoom.name, building: savedRoom.building, capacity: savedRoom.capacity }
-  );
-
-  return savedRoom;
-}
-
 
   findAllRooms(): Promise<Room[]> {
     return this.roomRepository.find();
@@ -86,7 +79,7 @@ export class RoomsService {
     updates: {
       capacity?: number;
       isActive?: boolean;
-      name?: string;  // corrected from roomName
+      room_name?: string;  // changed from name
       building?: string;
     }
   ) {
@@ -105,9 +98,9 @@ export class RoomsService {
         params.push(updates.isActive);
       }
 
-      if (updates.name !== undefined) {
+      if (updates.room_name !== undefined) {
         setClauses.push(`room_name = $${paramIndex++}`);
-        params.push(updates.name);
+        params.push(updates.room_name);
       }
 
       if (updates.building !== undefined) {
@@ -175,35 +168,31 @@ export class RoomsService {
     return { success: true, message: `Room capacity updated to ${capacity}`, room: result[0] };
   }
 
- async deleteRoom(roomId: number) {
-  const room = await this.roomRepository.findOne({ where: { id: roomId }, relations: ['timeslots'] });
-  if (!room) throw new NotFoundException('Room not found');
+  async deleteRoom(roomId: number) {
+    const room = await this.roomRepository.findOne({ where: { id: roomId }, relations: ['timeslots'] });
+    if (!room) throw new NotFoundException('Room not found');
 
-  // Delete associated timeslots first
-  if (room.timeslots?.length) {
-    await this.timeslotRepository
-      .createQueryBuilder()
-      .delete()
-      .from(Timeslot)
-      .where('room_id = :roomId', { roomId })
-      .execute();
+    if (room.timeslots?.length) {
+      await this.timeslotRepository
+        .createQueryBuilder()
+        .delete()
+        .from(Timeslot)
+        .where('room_id = :roomId', { roomId })
+        .execute();
+    }
+
+    await this.roomRepository.delete(roomId);
+
+    await this.auditService.logAction(
+      undefined,
+      'ROOM_DELETED',
+      'room',
+      roomId,
+      { room_name: room.room_name, building: room.building, capacity: room.capacity }
+    );
+
+    return { success: true, message: 'Room deleted successfully' };
   }
-
-  // Now delete the room
-  await this.roomRepository.delete(roomId);
-
-  await this.auditService.logAction(
-    undefined,
-    'ROOM_DELETED',
-    'room',
-    roomId,
-    { name: room.name, building: room.building, capacity: room.capacity }
-  );
-
-  return { success: true, message: 'Room deleted successfully' };
-}
-
-
 
   async toggleStatus(roomId: number, isActive: boolean) {
     const result = await AppDataSource.query(
@@ -456,7 +445,7 @@ export class RoomsService {
       success: true,
       room: {
         id: room.id,
-        name: room.room_name,
+        room_name: room.room_name,
         building: room.building,
         capacity: room.capacity,
       },

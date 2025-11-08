@@ -27,12 +27,6 @@ const RegistrarDashboard: React.FC = () => {
         </div>
         
         <div className="dashboard-card">
-          <h2>Handle Escalations</h2>
-          <p>Review and resolve booking conflicts and issues</p>
-          <button className="action-button" onClick={() => navigate('/registrar/escalations')}>View Escalations</button>
-        </div>
-        
-        <div className="dashboard-card">
           <h2>Account Management</h2>
           <p>Block abusive accounts or manually release bookings</p>
           <button className="action-button" onClick={() => navigate('/registrar/account-management')}>Manage Accounts</button>

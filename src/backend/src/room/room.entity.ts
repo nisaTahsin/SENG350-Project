@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Timeslot } from '../timeslot/timeslot.entity';
+import { Booking } from '../booking/booking.entity';
 
 @Entity('rooms')
 export class Room {
@@ -7,7 +8,7 @@ export class Room {
   id!: number;
 
   @Column({ name: 'room_name', length: 100 })
-  name!: string;
+  room_name!: string;
 
   @Column({ length: 100 })
   building!: string;
@@ -35,4 +36,7 @@ export class Room {
 
   @OneToMany(() => Timeslot, (timeslot) => timeslot.room)
   timeslots!: Timeslot[];
+
+  @OneToMany(() => Booking, (booking) => booking.room)
+  bookings!: Booking[]; 
 }
