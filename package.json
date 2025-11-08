@@ -1,5 +1,6 @@
 {
   "dependencies": {
+<<<<<<< HEAD
     "react-router-dom": "^7.9.3"
 <<<<<<< HEAD
 =======
@@ -12,5 +13,9 @@
     "react-router-dom": "^7.9.3",
     "recharts": "^3.3.0"
 >>>>>>> 6fce319 (Resolve merge conflicts)
+=======
+    "react-router-dom": "^7.9.3",
+    "recharts": "^3.3.0"
+>>>>>>> ed15977 (Added the adimn logs)
   }
 }
