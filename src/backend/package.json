@@ -27,18 +27,8 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     "@nestjs/testing": "^11.1.6",
     "@types/bcrypt": "^5.0.2",
-<<<<<<< HEAD
->>>>>>> 6fce319 (Resolve merge conflicts)
-=======
-    "@types/bcrypt": "^5.0.2",
->>>>>>> ed15977 (Added the adimn logs)
-=======
->>>>>>> 020070f7a9d58ec1da39609877299fb799920bd5
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.19.24",

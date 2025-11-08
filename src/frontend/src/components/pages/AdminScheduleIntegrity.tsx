@@ -46,7 +46,7 @@ const AdminScheduleIntegrity: React.FC = () => {
 
 
         if (response.data.success) {
-          const chartData: RoomUtilization[] = response.data.rooms.map((room) => ({
+          const chartData: RoomUtilization[] = response.data.rooms.map((room: ApiResponse["rooms"][number]) => ({
             room_name: room.roomName,
             bookings: room.totalBookings,
             capacity: room.capacity,
