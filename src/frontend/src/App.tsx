@@ -8,6 +8,7 @@ import RegistrarDashboard from './components/RegistrarDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
+
 // Staff pages
 import StaffBrowseAvailability from './components/pages/StaffBrowseAvailability';
 import StaffMyBookings from './components/pages/StaffMyBookings';
@@ -27,6 +28,7 @@ import AdminSystemHealth from './components/pages/AdminSystemHealth';
 import AdminPermissions from './components/pages/AdminPermissions';
 import AdminDatabase from './components/pages/AdminDatabase';
 import AdminMonitoring from './components/pages/AdminMonitoring';
+import AdminScheduleIntegrity from './components/pages/AdminScheduleIntegrity';
 import './App.css';
 
 const AppContent: React.FC = () => {
@@ -196,6 +198,15 @@ const AppContent: React.FC = () => {
             } 
           />
           
+          <Route 
+            path="/admin/schedule-integrity" 
+            element={
+              <ProtectedRoute>
+                <AdminScheduleIntegrity />
+              </ProtectedRoute>
+            } 
+          />
+
           <Route 
             path="/" 
             element={<Navigate to={getDashboardRoute()} replace />} 

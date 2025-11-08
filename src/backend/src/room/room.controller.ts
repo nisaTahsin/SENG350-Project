@@ -122,14 +122,14 @@ export class RoomsController {
 
   @Post()
 async createRoom(
-  @Body() body: { name: string; building: string; capacity: number }
+  @Body() body: { room_name: string; building: string; capacity: number }
 ) {
   try {
     console.log('Creating room:', body);
     const room = await this.roomsService.createRoom({
-      name: body.name,
+      room_name: body.room_name,
       building: body.building,
-      capacity: Number(body.capacity), // ensure numeric
+      capacity: Number(body.capacity),
     });
     return { success: true, room };
   } catch (error) {
@@ -143,6 +143,7 @@ async createRoom(
 }
 
 
+
   // ========== TIMESLOT MANAGEMENT ==========
 
   @Patch('timeslots/:id')
@@ -150,8 +151,26 @@ async createRoom(
     return this.roomsService.updateTimeslot(+id, dto);
   }
 
-  @Delete('timeslots/:id')
+   @Delete('timeslots/:id')
   deleteTimeslot(@Param('id') id: string) {
     return this.roomsService.deleteTimeslot(+id);
   }
+
+  @Delete(':id')
+async deleteRoom(@Param('id') id: string) {
+  try {
+    console.log('Deleting room with ID:', id);
+    const result = await this.roomsService.deleteRoom(+id);
+    return result; // no duplicate 'success'
+  } catch (error) {
+    console.error('Error deleting room:', error);
+    return {
+      success: false,
+      message: 'Failed to delete room',
+      error: (error as Error).message,
+    };
+  }
+}
+
+
 }
