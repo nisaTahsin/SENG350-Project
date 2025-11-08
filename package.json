@@ -1,12 +1,5 @@
 {
   "dependencies": {
     "react-router-dom": "^7.9.3"
-  },
- "scripts": {
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:cov": "vitest run --coverage",
-    "test:ui": "vitest --ui"
   }
 }
-
