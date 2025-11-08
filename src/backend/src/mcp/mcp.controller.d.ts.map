@@ -1,0 +1,1 @@
+{"version":3,"file":"mcp.controller.d.ts","sourceRoot":"","sources":["mcp.controller.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,cAAc,EAAE,MAAM,4BAA4B,CAAC;AAsB5D,qBACa,aAAa;IACZ,OAAO,CAAC,QAAQ,CAAC,cAAc;gBAAd,cAAc,EAAE,cAAc;IAI3D,KAAK;;;;;;;;;;;;;;;;;;;;;;;;;IAyBC,MAAM,CAAyB,KAAK,EAAE,MAAM,GAAG,SAAS,EAAU,IAAI,EAAE,GAAG;;;;;;;;;CA0BlF"}

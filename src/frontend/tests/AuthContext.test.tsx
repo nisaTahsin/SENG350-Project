@@ -1,40 +1,34 @@
-// src/contexts/AuthContext.tsx
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 
-type Role = 'Staff' | 'Registrar' | 'Admin';
-export type AuthUser = { username: string; role: Role } | null;
-
-type AuthContextType = {
-  user: AuthUser;
-  login: (username: string, role: Role) => void;
-  logout: () => void;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider = ({
-  children,
-  initialUser = null,
-}: {
-  children: ReactNode;
-  initialUser?: AuthUser;
-}) => {
-  const [user, setUser] = useState<AuthUser>(initialUser);
-
-  const login = (username: string, role: Role) => setUser({ username, role });
-  const logout = () => setUser(null);
-
+function Probe() {
+  const { isAuthenticated, user, login, logout } = useAuth();
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+    <div>
+      <div data-testid="auth">{String(isAuthenticated)}</div>
+      <div data-testid="user">{user ? `${user.username}:${user.userType}` : 'none'}</div>
+      <button onClick={() => login('bob', 'registrar')}>login</button>
+      <button onClick={() => logout()}>logout</button>
+    </div>
   );
-};
+}
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+describe('AuthContext', () => {
+  it('logs in and out correctly', async () => {
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+
+    expect(screen.getByTestId('auth')).toHaveTextContent('false');
+    screen.getByText('login').click();
+
+    await waitFor(() => expect(screen.getByTestId('auth')).toHaveTextContent('true'));
+    expect(screen.getByTestId('user')).toHaveTextContent('bob:registrar');
+
+    screen.getByText('logout').click();
+    await waitFor(() => expect(screen.getByTestId('auth')).toHaveTextContent('false'));
+  });
+});
