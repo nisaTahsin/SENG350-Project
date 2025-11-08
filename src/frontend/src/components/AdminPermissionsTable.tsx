@@ -16,7 +16,6 @@ const AdminPermissionsTable: React.FC = () => {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [modalOpen, setModalOpen] = useState(false);
 	const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-	const [editRole, setEditRole] = useState('');
 	const [editDisabled, setEditDisabled] = useState(false);
 	const [showBookings, setShowBookings] = useState(false);
 
@@ -52,7 +51,6 @@ const AdminPermissionsTable: React.FC = () => {
 		const u = users.find(x => x.id === userId);
 		if (!u) return;
 		setSelectedUserId(userId);
-		setEditRole(u.role);
 		setEditDisabled(u.disabled);
 		setModalOpen(true);
 	};

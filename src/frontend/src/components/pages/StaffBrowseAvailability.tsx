@@ -35,7 +35,7 @@ type Room = {
 };
 
 const StaffBrowseAvailability: React.FC = () => {
-  const [rooms, setRooms] = useState<Room[]>([]); // Used for API data
+  // Removed unused rooms state (data is organized per-building instead)
   const [buildings, setBuildings] = useState<string[]>([]);
   const [buildingData, setBuildingData] = useState<BuildingData>({});
   const [loading, setLoading] = useState(true);
@@ -56,9 +56,8 @@ const StaffBrowseAvailability: React.FC = () => {
         if (!response.ok) {
           throw new Error('Failed to fetch rooms');
         }
-        const roomsData: Room[] = await response.json();
-        console.log('Fetched rooms:', roomsData.length, 'rooms');
-        setRooms(roomsData);
+  const roomsData: Room[] = await response.json();
+  console.log('Fetched rooms:', roomsData.length, 'rooms');
         
         // Group rooms by building
         const buildingsSet = new Set<string>();
@@ -81,7 +80,7 @@ const StaffBrowseAvailability: React.FC = () => {
         setBuildingData(buildingDataMap);
         console.log('Buildings:', Array.from(buildingsSet));
         console.log('Building data:', buildingDataMap);
-        console.log('Current booking state when fetching rooms:', bookingState);
+  // Avoid referencing bookingState here to keep effect deps minimal
         
         // Set default selected building
         if (buildingsSet.size > 0) {
