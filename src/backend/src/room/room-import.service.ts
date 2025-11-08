@@ -35,9 +35,9 @@ export class RoomImportService {
         continue; // Skip invalid rows
       }
       
-      const [name, building, capacity, avEquipment, location, url] = fields;
+      const [room_name, building, capacity, avEquipment, location, url] = fields;
       
-      if (!name || !capacity) {
+      if (!room_name || !capacity) {
         continue; // Skip invalid rows
       }
       
@@ -48,7 +48,7 @@ export class RoomImportService {
       }
       
       const room = new Room();
-      room.name = name.trim();
+      room.room_name = room_name.trim(); // changed from name
       room.building = buildingName;
       room.capacity = parseInt(capacity.trim(), 10);
       room.avEquipment = avEquipment?.trim() ? [avEquipment.trim()] : [];
@@ -68,7 +68,7 @@ export class RoomImportService {
       } catch (error: any) {
         if (error.code === '23505') {
           // Duplicate key error - skip this room
-          console.log(`Skipping duplicate room: ${room.name} in ${room.building}`);
+          console.log(`Skipping duplicate room: ${room.room_name} in ${room.building}`);
           continue;
         }
         throw error;

@@ -6,7 +6,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:cov": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "react-router-dom": "^7.9.3",
+    "recharts": "^3.3.0"
   }
 }
 
