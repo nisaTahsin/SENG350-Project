@@ -3,13 +3,24 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import ErrorBoundary from './components/ErrorBoundary';
 
+// Suppress ResizeObserver loop errors in development
+//if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+//  window.addEventListener('error', (e) => {
+//    if (e.message) {
+//      e.stopImmediatePropagation();
+//    }
+//  });
+//}
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>
 );
 

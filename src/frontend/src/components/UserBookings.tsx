@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 
-// Reuse the Booking type and mockBookings from StaffMyBookings
-// In a real app, pass bookings as props or fetch from backend
-
 type Booking = {
   id: string;
   title: string;
@@ -51,16 +48,42 @@ const UserBookings: React.FC<{ userName: string; onClose: () => void }> = ({ use
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const toggleExpanded = (id: string) => {
-    setExpandedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
+    // Use rAF to delay DOM updates until after layout calculations are done
+    requestAnimationFrame(() => {
+      setExpandedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
     });
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
-      <div style={{ background: 'white', borderRadius: 10, padding: 32, minWidth: 400, maxWidth: 600, boxShadow: '0 2px 10px rgba(0,0,0,0.2)', maxHeight: '80vh', overflowY: 'auto' }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 2000,
+        overflow: 'hidden', // ✅ Prevent scroll-based layout thrash
+      }}
+    >
+      <div
+        style={{
+          background: 'white',
+          borderRadius: 10,
+          padding: 32,
+          minWidth: 400,
+          maxWidth: 600,
+          boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+          maxHeight: '80vh',
+          overflowY: 'auto',
+        }}
+      >
         <h2 style={{ marginTop: 0 }}>Bookings for {userName}</h2>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {mockBookings.map((b) => (
@@ -111,10 +134,7 @@ const UserBookings: React.FC<{ userName: string; onClose: () => void }> = ({ use
                     color: '#a11',
                     cursor: 'pointer',
                   }}
-                  onClick={() => {
-                    // Placeholder action
-                    alert(`Cancel booking: ${b.title}`);
-                  }}
+                  onClick={() => alert(`Cancel booking: ${b.title}`)}
                 >
                   Cancel
                 </button>
@@ -130,8 +150,7 @@ const UserBookings: React.FC<{ userName: string; onClose: () => void }> = ({ use
                   }}
                 >
                   <div style={{ marginBottom: 6 }}>
-                    <strong>Capacity:</strong>{' '}
-                    {roomDetails[b.room]?.capacity ?? 'N/A'}
+                    <strong>Capacity:</strong> {roomDetails[b.room]?.capacity ?? 'N/A'}
                   </div>
                   <div style={{ marginBottom: 6 }}>
                     <strong>AV Equipment:</strong>{' '}
@@ -151,7 +170,18 @@ const UserBookings: React.FC<{ userName: string; onClose: () => void }> = ({ use
           ))}
         </ul>
         <div style={{ textAlign: 'right', marginTop: 16 }}>
-          <button onClick={onClose} style={{ padding: '8px 20px', borderRadius: 6, background: '#2257bf', color: 'white', border: 'none' }}>Close</button>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '8px 20px',
+              borderRadius: 6,
+              background: '#2257bf',
+              color: 'white',
+              border: 'none',
+            }}
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>
