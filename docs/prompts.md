@@ -95,4 +95,16 @@ Oct. 19: Confirm whether or not the frontend and backend is connected by a REST 
 
 Oct. 19: What are the benefits and downsides of using a REST architecture?
 
+*Implementation 2
 
+What is causing this error in registrar/accountManagement: "ERROR Cannot read properties of undefined (reading 'toLowerCase')"
+
+How would you populate the Admin Permissions page with real user data from the database?
+
+How would you redirect a blocked user attempting to log in and redirect them to a page that says: "Your account has been blocked..."?
+
+How can you make it so that registrars can only view staff members on the Account Management page?
+
+How can I filter by blocked users?
+
+How would I remove every instance of the Registrar/HandleEscalations dashboard piece?
