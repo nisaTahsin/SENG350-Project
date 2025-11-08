@@ -23,27 +23,57 @@ const AdminDashboard: React.FC = () => {
         <div className="dashboard-card">
           <h2>System Configuration</h2>
           <p>Configure system-level settings and parameters</p>
-          <button className="action-button" onClick={() => navigate('/admin/system-config')}>System Config</button>
+          <button
+            className="action-button"
+            onClick={() => navigate('/admin/system-config')}
+          >
+            System Config
+          </button>
         </div>
         
         <div className="dashboard-card">
           <h2>Audit Records</h2>
           <p>View comprehensive audit trails and system records</p>
-          <button className="action-button" onClick={() => navigate('/admin/audit-records')}>View Audit Records</button>
+          <button
+            className="action-button"
+            onClick={() => navigate('/admin/audit-records')}
+          >
+            View Audit Records
+          </button>
         </div>
         
         <div className="dashboard-card">
           <h2>System Health</h2>
           <p>Monitor system performance and health metrics</p>
-          <button className="action-button" onClick={() => navigate('/admin/system-health')}>System Health</button>
+          <button
+            className="action-button"
+            onClick={() => navigate('/admin/system-health')}
+          >
+            System Health
+          </button>
         </div>
-        
+
+        <div className="dashboard-card">
+          <h2>Manage Schedule Integrity</h2>
+          <p>View utilization and ensure efficient room usage</p>
+          <button
+            className="action-button"
+            onClick={() => navigate('/admin/schedule-integrity')}
+          >
+            Manage Schedule Integrity
+          </button>
+        </div>
+
         <div className="dashboard-card">
           <h2>Block Users</h2>
           <p>Block users who are potentially causing harm to the system</p>
-          <button className="action-button" onClick={() => navigate('/admin/permissions')}>Block Users</button>
+          <button
+            className="action-button"
+            onClick={() => navigate('/admin/permissions')}
+          >
+            Block Users
+          </button>
         </div>
-
       </main>
     </div>
   );
