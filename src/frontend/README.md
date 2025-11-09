@@ -6,7 +6,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 First, install the project dependencies:
 
-### 'npm install'
+### `npm install`
 
 ## Available Scripts
 
@@ -47,16 +47,16 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 
 ## Project Structure
 
+```
 frontend/
-├── public/          # Static assets (index.html, favicon, images)
-├── src/             # React source code
-│   ├── components/  # Reusable React components
-│   ├── contexts/    # React contexts for state management
-│   ├── pages/       # Application pages for routing
+├── public/                  # Static assets (index.html, favicon, images, title updates)
+├── src/
+│   ├── components/          # Reusable React components (admin & registrar dashboards)
+│   ├── contexts/            # React contexts for state management
+│   ├── pages/               # Application pages for routing
 │   │   ├── AccountManagement.tsx
 │   │   ├── AdminAuditRecordsTable.tsx
 │   │   ├── AdminDashboard.tsx
-│   │   ├── AdminPermissionsTable.tsx
 │   │   ├── AdminSystemConfigurationTable.tsx
 │   │   ├── AdminSystemHealthTable.tsx
 │   │   ├── BlockedAccount.tsx
@@ -70,18 +70,33 @@ frontend/
 │   │   ├── ProtectedRoute.tsx
 │   │   ├── RegistrarAccountManagementTable.tsx
 │   │   ├── RegistrarDashboard.tsx
+│   │   ├── RegistrarClassroomManagement.tsx
+│   │   ├── RegistrarEscalations.tsx
+│   │   ├── RegistrarScheduleIntegrity.tsx
+│   │   ├── RegistrarStatisticsLogs.tsx
+│   │   ├── RegistrarTimeSlotManagement.tsx
+│   │   ├── StaffBrowseAvailability.tsx
 │   │   ├── StaffDashboard.tsx
+│   │   ├── StaffMyBookings.tsx
 │   │   ├── TimeslotTable.tsx
 │   │   └── UserBookings.tsx
-├── App.css           # Global app styles
-├── App.test.tsx      # App test file
-├── App.tsx           # Main App component
-├── index.css         # Global styles
-├── index.tsx         # React DOM entry point
-├── logo.svg          # Application logo
-├── react-app-env.d.ts# React TypeScript environment definitions
-├── reportWebVitals.ts# Web Vitals monitoring
-└── setupTests.ts     # Test setup configuration
+│   ├── App.css               # Global app styles
+│   ├── App.test.tsx          # App test file
+│   ├── App.tsx               # Main App component
+│   ├── index.css             # Global styles
+│   ├── index.tsx             # React DOM entry point
+│   ├── logo.svg              # Application logo
+│   ├── react-app-env.d.ts    # React TypeScript environment definitions
+│   ├── reportWebVitals.ts    # Web Vitals monitoring
+│   └── setupTests.ts         # Test setup configuration
+├── .gitignore                # React base ignores
+├── Dockerfile                # Docker setup
+├── README.md                 # Project documentation
+├── package.json              # Project dependencies
+├── package-lock.json         # Locked dependencies
+└── tsconfig.json             # TypeScript configuration
+
+```
 
 
 ## Notable Libraries
