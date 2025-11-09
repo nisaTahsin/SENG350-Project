@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Booking } from './booking.entity';
+import { Timeslot } from '../timeslot/timeslot.entity';
 import { AppDataSource } from '../data-source';
 import { AuditService } from '../audit/audit.service';
 
@@ -42,6 +43,8 @@ export class BookingService {
   constructor(
     @InjectRepository(Booking)
     private readonly bookingsRepository: Repository<Booking>,
+    @InjectRepository(Timeslot)
+    private readonly timeslotRepository: Repository<Timeslot>,
     private readonly auditService: AuditService,
   ) {}
 
@@ -51,6 +54,22 @@ export class BookingService {
   async createBooking(userId: number, data: Partial<Booking>): Promise<Booking> {
     if (typeof data.roomId !== 'number' || typeof data.timeslotId !== 'number') {
       throw new ConflictException('roomId and timeslotId are required (numbers)');
+    }
+
+    // Enforce booking window: not in the past and not more than 7 days in advance
+    const ts = await this.timeslotRepository.findOne({ where: { id: data.timeslotId } });
+    if (!ts) {
+      throw new NotFoundException('Timeslot not found');
+    }
+    const now = new Date();
+    const start = new Date(ts.startTime);
+    const end = new Date(ts.endTime);
+    if (end.getTime() <= now.getTime()) {
+      throw new ForbiddenException('Cannot book a past timeslot');
+    }
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    if (start.getTime() - now.getTime() > sevenDaysMs) {
+      throw new ForbiddenException('Bookings more than 7 days in advance are not allowed');
     }
 
     const key = `${data.roomId}:${data.timeslotId}`;
@@ -330,7 +349,11 @@ export class BookingService {
    * List bookings for the current user
    */
   async getMyBookings(userId: number): Promise<Booking[]> {
-    return this.bookingsRepository.find({ where: { userId } });
+    return this.bookingsRepository.find({
+      where: { userId },
+      relations: ['timeslot', 'room'],
+      order: { timeslot: { startTime: 'ASC' } as any },
+    });
   }
 
   /**

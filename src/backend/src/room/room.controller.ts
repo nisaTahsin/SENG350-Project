@@ -49,7 +49,15 @@ export class RoomsController {
   }
 
   @Get(':id/timeslots')
-  findTimeslots(@Param('id') roomId: string) {
+  findTimeslots(
+    @Param('id') roomId: string,
+    @Query('date') date?: string,
+  ) {
+    if (date) {
+      console.log(`[RoomsController] date param received for room ${roomId}:`, date);
+      return this.roomsService.findTimeslotsByRoomAndDate(+roomId, date);
+    }
+    console.log(`[RoomsController] no date param; returning all timeslots for room ${roomId}`);
     return this.roomsService.findTimeslotsByRoom(+roomId);
   }
 

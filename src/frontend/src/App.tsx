@@ -12,7 +12,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Staff pages
 import StaffBrowseAvailability from './components/pages/StaffBrowseAvailability';
 import StaffMyBookings from './components/pages/StaffMyBookings';
-import StaffBookingHistory from './components/pages/StaffBookingHistory';
 
 // Registrar pages
 import RegistrarClassroomManagement from './components/pages/RegistrarClassroomManagement';
@@ -95,15 +94,7 @@ const AppContent: React.FC = () => {
               <ProtectedRoute>
                 <StaffMyBookings />
               </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/staff/booking-history" 
-            element={
-              <ProtectedRoute>
-                <StaffBookingHistory />
-              </ProtectedRoute>
-            } 
+            }
           />
           
           {/* Registrar routes */}
