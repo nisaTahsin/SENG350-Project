@@ -73,6 +73,20 @@ ON CONFLICT (room_name, building) DO NOTHING;
 -- Drop the temp table
 DROP TABLE tmp_rooms;
 
+-- ===== AUDIT LOGS (Move this earlier to avoid dependency issues) =====
+CREATE TABLE audit_logs (
+  id BIGSERIAL PRIMARY KEY,
+  actor_id BIGINT REFERENCES users(id),
+  action VARCHAR(50) NOT NULL,
+  target_type VARCHAR(50),
+  target_id BIGINT,
+  metadata JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_audit_actor ON audit_logs(actor_id);
+CREATE INDEX idx_audit_time ON audit_logs(created_at);
+
 
 -- ===== TIMESLOTS =====
 CREATE TABLE timeslots (
@@ -156,20 +170,6 @@ CREATE UNIQUE INDEX ux_bookings_timeslot_confirmed ON bookings(timeslot_id)
 CREATE INDEX idx_bookings_user ON bookings(user_id);
 CREATE INDEX idx_bookings_timeslot_status ON bookings(timeslot_id, status);
 
--- ===== AUDIT LOGS =====
-CREATE TABLE audit_logs (
-  id BIGSERIAL PRIMARY KEY,
-  actor_id BIGINT REFERENCES users(id),
-  action VARCHAR(50) NOT NULL,
-  target_type VARCHAR(50),
-  target_id BIGINT,
-  metadata JSONB,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE INDEX idx_audit_actor ON audit_logs(actor_id);
-CREATE INDEX idx_audit_time ON audit_logs(created_at);
-
 -- ===== MAINTENANCE WINDOWS =====
 CREATE TABLE room_maintenance (
   id BIGSERIAL PRIMARY KEY,
@@ -201,3 +201,12 @@ CREATE TRIGGER trg_rooms_updated
 CREATE TRIGGER trg_timeslots_updated
   BEFORE UPDATE ON timeslots FOR EACH ROW
   EXECUTE PROCEDURE trigger_set_updated_at();
+
+
+-- Show results
+SELECT 'Database initialized successfully!' as status;
+SELECT 'Users created:' as info, COUNT(*) as count FROM users
+UNION ALL
+SELECT 'Rooms created:' as info, COUNT(*) as count FROM rooms
+UNION ALL
+SELECT 'Audit logs created:' as info, COUNT(*) as count FROM audit_logs;
