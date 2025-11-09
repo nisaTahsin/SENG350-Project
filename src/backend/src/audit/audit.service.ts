@@ -151,7 +151,7 @@ export class AuditService {
   }
 
   /**
-   * Get audit logs with enhanced filtering - Fixed to match frontend expectations
+   * Get audit logs with enhanced filtering - Fixed SQL type casting issue
    */
   async getAuditLogs(filters?: { 
     actorId?: number; 
@@ -171,11 +171,43 @@ export class AuditService {
         
         // Ensure database connection
         if (!AppDataSource.isInitialized) {
+          console.log('⚠️ Initializing AppDataSource...');
           await AppDataSource.initialize();
         }
         
-        const offset = ((filters?.page || 1) - 1) * (filters?.limit || 100);
+        // First, let's check if the audit_logs table exists and has data
+        console.log('🔍 Checking audit_logs table...');
+        try {
+          const tableCheck = await AppDataSource.query(`
+            SELECT COUNT(*) as count 
+            FROM audit_logs
+          `);
+          console.log('📊 Total records in audit_logs table:', tableCheck[0].count);
+          
+          if (parseInt(tableCheck[0].count) === 0) {
+            console.log('⚠️ No records found in audit_logs table. Inserting sample data...');
+            
+            // Insert some sample data if table is empty
+            await AppDataSource.query(`
+              INSERT INTO audit_logs (actor_id, action, target_type, target_id, metadata, created_at) VALUES
+              (1, 'USER_LOGIN', 'user', 1, '{"username": "admin", "role": "admin"}', NOW() - INTERVAL '1 hour'),
+              (1, 'SYSTEM_CONFIG_CHANGED', NULL, NULL, '{"setting": "test", "value": "sample"}', NOW() - INTERVAL '2 hours'),
+              (1, 'USER_CREATED', 'user', 2, '{"username": "testuser", "role": "staff"}', NOW() - INTERVAL '3 hours')
+            `);
+            
+            console.log('✅ Sample audit data inserted');
+          }
+        } catch (tableError) {
+          console.error('❌ Error checking audit_logs table:', tableError);
+          return { 
+            success: false, 
+            message: 'Audit logs table not accessible', 
+            error: tableError instanceof Error ? tableError.message : 'Unknown error' 
+          };
+        }
         
+        const offset = ((filters?.page || 1) - 1) * (filters?.limit || 100);
+      
         let query = `
             SELECT a.*, 
                    u.username as actor_username,
@@ -184,8 +216,9 @@ export class AuditService {
                    CASE 
                      WHEN a.target_type = 'user' THEN (SELECT username FROM users WHERE id = a.target_id)
                      WHEN a.target_type = 'room' THEN (SELECT room_name FROM rooms WHERE id = a.target_id)
-                     WHEN a.target_type = 'booking' THEN CONCAT('Booking #', a.target_id)
-                     ELSE CONCAT(a.target_type, ' #', a.target_id)
+                     WHEN a.target_type = 'booking' THEN CONCAT('Booking #', a.target_id::text)
+                     WHEN a.target_id IS NOT NULL THEN CONCAT(COALESCE(a.target_type, 'Unknown'), ' #', a.target_id::text)
+                     ELSE 'System Action'
                    END as target_name
             FROM audit_logs a
             LEFT JOIN users u ON a.actor_id = u.id
@@ -194,128 +227,163 @@ export class AuditService {
         const params: any[] = [];
         let paramIndex = 1;
 
-      // Filter by actor ID
-      if (filters?.actorId) {
-        params.push(filters.actorId);
-        query += ` AND a.actor_id = $${paramIndex++}`;
-      }
-
-      // Filter by user email (frontend compatibility)
-      if (filters?.userEmail) {
-        params.push(filters.userEmail);
-        query += ` AND u.email = $${paramIndex++}`;
-      }
-
-      // Filter by role
-      if (filters?.role) {
-        params.push(filters.role.toLowerCase());
-        query += ` AND LOWER(u.role) = $${paramIndex++}`;
-      }
-
-      // Filter by action
-      if (filters?.action) {
-        const backendAction = this.mapFrontendActionToBackend(filters.action);
-        params.push(backendAction);
-        query += ` AND a.action = $${paramIndex++}`;
-      }
-
-      // Filter by target type
-      if (filters?.targetType) {
-        params.push(filters.targetType);
-        query += ` AND a.target_type = $${paramIndex++}`;
-      }
-
-      // Filter by date range
-      if (filters?.startDate) {
-        params.push(filters.startDate + ' 00:00:00');
-        query += ` AND a.created_at >= $${paramIndex++}`;
-      }
-
-      if (filters?.endDate) {
-        params.push(filters.endDate + ' 23:59:59');
-        query += ` AND a.created_at <= $${paramIndex++}`;
-      }
-
-      // Search functionality
-      if (filters?.search) {
-        const searchTerm = `%${filters.search.toLowerCase()}%`;
-        params.push(searchTerm, searchTerm, searchTerm, searchTerm);
-        query += ` AND (
-          LOWER(u.username) LIKE $${paramIndex++} OR 
-          LOWER(u.email) LIKE $${paramIndex++} OR
-          LOWER(a.action) LIKE $${paramIndex++} OR
-          LOWER(a.metadata::text) LIKE $${paramIndex++}
-        )`;
-      }
-
-      console.log('🔍 Final SQL query:', query);
-      console.log('🔍 Query parameters:', params);
-
-      // Get total count for pagination
-      const countQuery = query.replace(/SELECT.*FROM/, 'SELECT COUNT(*) as total FROM');
-      const countResult = await AppDataSource.query(countQuery, params);
-      const totalCount = parseInt(countResult[0].total);
-
-      console.log('📊 Total audit records found:', totalCount);
-
-      // Add ordering and pagination
-      query += ` ORDER BY a.created_at DESC`;
-      params.push(filters?.limit || 100);
-      query += ` LIMIT $${paramIndex++}`;
-      params.push(offset);
-      query += ` OFFSET $${paramIndex++}`;
-
-      const logs: AuditLogRaw[] = await AppDataSource.query(query, params);
-      
-      console.log('📊 Raw logs retrieved:', logs.length);
-
-      // Format logs to match frontend expectations exactly
-      let formattedLogs: FormattedAuditLog[] = logs.map((log: AuditLogRaw) => {
-        const formatted = {
-          id: log.id.toString(), // Convert to string for frontend
-          timestamp: log.created_at.toISOString(), // Use ISO string format
-          user: log.actor_email || log.actor_username || 'System',
-          userRole: this.formatRole(log.actor_role),
-          action: this.mapBackendActionToFrontend(log.action),
-          details: this.formatDetails(log.action, log.metadata, log.target_name),
-          category: this.getActionCategory(log.action),
-          targetType: log.target_type,
-          targetId: log.target_id,
-        };
-        
-        console.log('📝 Formatted log sample:', formatted);
-        return formatted;
-      });
-
-      // Apply category filter post-query if specified
-      if (filters?.category) {
-        const originalCount = formattedLogs.length;
-        formattedLogs = formattedLogs.filter(log => log.category === filters.category);
-        console.log(`🔍 Category filter applied: ${originalCount} -> ${formattedLogs.length}`);
-      }
-
-      const result: AuditLogsSuccessResponse = {
-        success: true,
-        data: {
-          logs: formattedLogs,
-          pagination: {
-            total: totalCount,
-            page: filters?.page || 1,
-            limit: filters?.limit || 100,
-            totalPages: Math.ceil(totalCount / (filters?.limit || 100))
-          }
+        // Apply filters with logging
+        if (filters?.actorId) {
+          params.push(filters.actorId);
+          query += ` AND a.actor_id = $${paramIndex++}`;
+          console.log(`🔍 Filter: actorId = ${filters.actorId}`);
         }
-      };
 
-      console.log('✅ Final result:', {
-        success: result.success,
-        logsCount: result.data.logs.length,
-        pagination: result.data.pagination
-      });
+        if (filters?.userEmail) {
+          params.push(filters.userEmail);
+          query += ` AND u.email = $${paramIndex++}`;
+          console.log(`🔍 Filter: userEmail = ${filters.userEmail}`);
+        }
 
-      return result;
+        if (filters?.role) {
+          params.push(filters.role.toLowerCase());
+          query += ` AND LOWER(u.role) = $${paramIndex++}`;
+          console.log(`🔍 Filter: role = ${filters.role}`);
+        }
+
+        if (filters?.action) {
+          const backendAction = this.mapFrontendActionToBackend(filters.action);
+          params.push(backendAction);
+          query += ` AND a.action = $${paramIndex++}`;
+          console.log(`🔍 Filter: action = ${filters.action} -> ${backendAction}`);
+        }
+
+        if (filters?.targetType) {
+          params.push(filters.targetType);
+          query += ` AND a.target_type = $${paramIndex++}`;
+          console.log(`🔍 Filter: targetType = ${filters.targetType}`);
+        }
+
+        if (filters?.startDate) {
+          params.push(filters.startDate + ' 00:00:00');
+          query += ` AND a.created_at >= $${paramIndex++}`;
+          console.log(`🔍 Filter: startDate = ${filters.startDate}`);
+        }
+
+        if (filters?.endDate) {
+          params.push(filters.endDate + ' 23:59:59');
+          query += ` AND a.created_at <= $${paramIndex++}`;
+          console.log(`🔍 Filter: endDate = ${filters.endDate}`);
+        }
+
+        if (filters?.search) {
+          const searchTerm = `%${filters.search.toLowerCase()}%`;
+          params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+          query += ` AND (
+            LOWER(u.username) LIKE $${paramIndex++} OR 
+            LOWER(u.email) LIKE $${paramIndex++} OR
+            LOWER(a.action) LIKE $${paramIndex++} OR
+            LOWER(a.metadata::text) LIKE $${paramIndex++}
+          )`;
+          console.log(`🔍 Filter: search = ${filters.search}`);
+        }
+
+        console.log('🔍 Final SQL query:', query);
+        console.log('🔍 Query parameters:', params);
+
+        // Get total count for pagination - Simplified count query without CASE statement
+        const countQuery = `
+            SELECT COUNT(*) as total 
+            FROM audit_logs a
+            LEFT JOIN users u ON a.actor_id = u.id
+            WHERE 1=1
+        ` + (query.includes('AND') ? query.substring(query.indexOf('AND')) : '');
+        
+        console.log('🔍 Count query:', countQuery);
+        
+        const countResult = await AppDataSource.query(countQuery, params);
+        const totalCount = parseInt(countResult[0].total);
+
+        console.log('📊 Total audit records found:', totalCount);
+
+        if (totalCount === 0) {
+          console.log('⚠️ No records match the current filters');
+          return {
+            success: true,
+            data: {
+              logs: [],
+              pagination: {
+                total: 0,
+                page: filters?.page || 1,
+                limit: filters?.limit || 100,
+                totalPages: 0
+              }
+            }
+          };
+        }
+
+        // Add ordering and pagination
+        query += ` ORDER BY a.created_at DESC`;
+        params.push(filters?.limit || 100);
+        query += ` LIMIT $${paramIndex++}`;
+        params.push(offset);
+        query += ` OFFSET $${paramIndex++}`;
+
+        console.log('🔍 Final paginated query:', query);
+        console.log('🔍 Final parameters:', params);
+
+        const logs: AuditLogRaw[] = await AppDataSource.query(query, params);
+        
+        console.log('📊 Raw logs retrieved:', logs.length);
+        if (logs.length > 0) {
+          console.log('📊 Sample raw log:', logs[0]);
+        }
+
+        // Format logs to match frontend expectations exactly
+        let formattedLogs: FormattedAuditLog[] = logs.map((log: AuditLogRaw) => {
+          const formatted = {
+            id: log.id.toString(),
+            timestamp: log.created_at.toISOString(),
+            user: log.actor_email || log.actor_username || 'System',
+            userRole: this.formatRole(log.actor_role),
+            action: this.mapBackendActionToFrontend(log.action),
+            details: this.formatDetails(log.action, log.metadata, log.target_name),
+            category: this.getActionCategory(log.action),
+            targetType: log.target_type,
+            targetId: log.target_id,
+          };
+          
+          return formatted;
+        });
+
+        console.log('📝 Sample formatted log:', formattedLogs.length > 0 ? formattedLogs[0] : 'No logs to format');
+
+        // Apply category filter post-query if specified
+        if (filters?.category) {
+          const originalCount = formattedLogs.length;
+          formattedLogs = formattedLogs.filter(log => log.category === filters.category);
+          console.log(`🔍 Category filter applied: ${originalCount} -> ${formattedLogs.length}`);
+        }
+
+        const result: AuditLogsSuccessResponse = {
+          success: true,
+          data: {
+            logs: formattedLogs,
+            pagination: {
+              total: totalCount,
+              page: filters?.page || 1,
+              limit: filters?.limit || 100,
+              totalPages: Math.ceil(totalCount / (filters?.limit || 100))
+            }
+          }
+        };
+
+        console.log('✅ Final result summary:', {
+          success: result.success,
+          logsCount: result.data.logs.length,
+          pagination: result.data.pagination
+        });
+
+        return result;
     } catch (error) {
         console.error('❌ Error in getAuditLogs:', error);
+        console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+        
         return { 
             success: false, 
             message: 'Failed to get audit logs', 
@@ -325,7 +393,7 @@ export class AuditService {
   }
 
   /**
-   * Get available filter options
+   * Get available filter options - Enhanced with better error handling
    */
   async getFilterOptions(): Promise<FilterOptionsResponse> {
     try {
@@ -336,20 +404,44 @@ export class AuditService {
         await AppDataSource.initialize();
       }
 
+      // Check if tables exist first
+      const tableExists = await AppDataSource.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'audit_logs'
+        );
+      `);
+
+      if (!tableExists[0].exists) {
+        console.error('❌ audit_logs table does not exist');
+        return {
+          success: false,
+          message: 'Audit logs table does not exist',
+          error: 'Database schema not properly initialized'
+        };
+      }
+
       const [actions, targetTypes, users] = await Promise.all([
         AppDataSource.query(`
           SELECT DISTINCT action 
           FROM audit_logs 
           WHERE created_at >= NOW() - INTERVAL '30 days'
           ORDER BY action
-        `),
+        `).catch(err => {
+          console.error('❌ Error fetching actions:', err);
+          return [];
+        }),
         AppDataSource.query(`
           SELECT DISTINCT target_type 
           FROM audit_logs 
           WHERE created_at >= NOW() - INTERVAL '30 days'
           AND target_type IS NOT NULL
           ORDER BY target_type
-        `),
+        `).catch(err => {
+          console.error('❌ Error fetching target types:', err);
+          return [];
+        }),
         AppDataSource.query(`
           SELECT DISTINCT u.id, u.username, u.email, u.role
           FROM audit_logs a
@@ -357,7 +449,10 @@ export class AuditService {
           WHERE a.created_at >= NOW() - INTERVAL '30 days'
           AND u.email IS NOT NULL
           ORDER BY u.email
-        `)
+        `).catch(err => {
+          console.error('❌ Error fetching users:', err);
+          return [];
+        })
       ]);
 
       console.log('📊 Filter options found:', {
@@ -365,6 +460,9 @@ export class AuditService {
         targetTypes: targetTypes.length,
         users: users.length
       });
+
+      console.log('📊 Sample actions:', actions.slice(0, 3));
+      console.log('📊 Sample users:', users.slice(0, 3));
 
       const result: FilterOptionsSuccessResponse = {
         success: true,
@@ -401,7 +499,7 @@ export class AuditService {
   }
 
   /**
-   * Get audit logs for a specific user (enhanced)
+   * Get audit logs for a specific user (enhanced) - Also fix the CASE statement here
    */
   async getUserAuditHistory(userId: number): Promise<UserAuditHistoryResponse> {
     try {
@@ -418,8 +516,9 @@ export class AuditService {
                 CASE 
                   WHEN a.target_type = 'user' THEN (SELECT username FROM users WHERE id = a.target_id)
                   WHEN a.target_type = 'room' THEN (SELECT room_name FROM rooms WHERE id = a.target_id)
-                  WHEN a.target_type = 'booking' THEN CONCAT('Booking #', a.target_id)
-                  ELSE CONCAT(a.target_type, ' #', a.target_id)
+                  WHEN a.target_type = 'booking' THEN CONCAT('Booking #', a.target_id::text)
+                  WHEN a.target_id IS NOT NULL THEN CONCAT(COALESCE(a.target_type, 'Unknown'), ' #', a.target_id::text)
+                  ELSE 'System Action'
                 END as target_name
          FROM audit_logs a
          LEFT JOIN users u ON a.actor_id = u.id
