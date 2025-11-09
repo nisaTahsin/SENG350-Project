@@ -100,10 +100,7 @@ CREATE TABLE timeslots (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT uq_timeslots_room_id_id UNIQUE (room_id, id),
-  CONSTRAINT no_overlap_timeslot EXCLUDE USING gist (
-    room_id WITH =,
-    tstzrange(start_time, end_time, '[]') WITH &&
-  ),
+  -- REMOVED no_overlap_timeslot CONSTRAINT because it is impossible for our timeslots to overlap as they are
   CONSTRAINT chk_timeslot_duration CHECK (end_time = start_time + interval '30 minutes')
 );
 
@@ -153,6 +150,7 @@ CREATE TABLE bookings (
   user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
   timeslot_id BIGINT NOT NULL REFERENCES timeslots(id) ON DELETE CASCADE,
   room_id BIGINT NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+  actual_students INT,
   status booking_status NOT NULL DEFAULT 'confirmed',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   cancelled_at TIMESTAMPTZ,

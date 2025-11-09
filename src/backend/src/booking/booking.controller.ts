@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import * as jwt from 'jsonwebtoken';
+// Declare minimal process typing if @types/node not present (fallback to avoid TS compile errors)
+declare const process: { env: { JWT_SECRET?: string } };
 
 @Controller('booking')
 export class BookingController {
@@ -23,6 +25,7 @@ export class BookingController {
       roomId: number;
       timeslotId: number;
       notes?: string;
+      classSize?: number; // provided by staff users
     },
     @Req() req: any,
   ) {
@@ -44,7 +47,12 @@ export class BookingController {
       
       console.log('User ID from token:', userId);
 
-      const result = await this.bookingService.createBooking(userId, body);
+      // Map classSize to actualStudents for storage
+      const payload: any = { ...body };
+      if (typeof body.classSize === 'number') {
+        payload.actualStudents = body.classSize;
+      }
+      const result = await this.bookingService.createBooking(userId, payload);
       console.log('Booking created successfully:', result);
       return result;
     } catch (error) {

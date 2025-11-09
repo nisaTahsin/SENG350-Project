@@ -55,6 +55,12 @@ export class BookingService {
     if (typeof data.roomId !== 'number' || typeof data.timeslotId !== 'number') {
       throw new ConflictException('roomId and timeslotId are required (numbers)');
     }
+    // Validate actualStudents (class size) if provided
+    if (data.actualStudents !== undefined) {
+      if (typeof data.actualStudents !== 'number' || !Number.isInteger(data.actualStudents) || data.actualStudents <= 0) {
+        throw new ConflictException('actualStudents (class size) must be a positive integer');
+      }
+    }
 
     // Enforce booking window: not in the past and not more than 7 days in advance
     const ts = await this.timeslotRepository.findOne({ where: { id: data.timeslotId } });
@@ -81,6 +87,7 @@ export class BookingService {
         timeslotId: data.timeslotId!,
         status: 'confirmed',
         notes: data.notes,
+        actualStudents: data.actualStudents, // may be undefined
       });
 
       try {
@@ -92,7 +99,7 @@ export class BookingService {
           'BOOKING_CREATED',
           'booking',
           savedBooking.id,
-          { roomId: savedBooking.roomId, timeslotId: savedBooking.timeslotId, status: savedBooking.status }
+          { roomId: savedBooking.roomId, timeslotId: savedBooking.timeslotId, status: savedBooking.status, actualStudents: savedBooking.actualStudents }
         );
         
         return savedBooking;
@@ -103,7 +110,7 @@ export class BookingService {
           'BOOKING_CREATION_FAILED',
           'booking',
           undefined,
-          { roomId: data.roomId, timeslotId: data.timeslotId, error: err.message }
+          { roomId: data.roomId, timeslotId: data.timeslotId, actualStudents: data.actualStudents, error: err.message }
         );
         
         if (err.code === '23505') {

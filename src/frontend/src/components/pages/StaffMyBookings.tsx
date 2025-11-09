@@ -9,6 +9,7 @@ interface ApiBooking {
   status: string; // confirmed | cancelled | pending | etc.
   notes?: string;
   createdAt: string;
+  actualStudents?: number; // class size stored as actualStudents
   // Added relations from extended /booking/me
   room?: {
     id: number;
@@ -45,6 +46,7 @@ interface DisplayBooking {
   roomName: string;
   building: string;
   capacity?: number;
+  actualStudents?: number;
   location?: string;
   avEquipment?: string;
   createdAt: string;
@@ -193,6 +195,7 @@ const StaffMyBookings: React.FC = () => {
             roomName,
             building,
             capacity,
+            actualStudents: b.actualStudents,
             location,
             avEquipment,
             createdAt: b.createdAt,
@@ -251,10 +254,44 @@ const StaffMyBookings: React.FC = () => {
 
   // Date filter now based on timeslot date (fallback to createdAt)
   const isArchived = (b: DisplayBooking) => b.isPast || b.status === 'cancelled';
-  const filteredBookings = (selectedDate
-    ? bookings.filter(b => (b.date || b.createdAt.split('T')[0]) === selectedDate)
-    : bookings)
-    .filter(b => (isArchived(b) ? showPast : true));
+  const filteredBookings = (
+    selectedDate
+      ? bookings.filter(b => (b.date || b.createdAt.split('T')[0]) === selectedDate)
+      : bookings
+  )
+    .filter(b => (isArchived(b) ? showPast : true))
+    .sort((a, b) => {
+      // Use timeslot date if available, else createdAt date part
+      const aDateStr = a.date || a.createdAt.split('T')[0];
+      const bDateStr = b.date || b.createdAt.split('T')[0];
+      // Direct string comparison works for YYYY-MM-DD
+      if (aDateStr < bDateStr) return -1;
+      if (aDateStr > bDateStr) return 1;
+      // If same date, optionally sort by startTime if present
+      if (a.startTime && b.startTime) {
+        const toMinutes = (lbl: string) => {
+          const [time, mer] = lbl.split(' ');
+          let [h, m] = time.split(':').map(x => parseInt(x, 10));
+          if (mer === 'PM' && h !== 12) h += 12;
+          if (mer === 'AM' && h === 12) h = 0;
+          return h * 60 + m;
+        };
+        return toMinutes(a.startTime) - toMinutes(b.startTime);
+      }
+      return 0;
+    });
+
+  // Group by date (preserves sorted order)
+  const groupedByDate: Array<{ date: string; items: DisplayBooking[] }> = [];
+  filteredBookings.forEach((b) => {
+    const d = b.date || b.createdAt.split('T')[0];
+    const last = groupedByDate[groupedByDate.length - 1];
+    if (last && last.date === d) {
+      last.items.push(b);
+    } else {
+      groupedByDate.push({ date: d, items: [b] });
+    }
+  });
 
     if (loading) {
       return (
@@ -300,8 +337,11 @@ const StaffMyBookings: React.FC = () => {
         </div>
       </div>
       <div style={{ marginTop: 16 }}>
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-          {filteredBookings.map((b) => (
+        {groupedByDate.map(group => (
+          <div key={group.date} style={{ marginBottom: 24 }}>
+            <h3 style={{ margin: '0 0 8px 0', color: '#0b3d6e' }}>{prettyYmd(group.date)}</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {group.items.map((b) => (
             <li
               key={b.id}
               style={{
@@ -399,6 +439,9 @@ const StaffMyBookings: React.FC = () => {
                     <strong>Capacity:</strong> {b.capacity ?? 'N/A'}
                   </div>
                   <div style={{ marginBottom: 6 }}>
+                    <strong>Class Size:</strong> {typeof b.actualStudents === 'number' ? b.actualStudents : 'N/A'}
+                  </div>
+                  <div style={{ marginBottom: 6 }}>
                     <strong>AV Equipment:</strong>{' '}
                     {parseAvEquipment(b.avEquipment).length === 0 ? (
                       <span>N/A</span>
@@ -418,8 +461,10 @@ const StaffMyBookings: React.FC = () => {
                 </div>
               )}
             </li>
-          ))}
-        </ul>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </GenericPage>
   );

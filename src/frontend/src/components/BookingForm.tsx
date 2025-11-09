@@ -6,6 +6,7 @@ interface BookingFormProps {
   roomName: string;
   selectedTime: string; // initially requested label (may change if user picks a fallback)
   selectedDate: string;
+  roomCapacity?: number; // newly added optional capacity display
   // If provided, bypass timeslot matching and use this ID directly
   timeslotIdOverride?: number;
   onClose: () => void;
@@ -15,12 +16,15 @@ interface BookingFormProps {
 
 interface BookingData {
   notes: string;
+  classSize: string; // keep as string for controlled input, parse before submit
 }
 
-const BookingForm: React.FC<BookingFormProps> = ({ roomId, roomName, selectedTime, selectedDate, timeslotIdOverride, onClose, onSuccess }) => {
+const BookingForm: React.FC<BookingFormProps> = ({ roomId, roomName, selectedTime, selectedDate, roomCapacity, timeslotIdOverride, onClose, onSuccess }) => {
   const { user } = useAuth();
+  const requireClassSize = (user as any)?.role === 'staff';
   const [bookingData, setBookingData] = useState<BookingData>({
     notes: '',
+    classSize: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -217,14 +221,27 @@ const BookingForm: React.FC<BookingFormProps> = ({ roomId, roomName, selectedTim
       return;
     }
 
+    // Parse and validate class size
+    const sizeNum = parseInt(bookingData.classSize, 10);
+    if (requireClassSize) {
+      if (!bookingData.classSize || isNaN(sizeNum) || sizeNum <= 0) {
+        setError('Class size must be a positive number');
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const token = localStorage.getItem('authToken');
       
-      const bookingPayload = {
+      const bookingPayload: any = {
         roomId: Number(roomId),
         timeslotId: Number(timeslotId),
         notes: bookingData.notes,
       };
+      if (!isNaN(sizeNum) && sizeNum > 0) {
+        bookingPayload.classSize = sizeNum;
+      }
       
       console.log('Creating booking with payload:', bookingPayload);
       console.log('roomId type:', typeof roomId, 'value:', roomId);
@@ -285,43 +302,35 @@ const BookingForm: React.FC<BookingFormProps> = ({ roomId, roomName, selectedTim
         <h2 style={{ marginTop: 0, marginBottom: '1rem' }}>
           Book Room: {roomName}
         </h2>
-        <p style={{ marginBottom: '1rem', color: '#666' }}>
-          <strong>Selected Time:</strong> {effectiveTime}
+        <p style={{ marginBottom: '1rem', color: '#666', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <span><strong>Selected Time:</strong> {effectiveTime}</span>
+          {typeof roomCapacity === 'number' && roomCapacity > 0 && (
+            <span><strong>Room Capacity:</strong> {roomCapacity}</span>
+          )}
         </p>
-
-        {/* Lightweight debug toggle for visibility when matching fails */}
-        <div style={{ marginBottom: '0.5rem' }}>
-          <button
-            type="button"
-            onClick={() => setShowDebug(v => !v)}
-            style={{
-              padding: '2px 6px',
-              border: '1px solid #ccc',
-              borderRadius: 4,
-              background: '#f7f7f7',
-              cursor: 'pointer',
-              fontSize: 12
-            }}
-          >
-            {showDebug ? 'Hide debug' : 'Show debug'}
-          </button>
-        </div>
-        {showDebug && (
-          <div style={{ background: '#fafafa', border: '1px dashed #ccc', borderRadius: 6, padding: 8, marginBottom: 12 }}>
-            <div style={{ fontSize: 12, color: '#333' }}>
-              <div><strong>Available dates:</strong> {debugAvailableDates.join(', ') || '(none)'}</div>
-              <div><strong>Available times (24h):</strong> {debugAvailableTimes.join(', ') || '(none)'}</div>
-              {debugSample.length > 0 && (
-                <details style={{ marginTop: 6 }}>
-                  <summary style={{ cursor: 'pointer' }}>Sample of timeslots</summary>
-                  <pre style={{ fontSize: 11, whiteSpace: 'pre-wrap' }}>{JSON.stringify(debugSample, null, 2)}</pre>
-                </details>
-              )}
-            </div>
-          </div>
-        )}
-
+        
         <form onSubmit={handleSubmit}>
+          {(
+            <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="classSize" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              Class Size:
+            </label>
+            <input
+              id="classSize"
+              type="number"
+              min={1}
+              value={bookingData.classSize}
+              onChange={(e) => setBookingData({ ...bookingData, classSize: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                fontSize: '1rem'
+              }}
+            />
+          </div>
+          )}
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="notes" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
               Notes (Optional):

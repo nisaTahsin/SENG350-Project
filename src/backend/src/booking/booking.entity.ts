@@ -12,6 +12,10 @@ export class Booking {
   @Column({ name: 'notes', type: 'varchar', length: 500, nullable: true })
   notes?: string;
 
+  // number of students for the class occupying the room (entered by staff when booking)
+  @Column({ name: 'actual_students', type: 'int', nullable: true })
+  actualStudents?: number;
+
   // link to user who made the booking
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
@@ -32,7 +36,7 @@ export class Booking {
   status!: 'pending' | 'confirmed' | 'cancelled';
 
   // timeslot (1h slot) pointer — canonical for room+hour
-  @ManyToOne(() => Timeslot, (timeslot) => timeslot.bookings, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Timeslot, (timeslot: Timeslot) => timeslot.bookings, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'timeslot_id' })
   timeslot!: Timeslot;
 

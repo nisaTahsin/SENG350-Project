@@ -23,6 +23,33 @@ interface TimeslotTableProps {
 const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, onBookRoom, bookingState = {}, selectedDate = '' }) => {
   console.log('TimeslotTable received bookingState:', bookingState);
   
+  // Determine if a given time on selectedDate is in the past (local time)
+  const isPastSlot = (timeLabel: string, ymd: string): boolean => {
+    if (!ymd) return false;
+
+    const m = timeLabel.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!m) return false;
+    let hour = parseInt(m[1], 10);
+    const minute = parseInt(m[2], 10);
+    const mer = m[3].toUpperCase();
+    if (mer === 'AM' && hour === 12) hour = 0;
+    if (mer === 'PM' && hour !== 12) hour += 12;
+
+    // Build a Date for the slot start in local time
+    const [y, mo, d] = ymd.split('-').map((v) => parseInt(v, 10));
+    const slot = new Date(y, mo - 1, d, hour, minute, 0, 0);
+    const now = new Date();
+
+    // If the selected date is before today, it's definitely past; if after, definitely not past
+    const todayYmd = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const selectedYmd = new Date(y, mo - 1, d);
+    if (selectedYmd < todayYmd) return true;
+    if (selectedYmd > todayYmd) return false;
+
+    // Same day: compare time start against now
+    return slot.getTime() < now.getTime();
+  };
+  
   const timeColStyle: React.CSSProperties = {
     border: '1px solid #ccc',
     padding: '4px',
@@ -84,13 +111,14 @@ const TimeslotTable: React.FC<TimeslotTableProps> = ({ times, rooms, bookings, o
                 const bookingKey = `${room.id}-${time}-${selectedDate}`;
                 const isBooked = bookingState[bookingKey] || false;
                 
+                const past = isPastSlot(time, selectedDate);
                 return (
                   <td key={room.id} style={{ border: '1px solid #ccc', padding: 12, background: isBooked ? '#d4edda' : '#fff', fontSize: 13, textAlign: 'center' }}>
                     {isBooked ? (
                       <span style={{ color: '#155724', fontWeight: 'bold', fontSize: '12px' }}>
                         ✓ Booked
                       </span>
-                    ) : onBookRoom ? (
+                    ) : onBookRoom && !past ? (
                       <button
                         onClick={() => onBookRoom(room.id, room.name, time)} // Pass the actual room ID and name
                         style={{

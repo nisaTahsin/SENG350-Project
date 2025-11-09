@@ -41,9 +41,12 @@ const StaffBrowseAvailability: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<string>('');
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  // Earliest selectable date is tomorrow (cannot browse/book today)
+  const tomorrow = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })();
+  const maxSelectable = (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0]; })(); // window tomorrow .. tomorrow+6
+  const [selectedDate, setSelectedDate] = useState<string>(tomorrow);
   const [showBookingForm, setShowBookingForm] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<{ id: number; name: string; time: string } | null>(null);
+  const [selectedRoom, setSelectedRoom] = useState<{ id: number; name: string; time: string; capacity: number } | null>(null);
   const [selectedTimeslotId, setSelectedTimeslotId] = useState<number | null>(null);
   // Booking state now reflects server-confirmed bookings for the selected date/building
   const bookingStateRef = useRef<{[key: string]: boolean}>({});
@@ -325,8 +328,16 @@ const StaffBrowseAvailability: React.FC = () => {
          }
 
         const handleBookRoom = (roomId: number, roomName: string, time: string) => {
+          // Guard (should never trigger via UI) against booking before tomorrow
+          if (selectedDate < tomorrow) {
+            console.warn('Attempted booking for disallowed date', selectedDate);
+            return;
+          }
           const norm = normalizeTimeLabel(time);
-          setSelectedRoom({ id: roomId, name: roomName, time: norm });
+          // Lookup capacity from current building rooms
+          const roomObj = buildingRooms.find(r => r.id === roomId);
+          const capacity = roomObj ? roomObj.capacity : 0;
+          setSelectedRoom({ id: roomId, name: roomName, time: norm, capacity });
           const directKey = `${roomId}-${norm}-${selectedDate}`;
           let id: number | null = typeof timeslotIdMap[directKey] === 'number' ? timeslotIdMap[directKey] : null;
           if (id === null) {
@@ -391,18 +402,13 @@ const StaffBrowseAvailability: React.FC = () => {
             value={selectedDate}
             onChange={e => {
               const picked = e.target.value;
-              const todayStr = new Date().toISOString().split('T')[0];
-              const maxDate = new Date();
-              maxDate.setDate(maxDate.getDate() + 6); // inclusive 7-day window (today + 6)
-              const maxStr = maxDate.toISOString().split('T')[0];
-              if (picked > maxStr) {
-                // Ignore selections beyond allowed range
-                return;
-              }
+              // enforce [tomorrow, maxSelectable]
+              if (picked < tomorrow) return;
+              if (picked > maxSelectable) return;
               setSelectedDate(picked);
             }}
-            min={new Date().toISOString().split('T')[0]}
-            max={(() => { const d = new Date(); d.setDate(d.getDate() + 6); return d.toISOString().split('T')[0]; })()}
+            min={tomorrow}
+            max={maxSelectable}
             style={{ padding: '4px 8px', fontSize: '1rem', marginRight: 8 }}
           />
         </div>
@@ -421,9 +427,6 @@ const StaffBrowseAvailability: React.FC = () => {
         </div>
       </div>
              <div style={{ marginTop: 8 }}>
-               <div style={{ marginBottom: '8px', fontSize: '0.85rem', color: '#555' }}>
-                 {bookingsLoading ? 'Refreshing bookings…' : 'Showing confirmed bookings from server'}
-               </div>
                <TimeslotTable 
                  times={times} 
                  rooms={filteredRooms} 
@@ -440,6 +443,7 @@ const StaffBrowseAvailability: React.FC = () => {
                   roomName={selectedRoom.name}
                   selectedTime={selectedRoom.time}
                   selectedDate={selectedDate}
+                  roomCapacity={selectedRoom.capacity}
                   timeslotIdOverride={selectedTimeslotId ?? undefined}
                   onClose={() => {
                     setShowBookingForm(false);
