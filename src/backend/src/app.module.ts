@@ -7,6 +7,7 @@ import { AppDataSource } from './data-source';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AuditModule } from './audit/audit.module';
+import { TimeslotModule } from './timeslot/timeslot.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AuditModule } from './audit/audit.module';
     MaintenanceModule,
     AnalyticsModule,
     AuditModule,
+    TimeslotModule,
   ],
 })
 export class AppModule {}
