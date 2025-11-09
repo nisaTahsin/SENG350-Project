@@ -2,6 +2,12 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Getting Started
+
+First, install the project dependencies:
+
+### 'npm install'
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -38,6 +44,70 @@ If you aren’t satisfied with the build tool and configuration choices, you can
 Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
 You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+
+## Project Structure
+
+frontend/
+├── public/          # Static assets (index.html, favicon, images)
+├── src/             # React source code
+│   ├── components/  # Reusable React components
+│   ├── contexts/    # React contexts for state management
+│   ├── pages/       # Application pages for routing
+│   │   ├── AccountManagement.tsx
+│   │   ├── AdminAuditRecordsTable.tsx
+│   │   ├── AdminDashboard.tsx
+│   │   ├── AdminPermissionsTable.tsx
+│   │   ├── AdminSystemConfigurationTable.tsx
+│   │   ├── AdminSystemHealthTable.tsx
+│   │   ├── BlockedAccount.tsx
+│   │   ├── BookingForm.tsx
+│   │   ├── Dashboard.css
+│   │   ├── ErrorBoundary.tsx
+│   │   ├── GenericPage.css
+│   │   ├── GenericPage.tsx
+│   │   ├── Login.css
+│   │   ├── Login.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   ├── RegistrarAccountManagementTable.tsx
+│   │   ├── RegistrarDashboard.tsx
+│   │   ├── StaffDashboard.tsx
+│   │   ├── TimeslotTable.tsx
+│   │   └── UserBookings.tsx
+├── App.css           # Global app styles
+├── App.test.tsx      # App test file
+├── App.tsx           # Main App component
+├── index.css         # Global styles
+├── index.tsx         # React DOM entry point
+├── logo.svg          # Application logo
+├── react-app-env.d.ts# React TypeScript environment definitions
+├── reportWebVitals.ts# Web Vitals monitoring
+└── setupTests.ts     # Test setup configuration
+
+
+## Notable Libraries
+
+- `recharts` → for charts and graphs
+- `axios` → for API calls to backend
+- `react-router-dom` → for client-side routing
+
+## Pages Overview
+
+| Page | Description |
+|------|-------------|
+| AdminAuditRecords.tsx | Admin view for audit records |
+| AdminDatabase.tsx | Admin view for database navigation and actions |
+| AdminMonitoring.tsx | Admin monitoring dashboard |
+| AdminPermissions.tsx | Admin can manage and block user permissions |
+| AdminScheduleIntegrity.tsx | Admin page for schedule validation |
+| AdminSystemConfig.tsx | Admin system configuration dashboard |
+| AdminSystemHealth.tsx | Admin system health dashboard |
+| RegistrarAccountManagement.tsx | Registrar account management interface |
+| RegistrarClassroomManagement.tsx | Registrar classroom management |
+| RegistrarEscalations.tsx | Registrar escalation handling |
+| RegistrarStatisticsLogs.tsx | Registrar statistics and logs dashboard |
+| RegistrarTimeSlotManagement.tsx | Time slot management for registrar and staff |
+| StaffBrowseAvailability.tsx | Staff view to browse availability |
+| StaffMyBookings.tsx | Staff view of personal bookings |
 
 ## Learn More
 
