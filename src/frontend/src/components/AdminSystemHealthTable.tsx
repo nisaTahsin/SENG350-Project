@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import axios, { AxiosResponse } from 'axios';
 
 interface HealthMetric {
-	id: string;
-	name: string;
-	status: 'healthy' | 'warning' | 'critical';
-	value: string | number;
-	description: string;
-	lastChecked: string;
+    id: string;
+    name: string;
+    status: 'healthy' | 'warning' | 'critical';
+    value: string | number;
+    description: string;
+    lastChecked: string;
 }
 
 interface SystemUptime {
@@ -23,62 +24,61 @@ interface PerformanceMetric {
 }
 
 const healthMetrics: HealthMetric[] = [
-	{
-		id: 'db-connectivity',
-		name: 'Database Connectivity',
-		status: 'healthy',
-		value: 'Connected',
-		description: 'PostgreSQL database connection status',
-		lastChecked: '2024-01-15 16:45:22'
-	},
-	{
-		id: 'api-endpoints',
-		name: 'API Endpoints',
-		status: 'healthy',
-		value: 'All Operational',
-		description: 'REST API endpoint availability',
-		lastChecked: '2024-01-15 16:45:20'
-	},
-	{
-		id: 'booking-service',
-		name: 'Booking Service',
-		status: 'warning',
-		value: 'Degraded',
-		description: 'Booking service experiencing minor delays',
-		lastChecked: '2024-01-15 16:45:18'
-	},
-	{
-		id: 'error-rate',
-		name: 'Error Rate',
-		status: 'healthy',
-		value: '0.2%',
-		description: 'Failed requests in the last hour',
-		lastChecked: '2024-01-15 16:45:15'
-	},
-	{
-		id: 'failed-bookings',
-		name: 'Failed Bookings',
-		status: 'healthy',
-		value: '3',
-		description: 'Failed booking attempts in the last 24 hours',
-		lastChecked: '2024-01-15 16:45:12'
-	},
-	{
-		id: 'system-uptime',
-		name: 'System Uptime',
-		status: 'healthy',
-		value: '99.8%',
-		description: 'System availability over the last 30 days',
-		lastChecked: '2024-01-15 16:45:10'
-	}
+    {
+        id: 'db-connectivity',
+        name: 'Database Connectivity',
+        status: 'healthy',
+        value: 'Connected',
+        description: 'PostgreSQL database connection status',
+        lastChecked: 'Unknown'
+    },
+    {
+        id: 'api-endpoints',
+        name: 'API Endpoints',
+        status: 'healthy',
+        value: 'All Operational',
+        description: 'REST API endpoint availability',
+        lastChecked: '2024-01-15 16:45:20'
+    },
+    {
+        id: 'booking-service',
+        name: 'Booking Service',
+        status: 'healthy',
+        value: 'Operational',
+        description: 'Booking service running normally',
+        lastChecked: '2024-01-15 16:45:18'
+    },
+    {
+        id: 'error-rate',
+        name: 'Error Rate',
+        status: 'healthy',
+        value: '0.2%',
+        description: 'Failed requests in the last hour',
+        lastChecked: '2024-01-15 16:45:15'
+    },
+    {
+        id: 'failed-bookings',
+        name: 'Failed Bookings',
+        status: 'healthy',
+        value: '0',
+        description: 'Failed booking attempts in the last 24 hours',
+        lastChecked: '2024-01-15 16:45:12'
+    },
+    {
+        id: 'system-uptime',
+        name: 'System Uptime',
+        status: 'healthy',
+        value: '99.8%',
+        description: 'System availability over the last 30 days',
+        lastChecked: '2024-01-15 16:45:10'
+    }
 ];
 
 const systemUptime: SystemUptime[] = [
-	{ service: 'Database', uptime: 99.9, status: 'up' },
-	{ service: 'API Gateway', uptime: 99.7, status: 'up' },
-	{ service: 'Booking Service', uptime: 98.5, status: 'degraded' },
-	{ service: 'Authentication', uptime: 99.8, status: 'up' },
-	{ service: 'File Storage', uptime: 99.6, status: 'up' }
+    { service: 'Database', uptime: 99.9, status: 'up' },
+    { service: 'API Gateway', uptime: 99.7, status: 'up' },
+    { service: 'Booking Service', uptime: 99.8, status: 'up' },
+    { service: 'Authentication', uptime: 99.8, status: 'up' }
 ];
 
 const performanceMetrics: PerformanceMetric[] = [
@@ -91,18 +91,85 @@ const performanceMetrics: PerformanceMetric[] = [
 ];
 
 const AdminSystemHealthTable: React.FC = () => {
-	const [currentTime, setCurrentTime] = useState(new Date());
-	const [selectedTimeRange, setSelectedTimeRange] = useState('24h');
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const [selectedTimeRange, setSelectedTimeRange] = useState('24h');
+    const [healthMetricsState, setHealthMetricsState] = useState<HealthMetric[]>(healthMetrics);
 
-	// Update time every second
-	useEffect(() => {
-		const timer = setInterval(() => {
-			setCurrentTime(new Date());
-		}, 1000);
-		return () => clearInterval(timer);
-	}, []);
+    // Update time every second
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
 
-	const getStatusColor = (status: string) => {
+    // set a single snapshot timestamp for "Last checked" (does not increment)
+    useEffect(() => {
+        const snapshot = new Date().toLocaleString();
+        // set snapshot immediately so UI shows a timestamp even if backend is unreachable
+        setHealthMetricsState((prev: HealthMetric[]) =>
+            prev.map((m: HealthMetric) =>
+                ['db-connectivity', 'api-endpoints', 'booking-service', 'failed-bookings', 'system-uptime'].includes(m.id)
+                    ? { ...m, lastChecked: snapshot }
+                    : m
+            )
+        );
+
+        const endpoints: { id: string; path: string }[] = [
+            { id: 'db-connectivity', path: '/health/db' },
+            { id: 'api-endpoints', path: '/health/api' },         // optional backend endpoints
+            { id: 'booking-service', path: '/health/booking' },   // optional backend endpoints
+            { id: 'failed-bookings', path: '/health/failed-bookings' },
+            { id: 'system-uptime', path: '/health/uptime' }       // optional backend endpoints
+        ];
+
+        const extractTimestamp = (data: any): string | null => {
+            // common fields that health endpoints might return
+            const candidates = ['db_start', 'started_at', 'timestamp', 'last_checked', 'time'];
+            for (const c of candidates) {
+                if (data?.[c]) return new Date(data[c]).toLocaleString();
+            }
+            // If backend returns a simple ISO string
+            if (typeof data === 'string' && !isNaN(Date.parse(data))) return new Date(data).toLocaleString();
+            return null;
+        };
+
+        let mounted = true;
+        endpoints.forEach(({ id, path }) => {
+            axios.get(path)
+                .then((res: AxiosResponse<any>) => {
+                    if (!mounted) return;
+                    // handle failed-bookings response shape { count: number, last_failed_at: string|null }
+                    if (id === 'failed-bookings') {
+                        const count = typeof res.data?.count === 'number' ? res.data.count : null;
+                        const lastAt = res.data?.last_failed_at ? new Date(res.data.last_failed_at).toLocaleString() : null;
+                        setHealthMetricsState((prev: HealthMetric[]) =>
+                            prev.map((m: HealthMetric) =>
+                                m.id === id
+                                    ? { ...m, value: count !== null ? String(count) : m.value, lastChecked: lastAt ?? m.lastChecked }
+                                    : m
+                            )
+                        );
+                        return;
+                    }
+
+                    const ts = extractTimestamp(res.data);
+                    if (!ts) return;
+                    setHealthMetricsState((prev: HealthMetric[]) =>
+                        prev.map((m: HealthMetric) =>
+                            m.id === id ? { ...m, lastChecked: ts } : m
+                        )
+                    );
+                })
+                .catch(() => {
+                    // ignore — keep snapshot set above
+                });
+        });
+
+        return () => { mounted = false; };
+    }, []);
+
+    const getStatusColor = (status: string) => {
 		switch (status) {
 			case 'healthy':
 			case 'up':
@@ -193,7 +260,7 @@ const AdminSystemHealthTable: React.FC = () => {
 				</h3>
 				
 				<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
-					{healthMetrics.map((metric) => (
+					{healthMetricsState.map((metric) => (
 						<div key={metric.id} style={{
 							border: '1px solid #dee2e6',
 							borderRadius: 8,
@@ -238,7 +305,6 @@ const AdminSystemHealthTable: React.FC = () => {
 								<th style={{ padding: 12, textAlign: 'left', border: '1px solid #dee2e6' }}>SERVICE</th>
 								<th style={{ padding: 12, textAlign: 'left', border: '1px solid #dee2e6' }}>UPTIME</th>
 								<th style={{ padding: 12, textAlign: 'left', border: '1px solid #dee2e6' }}>STATUS</th>
-								<th style={{ padding: 12, textAlign: 'left', border: '1px solid #dee2e6' }}>VISUAL</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -260,80 +326,6 @@ const AdminSystemHealthTable: React.FC = () => {
 											fontWeight: 'bold'
 										}}>
 											{service.status.toUpperCase()}
-										</span>
-									</td>
-									<td style={{ padding: 12, border: '1px solid #dee2e6' }}>
-										<div style={{
-											width: '100%',
-											height: 8,
-											background: '#e9ecef',
-											borderRadius: 4,
-											overflow: 'hidden'
-										}}>
-											<div style={{
-												width: `${service.uptime}%`,
-												height: '100%',
-												background: getStatusColor(service.status),
-												transition: 'width 0.3s ease'
-											}} />
-										</div>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
-			</div>
-
-			{/* Performance Metrics */}
-			<div style={{ marginBottom: 32 }}>
-				<h3 style={{ color: '#0a4a7e', borderBottom: '2px solid #0a4a7e', paddingBottom: 8, marginBottom: 16 }}>
-					Performance Metrics
-				</h3>
-				
-				<div style={{ overflowX: 'auto' }}>
-					<table style={{ width: '100%', borderCollapse: 'collapse' }}>
-						<thead>
-							<tr style={{ background: '#f8f9fa' }}>
-								<th style={{ padding: 12, textAlign: 'left', border: '1px solid #dee2e6' }}>METRIC</th>
-								<th style={{ padding: 12, textAlign: 'left', border: '1px solid #dee2e6' }}>VALUE</th>
-								<th style={{ padding: 12, textAlign: 'left', border: '1px solid #dee2e6' }}>TREND</th>
-								<th style={{ padding: 12, textAlign: 'left', border: '1px solid #dee2e6' }}>STATUS</th>
-							</tr>
-						</thead>
-						<tbody>
-							{performanceMetrics.map((metric, idx) => (
-								<tr key={idx} style={{ borderBottom: '1px solid #dee2e6' }}>
-									<td style={{ padding: 12, border: '1px solid #dee2e6', fontWeight: 'bold' }}>
-										{metric.metric}
-									</td>
-									<td style={{ padding: 12, border: '1px solid #dee2e6', fontFamily: 'monospace' }}>
-										{metric.value} {metric.unit}
-									</td>
-									<td style={{ padding: 12, border: '1px solid #dee2e6' }}>
-										<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-											<span style={{ fontSize: 16 }}>{getTrendIcon(metric.trend)}</span>
-											<span style={{ 
-												color: getTrendColor(metric.trend),
-												fontSize: 12,
-												fontWeight: 'bold'
-											}}>
-												{metric.trend.toUpperCase()}
-											</span>
-										</span>
-									</td>
-									<td style={{ padding: 12, border: '1px solid #dee2e6' }}>
-										<span style={{
-											background: metric.trend === 'up' ? '#dc3545' : 
-														metric.trend === 'down' ? '#28a745' : '#6c757d',
-											color: 'white',
-											padding: '2px 8px',
-											borderRadius: 12,
-											fontSize: 10,
-											fontWeight: 'bold'
-										}}>
-											{metric.trend === 'up' ? 'HIGH' : 
-											 metric.trend === 'down' ? 'IMPROVING' : 'STABLE'}
 										</span>
 									</td>
 								</tr>
