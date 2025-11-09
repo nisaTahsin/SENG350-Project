@@ -17,9 +17,13 @@ const Login: React.FC = () => {
     setError(null);
     setLoading(true);
     
+    console.log('🔐 Login form submitted:', { username, userType });
+    
     if (username.trim() && password.trim()) {
       try {
         await login(username.trim(), userType, password.trim());
+        
+        console.log('✅ Login successful, navigating to dashboard...');
         
         // Navigate to appropriate dashboard based on user type
         switch (userType) {
@@ -36,7 +40,8 @@ const Login: React.FC = () => {
             navigate('/login');
         }
       } catch (err) {
-        console.error('Login error:', err);
+        console.error('❌ Login error:', err);
+        
         // Check if account is blocked and navigate to blocked account page
         if (err instanceof Error && err.message === 'BLOCKED_ACCOUNT') {
           navigate('/blocked-account');
@@ -44,6 +49,8 @@ const Login: React.FC = () => {
           setError(err instanceof Error ? err.message : 'Login failed');
         }
       }
+    } else {
+      setError('Please enter both username and password');
     }
     setLoading(false);
   };
@@ -55,6 +62,7 @@ const Login: React.FC = () => {
           <h1 className="page-title">UVIC Classroom Booking Page</h1>
           <h2>Welcome! Please Login</h2>
         </div>
+        
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <label htmlFor="username">Username:</label>
