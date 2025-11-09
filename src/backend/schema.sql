@@ -73,6 +73,20 @@ ON CONFLICT (room_name, building) DO NOTHING;
 -- Drop the temp table
 DROP TABLE tmp_rooms;
 
+-- ===== AUDIT LOGS (Move this earlier to avoid dependency issues) =====
+CREATE TABLE audit_logs (
+  id BIGSERIAL PRIMARY KEY,
+  actor_id BIGINT REFERENCES users(id),
+  action VARCHAR(50) NOT NULL,
+  target_type VARCHAR(50),
+  target_id BIGINT,
+  metadata JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_audit_actor ON audit_logs(actor_id);
+CREATE INDEX idx_audit_time ON audit_logs(created_at);
+
 
 -- ===== TIMESLOTS =====
 CREATE TABLE timeslots (
@@ -156,20 +170,6 @@ CREATE UNIQUE INDEX ux_bookings_timeslot_confirmed ON bookings(timeslot_id)
 CREATE INDEX idx_bookings_user ON bookings(user_id);
 CREATE INDEX idx_bookings_timeslot_status ON bookings(timeslot_id, status);
 
--- ===== AUDIT LOGS =====
-CREATE TABLE audit_logs (
-  id BIGSERIAL PRIMARY KEY,
-  actor_id BIGINT REFERENCES users(id),
-  action VARCHAR(50) NOT NULL,
-  target_type VARCHAR(50),
-  target_id BIGINT,
-  metadata JSONB,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE INDEX idx_audit_actor ON audit_logs(actor_id);
-CREATE INDEX idx_audit_time ON audit_logs(created_at);
-
 -- ===== MAINTENANCE WINDOWS =====
 CREATE TABLE room_maintenance (
   id BIGSERIAL PRIMARY KEY,
@@ -201,3 +201,26 @@ CREATE TRIGGER trg_rooms_updated
 CREATE TRIGGER trg_timeslots_updated
   BEFORE UPDATE ON timeslots FOR EACH ROW
   EXECUTE PROCEDURE trigger_set_updated_at();
+
+
+-- Ensure audit_logs table has some test data
+INSERT INTO audit_logs (actor_id, action, target_type, target_id, metadata, created_at) VALUES
+(1, 'USER_LOGIN', 'user', 1, '{"username": "admin", "role": "admin", "timestamp": "2024-11-09T10:00:00Z"}', NOW() - INTERVAL '1 hour'),
+(2, 'USER_LOGIN', 'user', 2, '{"username": "registrar", "role": "registrar", "timestamp": "2024-11-09T09:30:00Z"}', NOW() - INTERVAL '1.5 hours'),
+(3, 'USER_LOGIN', 'user', 3, '{"username": "staff", "role": "staff", "timestamp": "2024-11-09T09:00:00Z"}', NOW() - INTERVAL '2 hours'),
+(1, 'USER_CREATED', 'user', 4, '{"username": "newstaff", "role": "staff", "created_by": "admin"}', NOW() - INTERVAL '3 hours'),
+(1, 'USER_ROLE_CHANGED', 'user', 2, '{"username": "registrar", "old_role": "staff", "new_role": "registrar"}', NOW() - INTERVAL '4 hours'),
+(2, 'USER_BLOCKED_WITH_REASON', 'user', 4, '{"username": "newstaff", "reason": "Policy violation"}', NOW() - INTERVAL '5 hours'),
+(1, 'SYSTEM_CONFIG_CHANGED', NULL, NULL, '{"setting": "max_bookings_per_day", "old_value": "2", "new_value": "3"}', NOW() - INTERVAL '6 hours')
+ON CONFLICT DO NOTHING;
+
+-- Show final status
+SELECT 'Audit logs created:' as info, COUNT(*) as count FROM audit_logs;
+
+-- Show results
+SELECT 'Database initialized successfully!' as status;
+SELECT 'Users created:' as info, COUNT(*) as count FROM users
+UNION ALL
+SELECT 'Rooms created:' as info, COUNT(*) as count FROM rooms
+UNION ALL
+SELECT 'Audit logs created:' as info, COUNT(*) as count FROM audit_logs;

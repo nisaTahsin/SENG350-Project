@@ -13,7 +13,19 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  
+  // Enable CORS for frontend
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',  // React frontend
+      'http://localhost:4000',  // Backend
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:4000'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
   
   // Auto-import rooms on startup if database is empty
   const roomImportService = app.get(RoomImportService);
@@ -31,8 +43,7 @@ async function bootstrap() {
     console.log(`Database already contains ${roomCount} rooms`);
   }
   
-  const port = process.env.PORT || 4000;
-  await app.listen(port);
-  console.log(`Server running on http://localhost:${port}`);
+  await app.listen(4000, '0.0.0.0'); // Listen on port 4000
+  console.log('Backend server running on http://localhost:4000');
 }
 bootstrap();

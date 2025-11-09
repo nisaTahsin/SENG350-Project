@@ -8,6 +8,8 @@ import { MaintenanceModule } from './maintenance/maintenance.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AuditModule } from './audit/audit.module';
 import { TimeslotModule } from './timeslot/timeslot.module';
+import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -19,6 +21,11 @@ import { TimeslotModule } from './timeslot/timeslot.module';
     AnalyticsModule,
     AuditModule,
     TimeslotModule,
+    AuthModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      signOptions: { expiresIn: '24h' },
+    }),
   ],
 })
 export class AppModule {}
