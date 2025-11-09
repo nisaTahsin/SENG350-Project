@@ -1,6 +1,6 @@
 # UVIC Classroom Booking System
 
-
+This document details important information for running, using, and understanding the system.
 
 ## Team Members
 
@@ -12,13 +12,13 @@
 | V00984911 | Anitta Varghese |
 | V01033161 | Taqdeer Kaur Sandhu|
 
-## Quick Start
+## 1.0 Quick Start
 
-### Prerequisites
+### 1.1 Prerequisites
 - Docker and Docker Compose
 - Node.js (for local development)
 
-### Running the Application
+### 1.2 Running the Application
 
 1. **Clone the repository:**
    ```bash
@@ -30,31 +30,30 @@
    ```bash
    docker compose up
    ```
-3. **Troubleshooting:**
+3. **Access the application:**
+Just go to localhost:3000 on your web browser to begin interacting with the system
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:4000
+
+4. **Troubleshooting:**
 If you are having issues with database inconsistencies/errors, try using these commands:
    ```bash
    docker compose down -v
    docker compose up --build
    ```
 
+### 1.3 Test User Credentials
 
-4. **Access the application:**
-Just go to localhost:3000 on your web browser to begin interacting with the system
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:4000
+Please login with one of the following available test users :
 
-### Test User Credentials
+| Username | Password | Role |
+|----------|----------|------|
+| `staff` | `test123` | Staff |
+| `staffA` | `test123` | Staff |
+| `registrar` | `test123` | Registrar |
+| `admin` | `test123` | Admin |
 
-The following test users are available for testing different user roles:
-
-| Username | Password | Role | Description |
-|----------|----------|------|-------------|
-| `staff` | `test123` | Staff | Can browse and book classrooms |
-| `staffA` | `test123` | Staff | Additional staff user |
-| `registrar` | `test123` | Registrar | Registrar-level access |
-| `admin` | `test123` | Admin | Administrative access |
-
-### Features
+### 1.4 Features
 
 **All Users:**
 - **User Authentication**: Login with any of the three user roles (staff, registrar, or admin)
@@ -63,23 +62,21 @@ The following test users are available for testing different user roles:
 **Staff:**
 - **Room Browsing**: View available classrooms by building
 - **Room Booking**: Book classrooms in 30-minute sessions a maximum of 7 days into the future
-- **View Bookings**: View bookings (upcoming, passed, and cancelled), filter by date, cancel bookings, and view booking details.
+- **View Bookings**: View bookings (upcoming, passed, and cancelled), filter by date, cancel bookings, and view booking details
 
 **Registrar:**
-- **Feature A**: Description
-- **Feature B**: Description
-- **Feature C**: Description
-
-...
+- **Classroom & Timeslot Management**: Edit classroom information and configure available time slots
+- **Account Management**: Block abusive accounts or manually release bookings
+- **Statistics & System Logs**: View booking statistics, generate reports, and monitor system activity
+- **Manage Schedule Integrity**: View utilization and ensure efficient room usage
 
 **Admin:**
-- **Feature A**: Description
-- **Feature B**: Description
-- **Feature C**: Description
+- **System Configuration**: ADD DESCRIPTION
+- **Audit Records**: View comprehensive audit trails and system records
+- **System Health**: Monitor system performance and health metrics
 
-...
 
-### Available Buildings
+### 1.5 Available Buildings
 
 - Elliot Building
 - MacLaurin Building  
@@ -88,7 +85,9 @@ The following test users are available for testing different user roles:
 - Cornett Building
 - And many more...
 
-### API Endpoints
+## 2.0 Additional Information
+
+### 2.1 API Endpoints
 
 - `GET /users` - List all users
 - `POST /users/login` - User authentication
@@ -97,7 +96,7 @@ The following test users are available for testing different user roles:
 - `POST /booking` - Create a new booking
 - `GET /booking` - List all bookings
 
-### Development
+### 2.2 Development
 
 To run in development mode:
 
@@ -112,5 +111,25 @@ cd src/frontend
 npm install
 npm start
 ```
+
+### 2.3 File Structure Guide
+...
+
+### 2.5 Frontend to Backend Connections
+...
+
+### 2.4 Hardcoded Elements
+
+#### 2.4.1 Admin System Health Data
+Since this system will not be operating like a real booking website, a lot of the system health data is not practical display. 
+The database connection timestamp, number of failed booking attempts, and number of failed requests to the system health are dynamic.
+The hardcoded elements are:
+
+- API Endpoints status
+- Booking Service status
+- Error Rate
+- Failed Bookings
+- System Uptime
+
 
 
