@@ -1,15 +1,7 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid,
-} from "recharts";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import GenericPage from '../GenericPage';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 
 interface RoomUtilization {
   room_name: string;
@@ -19,7 +11,6 @@ interface RoomUtilization {
   avgFill: number;
 }
 
-// Expected API response format
 interface ApiResponse {
   success: boolean;
   message?: string;
@@ -31,7 +22,7 @@ interface ApiResponse {
   }[];
 }
 
-const AdminScheduleIntegrity: React.FC = () => {
+const RegistrarScheduleIntegrity: React.FC = () => {
   const [data, setData] = useState<RoomUtilization[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
@@ -40,20 +31,15 @@ const AdminScheduleIntegrity: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        
         const response = await axios.get<ApiResponse>("http://localhost:4000/analytics/schedule-integrity");
-
-
         if (response.data.success) {
-          const chartData: RoomUtilization[] = response.data.rooms.map((room: ApiResponse["rooms"][number]) => ({
+          const chartData: RoomUtilization[] = response.data.rooms.map((room) => ({
             room_name: room.roomName,
             bookings: room.totalBookings,
             capacity: room.capacity,
             utilizationRate: Number(room.avgFill),
             avgFill: Number(room.avgFill),
           }));
-
           setData(chartData);
         } else {
           setError(response.data.message || "Failed to load data");
@@ -64,14 +50,15 @@ const AdminScheduleIntegrity: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Room Utilization & Schedule Integrity</h1>
-
+    <GenericPage
+      title="Schedule Integrity"
+      description="Room utilization metrics and schedule integrity overview"
+      userType="registrar"
+    >
       {loading ? (
         <p>Loading room utilization data...</p>
       ) : error ? (
@@ -80,10 +67,9 @@ const AdminScheduleIntegrity: React.FC = () => {
         <p>No room utilization data available.</p>
       ) : (
         <>
-          {/* Chart Section */}
-          <div style={{ width: "100%", height: 400, marginBottom: "2rem" }}>
+          <div style={{ width: "100%", height: 360, marginBottom: "1.5rem" }}>
             <ResponsiveContainer>
-              <BarChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+              <BarChart data={data} margin={{ top: 5, right: 25, left: 0, bottom: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="room_name" />
                 <YAxis />
@@ -93,47 +79,36 @@ const AdminScheduleIntegrity: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-
-          {/* Table Section */}
           <table
             style={{
               width: "100%",
               borderCollapse: "collapse",
-              marginTop: "1rem",
-              fontSize: "0.95rem",
+              fontSize: "0.9rem",
             }}
           >
             <thead>
               <tr>
-                <th style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>Room</th>
-                <th style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>Capacity</th>
-                <th style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>Bookings</th>
-                <th style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>Avg Fill (%)</th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd", padding: "6px" }}>Room</th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd", padding: "6px" }}>Capacity</th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd", padding: "6px" }}>Bookings</th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd", padding: "6px" }}>Avg Fill (%)</th>
               </tr>
             </thead>
             <tbody>
               {data.map((room) => (
                 <tr key={room.room_name}>
-                  <td style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>
-                    {room.room_name}
-                  </td>
-                  <td style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>
-                    {room.capacity}
-                  </td>
-                  <td style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>
-                    {room.bookings}
-                  </td>
-                  <td style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>
-                    {room.avgFill}
-                  </td>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "6px" }}>{room.room_name}</td>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "6px" }}>{room.capacity}</td>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "6px" }}>{room.bookings}</td>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "6px" }}>{room.avgFill}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </>
       )}
-    </div>
+    </GenericPage>
   );
 };
 
-export default AdminScheduleIntegrity;
+export default RegistrarScheduleIntegrity;

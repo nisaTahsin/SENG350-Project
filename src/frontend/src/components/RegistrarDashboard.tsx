@@ -37,6 +37,14 @@ const RegistrarDashboard: React.FC = () => {
           <p>View booking statistics, generate reports, and monitor system activity</p>
           <button className="action-button" onClick={() => navigate('/registrar/statistics-logs')}>View Statistics & Logs</button>
         </div>
+
+        <div className="dashboard-card">
+          <h2>Manage Schedule Integrity</h2>
+          <p>View utilization and ensure efficient room usage</p>
+          <button className="action-button" onClick={() => navigate('/registrar/schedule-integrity')}>
+            Manage Schedule Integrity
+          </button>
+        </div>
       </main>
     </div>
   );

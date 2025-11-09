@@ -24,10 +24,9 @@ import RegistrarStatisticsLogs from './components/pages/RegistrarStatisticsLogs'
 import AdminSystemConfig from './components/pages/AdminSystemConfig';
 import AdminAuditRecords from './components/pages/AdminAuditRecords';
 import AdminSystemHealth from './components/pages/AdminSystemHealth';
-import AdminPermissions from './components/pages/AdminPermissions';
 import AdminDatabase from './components/pages/AdminDatabase';
 import AdminMonitoring from './components/pages/AdminMonitoring';
-import AdminScheduleIntegrity from './components/pages/AdminScheduleIntegrity';
+import AdminScheduleIntegrity from './components/pages/RegistrarScheduleIntegrity'; // reused for registrar route now
 import './App.css';
 
 const AppContent: React.FC = () => {
@@ -138,8 +137,17 @@ const AppContent: React.FC = () => {
               </ProtectedRoute>
             } 
           />
+          {/* Registrar schedule integrity (moved from admin) */}
+          <Route 
+            path="/registrar/schedule-integrity" 
+            element={
+              <ProtectedRoute>
+                <AdminScheduleIntegrity />
+              </ProtectedRoute>
+            } 
+          />
           
-          {/* Admin routes */}
+          {/* Admin routes (removed schedule-integrity now moved to registrar) */}
           <Route 
             path="/admin/system-config" 
             element={
@@ -165,14 +173,6 @@ const AppContent: React.FC = () => {
             } 
           />
           <Route 
-            path="/admin/permissions" 
-            element={
-              <ProtectedRoute>
-                <AdminPermissions />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
             path="/admin/database" 
             element={
               <ProtectedRoute>
@@ -185,15 +185,6 @@ const AppContent: React.FC = () => {
             element={
               <ProtectedRoute>
                 <AdminMonitoring />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/admin/schedule-integrity" 
-            element={
-              <ProtectedRoute>
-                <AdminScheduleIntegrity />
               </ProtectedRoute>
             } 
           />

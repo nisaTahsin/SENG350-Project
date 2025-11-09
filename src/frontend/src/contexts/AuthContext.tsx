@@ -56,8 +56,11 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     try {
       console.log('🔐 Attempting login for:', { username, userType });
 
-      // Use the correct backend endpoint
-      const response = await fetch('http://localhost:4000/auth/login', {
+      // Backend login endpoint (align with currently exposed UsersController route)
+      // Note: The backend also has an AuthController in some branches, but the active
+      // server maps POST /users/login. If /auth/login is enabled later, we can switch
+      // back to it or make this configurable via env.
+      const response = await fetch('http://localhost:4000/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,10 +71,21 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
         }),
       });
 
-      const data = await response.json();
+      // Be resilient to non-JSON error responses (e.g., plain text 404)
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (_) {
+        // Fallback to text for better diagnostics
+        const text = await response.text();
+        console.error('📡 Login non-JSON response:', text);
+        if (!response.ok) {
+          throw new Error(text || `HTTP ${response.status}`);
+        }
+      }
       console.log('📡 Login response:', data);
 
-      if (data.success && data.access_token) {
+      if (response.ok && data && data.success && data.access_token) {
         const newUser: User = {
           id: data.user.id.toString(),
           username: data.user.username,
@@ -103,8 +117,9 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
         if (data.message && data.message.includes('Invalid credentials')) {
           throw new Error('Invalid username or password');
         }
-        
-        throw new Error(data.message || 'Login failed');
+        // Prefer server-provided message; fallback to HTTP status text
+        const msg = (data && data.message) ? data.message : (response.statusText || 'Login failed');
+        throw new Error(msg);
       }
     } catch (error) {
       console.error('❌ Login error:', error);

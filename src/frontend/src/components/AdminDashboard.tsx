@@ -53,27 +53,8 @@ const AdminDashboard: React.FC = () => {
           </button>
         </div>
 
-        <div className="dashboard-card">
-          <h2>Manage Schedule Integrity</h2>
-          <p>View utilization and ensure efficient room usage</p>
-          <button
-            className="action-button"
-            onClick={() => navigate('/admin/schedule-integrity')}
-          >
-            Manage Schedule Integrity
-          </button>
-        </div>
+        {/* Schedule Integrity moved to Registrar dashboard */}
 
-        <div className="dashboard-card">
-          <h2>Block Users</h2>
-          <p>Block users who are potentially causing harm to the system</p>
-          <button
-            className="action-button"
-            onClick={() => navigate('/admin/permissions')}
-          >
-            Block Users
-          </button>
-        </div>
       </main>
     </div>
   );
