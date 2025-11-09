@@ -31,12 +31,6 @@ const StaffDashboard: React.FC = () => {
           <p>View and manage your current bookings</p>
           <button className="action-button" onClick={() => navigate('/staff/my-bookings')}>View My Bookings</button>
         </div>
-        
-        <div className="dashboard-card">
-          <h2>Booking History</h2>
-          <p>View your past booking history and records</p>
-          <button className="action-button" onClick={() => navigate('/staff/booking-history')}>View History</button>
-        </div>
       </main>
     </div>
   );
