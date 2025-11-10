@@ -56,11 +56,8 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     try {
       console.log('🔐 Attempting login for:', { username, userType });
 
-      // Backend login endpoint (align with currently exposed UsersController route)
-      // Note: The backend also has an AuthController in some branches, but the active
-      // server maps POST /users/login. If /auth/login is enabled later, we can switch
-      // back to it or make this configurable via env.
-      const response = await fetch('http://localhost:4000/users/login', {
+      // Use the correct backend auth endpoint
+      const response = await fetch('http://localhost:4000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,9 +94,8 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
         setUser(newUser);
         setToken(data.access_token);
         
-        // Store in localStorage with both key names for compatibility
+        // Store in localStorage - use 'token' as primary key to match audit component
         localStorage.setItem('token', data.access_token);
-        localStorage.setItem('authToken', data.access_token); // Keep for backward compatibility
         localStorage.setItem('user', JSON.stringify(newUser));
         
         console.log('✅ Login successful! User:', newUser);
@@ -145,7 +141,6 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     setToken(null);
     
     localStorage.removeItem('token');
-    localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     
     console.log('✅ Logout complete');
