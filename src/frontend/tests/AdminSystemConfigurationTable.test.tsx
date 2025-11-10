@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import AdminSystemConfigurationTable from "../src/components/AdminSystemConfigurationTable";
+import AdminSystemConfigurationTable from "../src/components/pages/admin_pages/admin_components/AdminSystemConfigurationTable";
 
 describe("AdminSystemConfigurationTable", () => {
   it("renders and allows editing a setting", async () => {

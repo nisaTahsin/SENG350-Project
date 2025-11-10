@@ -1,10 +1,10 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import RegistrarClassroomManagement from '../src/components/pages/RegistrarClassroomManagement';
-import RegistrarEscalations from '../src/components/pages/RegistrarEscalations';
-import RegistrarStatisticsLogs from '../src/components/pages/RegistrarStatisticsLogs';
-import RegistrarTimeSlotManagement from '../src/components/pages/RegistrarTimeSlotManagement';
+import RegistrarClassroomManagement from '../src/components/pages/registrar_pages/RegistrarClassroomManagement';
+import RegistrarEscalations from '../src/components/pages/registrar_pages/RegistrarEscalations';
+import RegistrarStatisticsLogs from '../src/components/pages/registrar_pages/RegistrarStatisticsLogs';
+import RegistrarTimeSlotManagement from '../src/components/pages/registrar_pages/RegistrarTimeSlotManagement';
 
 describe('Registrar pages render correctly', () => {
   it('renders Classroom Management page', () => {
