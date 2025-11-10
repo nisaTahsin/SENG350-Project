@@ -144,3 +144,6 @@ Check the API endpoints for authentication and ensure the frontend and backend a
 
 Remove authentication requirements for audit logs
 
+November 8: https://chatgpt.com/share/69119b9b-7d2c-8010-bcbf-9b5253b81ad8
+
+November 9: https://chatgpt.com/share/69119b48-caf4-8010-b47a-3200117d825f
