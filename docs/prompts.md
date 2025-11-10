@@ -106,10 +106,13 @@ Nov 08: Is this file being used anywhere?
 Nov 09: Can you update the file structure diagram in here to match the current file structure within frontend?
 
 *Implementation 2
+Help me implement audit logging in all services such as bookings.service, room.service etc, and change their respective controllers.
 
 What is causing this error in registrar/accountManagement: "ERROR Cannot read properties of undefined (reading 'toLowerCase')"
 
 How would you populate the Admin Permissions page with real user data from the database?
+
+Which parts do I have to remove so that performance metrics and trends no longer show up in System Health for Admin
 
 How would you redirect a blocked user attempting to log in and redirect them to a page that says: "Your account has been blocked..."?
 
@@ -117,7 +120,29 @@ How can you make it so that registrars can only view staff members on the Accoun
 
 How can I filter by blocked users?
 
+How do I resolve authentication errors when logging in as Admin and accessing the audit logs page?
+
 How would I remove every instance of the Registrar/HandleEscalations dashboard piece?
+
+Format requirements.md with proper heading and paragraph formatting
+
+Under PostgreSQL database connection status for Database connectivity, put the last checked timestamp as the time when database is initialized successfully
+
+Put a timestamp like in last updated for database connection last checked. do the same for the API endpoints, booking service, and system uptime for their last checked value
+
+How do I remove the hardcoded data from the audit log
+
+Why am I receving type any errors?
+
+Receiving the following errors: Authentication token not found error, please log in again when logged in as Admin and accessing audit table page.
+
+Errors in schema: system config changed should have role admin, role changed should have role registrar, account blocked should have role registrar. They are all showing up as staff currently
+
+When logged in as staff and going to my bookings page, receiving 'not authenticated error' under 'view and manage your current bookings'
+
+Check the API endpoints for authentication and ensure the frontend and backend are matching up for Admin and Staff
+
+Remove authentication requirements for audit logs
 
 November 8: https://chatgpt.com/share/69119b9b-7d2c-8010-bcbf-9b5253b81ad8
 
