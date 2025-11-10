@@ -118,3 +118,7 @@ How can you make it so that registrars can only view staff members on the Accoun
 How can I filter by blocked users?
 
 How would I remove every instance of the Registrar/HandleEscalations dashboard piece?
+
+November 8: https://chatgpt.com/share/69119b9b-7d2c-8010-bcbf-9b5253b81ad8
+
+November 9: https://chatgpt.com/share/69119b48-caf4-8010-b47a-3200117d825f
