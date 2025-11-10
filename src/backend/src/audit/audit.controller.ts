@@ -1,14 +1,34 @@
-import { Controller, Get, Query, Param, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Query, Param, UseGuards, Request, BadRequestException } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { AuditService } from './audit.service';
 
+interface AuthenticatedRequest {
+  user: {
+    userId: number;
+    username: string;
+    role: string;
+    email: string;
+  };
+}
+
 @Controller('audit')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
+  /**
+   * Get audit logs with filters - Admin and Registrar only
+   */
   @Get()
-  async getAuditLogs(@Query() query: any) {
+  @Roles('admin', 'registrar')
+  async getAuditLogs(
+    @Query() query: any,
+    @Request() req: AuthenticatedRequest
+  ) {
     try {
-      console.log('🔍 Public audit request');
+      console.log('🔍 Audit request from user:', req.user);
       console.log('📊 Query parameters:', query);
 
       const filters = {
@@ -50,11 +70,14 @@ export class AuditController {
     }
   }
 
-
+  /**
+   * Get available filter options
+   */
   @Get('filters')
-  async getFilterOptions() {
+  @Roles('admin', 'registrar')
+  async getFilterOptions(@Request() req: AuthenticatedRequest) {
     try {
-      console.log('🔍 Public filter options request');
+      console.log('🔍 Filter options request from user:', req.user);
       
       const result = await this.auditService.getFilterOptions();
       
@@ -79,10 +102,17 @@ export class AuditController {
     }
   }
 
+  /**
+   * Get audit history for a specific user
+   */
   @Get('user/:userId')
-  async getUserAuditHistory(@Param('userId') userId: string) {
+  @Roles('admin', 'registrar')
+  async getUserAuditHistory(
+    @Param('userId') userId: string,
+    @Request() req: AuthenticatedRequest
+  ) {
     try {
-      console.log('🔍 Public user audit history request for userId:', userId);
+      console.log('🔍 User audit history request for userId:', userId, 'from user:', req.user);
       
       const userIdNum = parseInt(userId);
       if (isNaN(userIdNum)) {
@@ -110,4 +140,41 @@ export class AuditController {
       throw new BadRequestException('Failed to retrieve user audit history');
     }
   }
+
+  /**
+   * Get current user's own audit history - All authenticated users
+   */
+  @Get('my-history')
+  async getMyAuditHistory(@Request() req: AuthenticatedRequest) {
+    try {
+      console.log('🔍 My audit history request from user:', req.user);
+      
+      const result = await this.auditService.getUserAuditHistory(req.user.userId);
+      
+      // Type guard to check if result has data property
+      if (result.success && 'data' in result) {
+        console.log('✅ My audit history result:', {
+          success: result.success,
+          recordCount: result.data.logs?.length || 0
+        });
+      } else {
+        console.log('❌ My audit history failed:', {
+          success: result.success,
+          message: 'message' in result ? result.message : 'Unknown error'
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error in getMyAuditHistory:', error);
+      throw new BadRequestException('Failed to retrieve your audit history');
+    }
+  }
+  
+   @Get('recent')
+  async getRecentLogs(@Query('limit') limit: string = '10') {
+    const logs = await this.auditService.getRecentLogs(Number(limit));
+    return { success: true, data: logs };
+  }
+
 }
