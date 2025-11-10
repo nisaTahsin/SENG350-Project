@@ -84,6 +84,12 @@ Please login with one of the following available test users :
 - Cornett Building
 - And many more...
 
+### 1.6 Testing Instructions
+To run the tests navigate to src/backend and src/frontend respectively and run:
+   ```bash
+   npm run test
+   ```
+
 ## 2.0 Additional Information
 
 ### 2.1 API Endpoints
