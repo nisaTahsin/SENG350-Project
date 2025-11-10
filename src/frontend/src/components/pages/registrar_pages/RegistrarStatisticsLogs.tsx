@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import GenericPage from '../GenericPage';
+import GenericPage from '../../GenericPage';
 import {
   BarChart,
   Bar,

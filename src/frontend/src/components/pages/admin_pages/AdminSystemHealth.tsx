@@ -1,6 +1,6 @@
 import React from 'react';
-import GenericPage from '../GenericPage';
-import AdminSystemHealthTable from '../AdminSystemHealthTable';
+import GenericPage from '../../GenericPage';
+import AdminSystemHealthTable from './admin_components/AdminSystemHealthTable';
 
 const AdminSystemHealth: React.FC = () => {
   return (

@@ -1,7 +1,7 @@
 
 import React from 'react';
-import GenericPage from '../GenericPage';
-import RegistrarAccountManagementTable from '../RegistrarAccountManagementTable';
+import GenericPage from '../../GenericPage';
+import RegistrarAccountManagementTable from './registrar_components/RegistrarAccountManagementTable';
 
 
 const RegistrarAccountManagement: React.FC = () => {

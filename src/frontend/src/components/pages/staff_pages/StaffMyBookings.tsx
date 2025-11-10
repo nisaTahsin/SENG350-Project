@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import GenericPage from '../GenericPage';
+import GenericPage from '../../GenericPage';
 
 // Shape returned by backend /booking/me (via TypeORM entity serialization)
 interface ApiBooking {

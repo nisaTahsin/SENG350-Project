@@ -1,6 +1,6 @@
 import React from 'react';
-import GenericPage from '../GenericPage';
-import AdminAuditRecordsTable from '../AdminAuditRecordsTable';
+import GenericPage from '../../GenericPage';
+import AdminAuditRecordsTable from './admin_components/AdminAuditRecordsTable';
 
 const AdminAuditRecords: React.FC = () => {
   return (

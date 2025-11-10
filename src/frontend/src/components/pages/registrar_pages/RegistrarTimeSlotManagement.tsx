@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import GenericPage from '../GenericPage';
+import GenericPage from '../../GenericPage';
 
 type Timeslot = {
   id: number;

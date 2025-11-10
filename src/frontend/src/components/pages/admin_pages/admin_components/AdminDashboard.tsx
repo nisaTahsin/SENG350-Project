@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import './Dashboard.css';
+import { useAuth } from '../../../../contexts/AuthContext';
+import '../../../Dashboard.css';
 
 const AdminDashboard: React.FC = () => {
   const { user, logout } = useAuth();

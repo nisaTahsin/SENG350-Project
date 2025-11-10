@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import GenericPage from '../GenericPage';
+import GenericPage from '../../GenericPage';
 
 interface Room {
   id: number;

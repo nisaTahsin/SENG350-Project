@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import GenericPage from '../GenericPage';
-import TimeslotTable from '../TimeslotTable';
-import BookingForm from '../BookingForm';
+import GenericPage from '../../GenericPage';
+import TimeslotTable from './staff_components/TimeslotTable';
+import BookingForm from './staff_components/BookingForm';
 
 
 const times = [

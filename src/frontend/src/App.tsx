@@ -2,31 +2,32 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
-import BlockedAccount from './components/BlockedAccount';
-import StaffDashboard from './components/StaffDashboard';
-import RegistrarDashboard from './components/RegistrarDashboard';
-import AdminDashboard from './components/AdminDashboard';
+import BlockedAccount from './components/pages/staff_pages/staff_components/BlockedAccount';
+import StaffDashboard from './components/pages/staff_pages/staff_components/StaffDashboard';
+import RegistrarDashboard from './components/pages/registrar_pages/registrar_components/RegistrarDashboard';
+import AdminDashboard from './components/pages/admin_pages/admin_components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 
 // Staff pages
-import StaffBrowseAvailability from './components/pages/StaffBrowseAvailability';
-import StaffMyBookings from './components/pages/StaffMyBookings';
+import StaffBrowseAvailability from './components/pages/staff_pages/StaffBrowseAvailability';
+import StaffMyBookings from './components/pages/staff_pages/StaffMyBookings';
 
 // Registrar pages
-import RegistrarClassroomManagement from './components/pages/RegistrarClassroomManagement';
-import RegistrarTimeSlotManagement from './components/pages/RegistrarTimeSlotManagement';
-import RegistrarEscalations from './components/pages/RegistrarEscalations';
-import RegistrarAccountManagement from './components/pages/RegistrarAccountManagement';
-import RegistrarStatisticsLogs from './components/pages/RegistrarStatisticsLogs';
+import RegistrarClassroomManagement from './components/pages/registrar_pages/RegistrarClassroomManagement';
+import RegistrarTimeSlotManagement from './components/pages/registrar_pages/RegistrarTimeSlotManagement';
+import RegistrarEscalations from './components/pages/registrar_pages/RegistrarEscalations';
+import RegistrarAccountManagement from './components/pages/registrar_pages/RegistrarAccountManagement';
+import RegistrarStatisticsLogs from './components/pages/registrar_pages/RegistrarStatisticsLogs';
+import AdminScheduleIntegrity from './components/pages/registrar_pages/RegistrarScheduleIntegrity'; // reused for registrar route now
 
 // Admin pages
-import AdminSystemConfig from './components/pages/AdminSystemConfig';
-import AdminAuditRecords from './components/pages/AdminAuditRecords';
-import AdminSystemHealth from './components/pages/AdminSystemHealth';
-import AdminDatabase from './components/pages/AdminDatabase';
-import AdminMonitoring from './components/pages/AdminMonitoring';
-import AdminScheduleIntegrity from './components/pages/RegistrarScheduleIntegrity'; // reused for registrar route now
+import AdminSystemConfig from './components/pages/admin_pages/AdminSystemConfig';
+import AdminAuditRecords from './components/pages/admin_pages/AdminAuditRecords';
+import AdminSystemHealth from './components/pages/admin_pages/AdminSystemHealth';
+import AdminDatabase from './components/pages/admin_pages/AdminDatabase';
+import AdminMonitoring from './components/pages/admin_pages/AdminMonitoring';
+
 import './App.css';
 
 const AppContent: React.FC = () => {

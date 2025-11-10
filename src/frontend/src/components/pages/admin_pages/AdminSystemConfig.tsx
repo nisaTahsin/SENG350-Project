@@ -1,6 +1,6 @@
 import React from 'react';
-import GenericPage from '../GenericPage';
-import AdminSystemConfigurationTable from '../AdminSystemConfigurationTable';
+import GenericPage from '../../GenericPage';
+import AdminSystemConfigurationTable from './admin_components/AdminSystemConfigurationTable';
 
 const AdminSystemConfig: React.FC = () => {
   return (

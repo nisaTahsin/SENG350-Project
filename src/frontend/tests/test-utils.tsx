@@ -1,5 +1,4 @@
 // tests/test-utils.tsx
-import { AuthProvider } from '../src/contexts/AuthContext';
 
 function Providers({ children }: PropsWithChildren) {
   return (
