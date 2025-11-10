@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import RegistrarAccountManagementTable from "../src/components/RegistrarAccountManagementTable";
+import RegistrarAccountManagementTable from "../src/components/pages/registrar_pages/registrar_components/RegistrarAccountManagementTable";
 
 describe("RegistrarAccountManagementTable", () => {
   it("filters users and opens the bookings modal", async () => {
