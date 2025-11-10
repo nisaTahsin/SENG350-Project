@@ -10,7 +10,8 @@ services:
     env_file:
       - ./src/backend/.env
     volumes:
-      - ./src/backend:/app
+      - ./src/backend:/usr/src/app
+      - backend_node_modules:/usr/src/app/node_modules
       - ./data/uvic_rooms.csv:/usr/data/uvic_rooms.csv:ro
     depends_on:
      db:
@@ -26,6 +27,8 @@ services:
       - ./src/frontend/public:/app/public
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_BACKEND_URL=http://localhost:4000
+      - REACT_APP_DEBUG=true
     command: npm start
 
   db:
@@ -49,3 +52,6 @@ services:
 
 volumes:
   db_data:
+  backend_node_modules:
+    # keep container-installed node_modules so dev tooling (nodemon/ts-node) remains available
+    driver: local

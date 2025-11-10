@@ -170,4 +170,11 @@ export class AuditController {
       throw new BadRequestException('Failed to retrieve your audit history');
     }
   }
+  
+   @Get('recent')
+  async getRecentLogs(@Query('limit') limit: string = '10') {
+    const logs = await this.auditService.getRecentLogs(Number(limit));
+    return { success: true, data: logs };
+  }
+
 }

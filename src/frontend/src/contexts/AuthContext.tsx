@@ -60,16 +60,14 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
       // Note: The backend also has an AuthController in some branches, but the active
       // server maps POST /users/login. If /auth/login is enabled later, we can switch
       // back to it or make this configurable via env.
-      const response = await fetch('http://localhost:4000/users/login', {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:4000';
+
+      const response = await fetch(`${backendUrl}/users/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
       });
+
 
       // Be resilient to non-JSON error responses (e.g., plain text 404)
       let data: any = null;

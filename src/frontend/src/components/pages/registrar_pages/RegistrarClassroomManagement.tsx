@@ -14,6 +14,14 @@ interface Timeslot {
   endTime: string;
 }
 
+interface MaintenanceWindow {
+  id?: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+  type: string;
+}
+
 const RegistrarClassroomManagement: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [name, setName] = useState('');
@@ -30,6 +38,12 @@ const RegistrarClassroomManagement: React.FC = () => {
   const [end, setEnd] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [timeslotSuccess, setTimeslotSuccess] = useState('');
+  // Maintenance states
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
+  const [maintenance, setMaintenance] = useState<MaintenanceWindow>({ date: '', startTime: '', endTime: '', type: 'maintenance' });
+  const [maintenanceSuccess, setMaintenanceSuccess] = useState('');
+  const [updatingCapacityId, setUpdatingCapacityId] = useState<number | null>(null);
+  const [capacityDraft, setCapacityDraft] = useState<number | null>(null);
 
   // Using GenericPage for header/back navigation
 
@@ -40,11 +54,25 @@ const RegistrarClassroomManagement: React.FC = () => {
     try {
       const res = await fetch('http://localhost:4000/rooms');
       const data = await res.json();
-      setRooms(data);
-    } catch {
+
+      // Defensive handling: backend may return an object (e.g. { success: true, rooms: [...] })
+      if (Array.isArray(data)) {
+        setRooms(data);
+      } else if (data && Array.isArray((data as any).rooms)) {
+        setRooms((data as any).rooms);
+      } else if (data && Array.isArray((data as any).data)) {
+        setRooms((data as any).data);
+      } else {
+        // preserve current rooms if response shape is unexpected
+        console.warn('fetchRooms: unexpected response shape', data);
+        setError('Unexpected response from server when fetching rooms');
+      }
+    } catch (err) {
+      console.error('fetchRooms error', err);
       setError('Failed to fetch rooms');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -86,17 +114,86 @@ const RegistrarClassroomManagement: React.FC = () => {
     }
   };
 
+  // Update room capacity inline
+  const handleUpdateCapacity = async (roomId: number) => {
+    if (capacityDraft == null || capacityDraft < 0) {
+      setError('Capacity must be a positive number');
+      return;
+    }
+    
+    setError('');
+    try {
+      const res = await fetch(`http://localhost:4000/rooms/${roomId}/capacity`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ capacity: capacityDraft }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ message: 'Failed to update capacity' }));
+        throw new Error(errData.message || 'Failed to update capacity');
+      }
+
+      // After a successful PATCH, fetch the single updated room and merge it into state.
+      try {
+        const roomRes = await fetch(`http://localhost:4000/rooms/${roomId}`);
+        if (roomRes.ok) {
+          const updatedRoom = await roomRes.json().catch(() => null);
+          if (updatedRoom && (updatedRoom.id || updatedRoom.room_name)) {
+            // some APIs return the room object directly, some wrap it
+            const roomObj = updatedRoom.room || updatedRoom.updatedRoom || updatedRoom;
+            if (roomObj && roomObj.id) {
+              setRooms(prev => prev.map(r => (r.id === roomObj.id ? { ...r, ...roomObj } : r)));
+            } else {
+              setRooms(prev => prev.map(r => (r.id === roomId ? { ...r, capacity: capacityDraft as number } : r)));
+            }
+          } else {
+            // fallback optimistic update
+            setRooms(prev => prev.map(r => (r.id === roomId ? { ...r, capacity: capacityDraft as number } : r)));
+          }
+        } else {
+          // fallback optimistic update
+          setRooms(prev => prev.map(r => (r.id === roomId ? { ...r, capacity: capacityDraft as number } : r)));
+        }
+      } catch (e) {
+        // network or parse error -> optimistic update
+        setRooms(prev => prev.map(r => (r.id === roomId ? { ...r, capacity: capacityDraft as number } : r)));
+      }
+
+      setUpdatingCapacityId(null);
+      setCapacityDraft(null);
+      setSuccessMsg('Capacity updated successfully');
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err: any) {
+      setError(typeof err === 'string' ? err : (err.message || 'Failed to update capacity'));
+      // Keep the edit mode active so user can try again
+      setCapacityDraft(capacityDraft);
+    }
+  };
+
   // --- Timeslot management ---
   const fetchTimeslots = async (roomId: number) => {
     try {
       const res = await fetch(`http://localhost:4000/timeslots?roomId=${roomId}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || `Failed to fetch timeslots: ${res.status}`);
+      }
+
       const data = await res.json();
-      const sorted = Array.isArray(data)
-        ? data.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-        : [];
+      // Handle different response shapes
+      const timeslotArray = Array.isArray(data) ? data : 
+                          Array.isArray(data.timeslots) ? data.timeslots :
+                          Array.isArray(data.data) ? data.data : [];
+
+      const sorted = timeslotArray.sort((a: Timeslot, b: Timeslot) => 
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+      );
       setTimeslots(sorted);
-    } catch {
-      setError('Failed to fetch timeslots');
+      setError(''); // Clear any previous errors
+    } catch (err: any) {
+      console.error('Fetch timeslots error:', err);
+      setError(err.message || 'Failed to fetch timeslots');
       setTimeslots([]);
     }
   };
@@ -117,6 +214,15 @@ const RegistrarClassroomManagement: React.FC = () => {
     const startDate = new Date(start);
     const endDate = new Date(end);
 
+    // Validate time range (7:30 AM - 7:00 PM)
+    const startHour = startDate.getHours() + startDate.getMinutes() / 60;
+    const endHour = endDate.getHours() + endDate.getMinutes() / 60;
+
+    if (startHour < 7.5 || startHour > 19 || endHour < 7.5 || endHour > 19) {
+      setError('Time slots must be between 7:30 AM and 7:00 PM');
+      return;
+    }
+
     if (endDate <= startDate) {
       setError('End time must be after start time');
       return;
@@ -126,12 +232,26 @@ const RegistrarClassroomManagement: React.FC = () => {
       const res = await fetch(`http://localhost:4000/timeslots`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId: selectedRoom.id, startTime: startDate, endTime: endDate }),
+        body: JSON.stringify({ 
+          roomId: selectedRoom.id, 
+          startTime: startDate.toISOString(), // Ensure proper ISO string format
+          endTime: endDate.toISOString() 
+        }),
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'Failed to add timeslot');
+        // try to extract JSON error, otherwise text
+        let errMsg = 'Failed to add timeslot';
+        try {
+          const err = await res.json();
+          errMsg = err.message || JSON.stringify(err);
+          console.error('Timeslot error:', err); // Add logging
+        } catch {
+          const txt = await res.text().catch(() => '');
+          if (txt) errMsg = txt;
+          console.error('Timeslot error text:', txt); // Add logging
+        }
+        throw new Error(errMsg);
       }
 
       setStart('');
@@ -145,12 +265,79 @@ const RegistrarClassroomManagement: React.FC = () => {
 
   const handleDeleteTimeslot = async (id: number) => {
     try {
-      await fetch(`http://localhost:4000/timeslots/${id}`, { method: 'DELETE' });
-      if (selectedRoom) fetchTimeslots(selectedRoom.id);
-    } catch {
-      setError('Failed to delete timeslot');
+      const res = await fetch(`http://localhost:4000/timeslots/${id}`, { 
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Failed to delete timeslot');
+      }
+
+      if (selectedRoom) {
+        fetchTimeslots(selectedRoom.id);
+        setTimeslotSuccess('Timeslot deleted successfully');
+        setTimeout(() => setTimeslotSuccess(''), 3000);
+      }
+    } catch (err: any) {
+      console.error('Delete timeslot error:', err);
+      setError(err.message || 'Failed to delete timeslot');
     }
   };
+
+  // Maintenance handlers
+  const openMaintenanceModal = (room: Room) => {
+    setSelectedRoom(room);
+    setShowMaintenanceModal(true);
+    setMaintenance({ date: '', startTime: '', endTime: '', type: 'maintenance' });
+    setMaintenanceSuccess('');
+  };
+
+  const handleAddMaintenance = async () => {
+    if (!selectedRoom) return;
+      if (!maintenance.date || !maintenance.startTime || !maintenance.endTime) {
+        setError('Please fill in all fields');
+        return;
+      }
+
+    setError('');
+    setMaintenanceSuccess('');
+   
+      // Combine date and time into proper ISO string format
+      const startDateTime = new Date(`${maintenance.date}T${maintenance.startTime}`);
+      const endDateTime = new Date(`${maintenance.date}T${maintenance.endTime}`);
+
+      if (endDateTime <= startDateTime) {
+        setError('End time must be after start time');
+        return;
+      }
+
+    try {
+      // POST to the central maintenance endpoint (server exposes /maintenance)
+      const res = await fetch(`http://localhost:4000/maintenance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId: selectedRoom.id,
+          date: maintenance.date,
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+          type: maintenance.type,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to add maintenance window');
+      }
+      // Clear form and show success
+      setMaintenance({ date: '', startTime: '', endTime: '', type: 'maintenance' });
+      setMaintenanceSuccess('Maintenance window added');
+    } catch (err: any) {
+      setError(err.message || 'Failed to add maintenance window');
+    }
+  };
+
   // --- End timeslot management ---
 
   return (
@@ -212,13 +399,48 @@ const RegistrarClassroomManagement: React.FC = () => {
                 <tr key={room.id} style={{ borderBottom: '1px solid #eee' }}>
                   <td style={{ padding: 8 }}>{room.room_name}</td>
                   <td style={{ padding: 8 }}>{room.building}</td>
-                  <td style={{ padding: 8 }}>{room.capacity}</td>
+                  <td style={{ padding: 8 }}>
+                    {updatingCapacityId === room.id ? (
+                      <>
+                        <input
+                          type="number"
+                          value={capacityDraft ?? room.capacity}
+                          onChange={(e) => setCapacityDraft(Number(e.target.value))}
+                          style={{ width: 80, marginRight: 8 }}
+                        />
+                        <button onClick={() => handleUpdateCapacity(room.id)} style={{ marginRight: 4 }}>Save</button>
+                        <button onClick={() => { setUpdatingCapacityId(null); setCapacityDraft(null); }}>Cancel</button>
+                        </>) : (<>
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <span style={{ marginRight: 8, minWidth: '40px' }}>{room.capacity}</span>
+                            <button 
+                              onClick={() => { setUpdatingCapacityId(room.id); setCapacityDraft(room.capacity); }}
+                              style={{ 
+                                padding: '4px 8px',
+                                backgroundColor: '#f8f9fa',
+                                border: '1px solid #dee2e6',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </>
+                    )}
+                  </td>
                   <td style={{ padding: 8 }}>
                     <button
                       onClick={() => openTimeslotModal(room)}
                       style={{ background: '#28a745', color: 'white', border: 'none', padding: '4px 8px', borderRadius: 4, cursor: 'pointer', marginRight: 4 }}
                     >
                       Time Slots
+                    </button>
+                    <button
+                      onClick={() => openMaintenanceModal(room)}
+                      style={{ background: '#ff9900', color: 'white', border: 'none', padding: '4px 8px', borderRadius: 4, cursor: 'pointer', marginRight: 4 }}
+                    >
+                      Maintenance
                     </button>
                     <button
                       onClick={() => handleDelete(room.id)}
@@ -266,43 +488,37 @@ const RegistrarClassroomManagement: React.FC = () => {
                 overflowY: 'auto',
               }}
             >
-              <h2>Time Slots for {selectedRoom.room_name}</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h2>Time Slots for {selectedRoom.room_name}</h2>
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    setTimeslots([]);
+                    setSelectedRoom(null);
+                    setStart('');
+                    setEnd('');
+                    setError('');
+                    setTimeslotSuccess('');
+                  }}
+                  style={{
+                    background: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: 4,
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✕ Close
+                </button>
+              </div>
 
               {/* Success / Error messages */}
               {timeslotSuccess && <div style={{ color: 'green', marginBottom: 8 }}>{timeslotSuccess}</div>}
               {error && <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>}
 
-              {/* Inputs to add new timeslot */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                <input
-                  type="datetime-local"
-                  value={start}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setStart(e.target.value)}
-                  style={{ flex: 1, padding: 4 }}
-                />
-                <input
-                  type="datetime-local"
-                  value={end}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setEnd(e.target.value)}
-                  style={{ flex: 1, padding: 4 }}
-                />
-                <button
-                  onClick={handleAddTimeslot}
-                  disabled={!start || !end}
-                  style={{
-                    background: '#28a745',
-                    color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: 4,
-                    cursor: !start || !end ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  Add
-                </button>
-              </div>
-
-              {/* --- Half-hour time slot grid --- */}
-              <div style={{ marginTop: 16 }}>
+              {/* Time Slot Grid */}
+              <div style={{ marginBottom: 24 }}>
                 <h3>Available Time Slots (7:30 AM – 7:00 PM)</h3>
                 <div
                   style={{
@@ -368,33 +584,139 @@ const RegistrarClassroomManagement: React.FC = () => {
                 </div>
               </div>
 
-              {/* Close modal button */}
-              <div style={{ textAlign: 'center', marginTop: 16 }}>
+              {/* Inputs to add new timeslot */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <input
+                  type="datetime-local"
+                  value={start}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setStart(e.target.value)}
+                  style={{ flex: 1, padding: 4 }}
+                />
+                <input
+                  type="datetime-local"
+                  value={end}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setEnd(e.target.value)}
+                  style={{ flex: 1, padding: 4 }}
+                />
                 <button
-                  onClick={() => {
-                    setShowModal(false);
-                    setTimeslots([]);
-                    setSelectedRoom(null);
-                    setStart('');
-                    setEnd('');
-                    setError('');
-                    setTimeslotSuccess('');
-                  }}
+                  onClick={handleAddTimeslot}
+                  disabled={!start || !end}
                   style={{
-                    background: '#6c757d',
+                    background: '#28a745',
                     color: 'white',
-                    border: 'none',
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     borderRadius: 4,
-                    cursor: 'pointer'
+                    cursor: !start || !end ? 'not-allowed' : 'pointer',
                   }}
                 >
-                  Close
+                  Add
                 </button>
+              </div>
+
+              {/* Existing Timeslots List */}
+              {timeslots.length > 0 && (
+                <div style={{ marginTop: 24 }}>
+                  <h3>Existing Time Slots</h3>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                    gap: 8,
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    padding: '8px',
+                    border: '1px solid #eee',
+                    borderRadius: '4px'
+                  }}>
+                    {timeslots
+                      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+                      .map((slot) => {
+                        const start = new Date(slot.startTime);
+                        const end = new Date(slot.endTime);
+                        const formatTime = (date: Date) => {
+                          const hours = date.getHours();
+                          const minutes = date.getMinutes();
+                          const ampm = hours >= 12 ? 'PM' : 'AM';
+                          const displayHours = hours % 12 || 12;
+                          return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                        };
+                        return (
+                          <div key={slot.id} style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '8px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '4px',
+                            gap: '8px'
+                          }}>
+                            <span style={{ fontSize: '0.9em' }}>{formatTime(start)} - {formatTime(end)}</span>
+                            <button
+                              onClick={() => handleDeleteTimeslot(slot.id)}
+                              style={{
+                                background: '#dc3545',
+                                color: 'white',
+                                border: 'none',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.8em'
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Maintenance modal */}
+        {showMaintenanceModal && selectedRoom && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.4)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000
+            }}
+          >
+            <div style={{ background: 'white', padding: 24, borderRadius: 8, width: 480 }}>
+              <h2>Maintenance for {selectedRoom.room_name}</h2>
+              {maintenanceSuccess && <div style={{ color: 'green' }}>{maintenanceSuccess}</div>}
+              {error && <div style={{ color: 'red' }}>{error}</div>}
+
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <input type="date" value={maintenance.date} onChange={(e) => setMaintenance({ ...maintenance, date: e.target.value })} />
+                <input type="time" value={maintenance.startTime} onChange={(e) => setMaintenance({ ...maintenance, startTime: e.target.value })} />
+                <input type="time" value={maintenance.endTime} onChange={(e) => setMaintenance({ ...maintenance, endTime: e.target.value })} />
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <select value={maintenance.type} onChange={(e) => setMaintenance({ ...maintenance, type: e.target.value })}>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="capacity_check">Capacity Check</option>
+                  <option value="av_check">AV Check</option>
+                </select>
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <button onClick={handleAddMaintenance} style={{ marginRight: 8, background: '#28a745', color: 'white', padding: '6px 12px' }}>Add</button>
+                <button onClick={() => { setShowMaintenanceModal(false); setSelectedRoom(null); setMaintenanceSuccess(''); setError(''); }} style={{ background: '#6c757d', color: 'white', padding: '6px 12px' }}>Close</button>
               </div>
             </div>
           </div>
         )}
+
+
       </>
     </GenericPage>
   );
