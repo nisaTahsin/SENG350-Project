@@ -22,7 +22,6 @@ interface FilterOptions {
 const API_BASE_URL = 'http://localhost:4000';
 
 const AdminAuditRecordsTable: React.FC = () => {
-    // State for filters
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState('');
     const [selectedRole, setSelectedRole] = useState('');
@@ -31,7 +30,6 @@ const AdminAuditRecordsTable: React.FC = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     
-    // Backend integration state
     const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
         actions: [],
@@ -45,12 +43,10 @@ const AdminAuditRecordsTable: React.FC = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalRecords, setTotalRecords] = useState(0);
 
-    // Test backend connection - no authentication needed
     const testBackendConnection = async () => {
         console.log('=== Testing Backend Connection ===');
 
         try {
-            // Test 1: Backend health check
             console.log('🔍 Testing backend health...');
             const healthResponse = await fetch(`${API_BASE_URL}/auth/test`);
             console.log('✅ Backend health status:', healthResponse.status);
@@ -67,8 +63,7 @@ const AdminAuditRecordsTable: React.FC = () => {
         }
 
         try {
-            // Test 2: Public audit filters endpoint
-            console.log('🔍 Testing public audit filters endpoint...');
+            console.log('🔍 Testing audit filters endpoint...');
             
             const filtersResponse = await fetch(`${API_BASE_URL}/audit/filters`);
             console.log('Filters response status:', filtersResponse.status);
@@ -87,7 +82,6 @@ const AdminAuditRecordsTable: React.FC = () => {
         }
     };
 
-    // Fetch audit records without authentication
     const fetchAuditRecords = useCallback(async () => {
         setLoading(true);
         setError('');
@@ -138,7 +132,6 @@ const AdminAuditRecordsTable: React.FC = () => {
         }
     }, [searchTerm, selectedUser, selectedRole, selectedAction, selectedCategory, startDate, endDate, currentPage]);
 
-    // Fetch filter options without authentication
     useEffect(() => {
         const fetchFilterOptions = async () => {
             try {
@@ -164,18 +157,15 @@ const AdminAuditRecordsTable: React.FC = () => {
         fetchFilterOptions();
     }, []);
 
-    // Fetch records when filters change
     useEffect(() => {
         fetchAuditRecords();
     }, [fetchAuditRecords]);
 
-    // Get unique values for filters
     const uniqueUsers = Array.from(new Set(filterOptions.users.map((u: { email?: string; username: string }) => u.email || u.username)));
     const uniqueRoles = ['admin', 'registrar', 'staff'];
     const uniqueActions = filterOptions.actions;
     const uniqueCategories = filterOptions.categories;
 
-    // Apply client-side role and category filtering
     const filteredRecords = auditRecords.filter((record: AuditRecord) => {
         const matchesRole = !selectedRole || record.userRole.toLowerCase() === selectedRole.toLowerCase();
         const matchesCategory = !selectedCategory || record.category === selectedCategory;
@@ -254,7 +244,6 @@ const AdminAuditRecordsTable: React.FC = () => {
                 </div>
             </div>
 
-            {/* Error display */}
             {error && (
                 <div style={{ 
                     background: '#f8d7da', 
@@ -268,7 +257,6 @@ const AdminAuditRecordsTable: React.FC = () => {
                 </div>
             )}
 
-            {/* Data source indicator */}
             <div style={{ 
                 background: '#d1ecf1', 
                 color: '#0c5460',
@@ -281,7 +269,6 @@ const AdminAuditRecordsTable: React.FC = () => {
                 📊 Showing audit data from database
             </div>
             
-            {/* Search and Filters */}
             <div style={{ marginBottom: 24, padding: 16, background: '#f8f9fa', borderRadius: 8, border: '1px solid #dee2e6' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
                     <div>
@@ -432,14 +419,12 @@ const AdminAuditRecordsTable: React.FC = () => {
                 </div>
             </div>
 
-            {/* Results Summary and Pagination */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div style={{ color: '#666', fontSize: 14 }}>
                     Showing {filteredRecords.length} of {totalRecords} records
                     {loading && <span> (loading...)</span>}
                 </div>
                 
-                {/* Pagination */}
                 {totalPages > 1 && (
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <button
@@ -475,7 +460,6 @@ const AdminAuditRecordsTable: React.FC = () => {
                 )}
             </div>
 
-            {/* Audit Records Table */}
             <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>

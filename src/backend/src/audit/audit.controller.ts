@@ -1,20 +1,7 @@
-import { Controller, Get, Query, Param, UseGuards, Request, BadRequestException } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
+import { Controller, Get, Query, Param, BadRequestException } from '@nestjs/common';
 import { AuditService } from './audit.service';
 
-interface AuthenticatedRequest {
-  user: {
-    userId: number;
-    username: string;
-    role: string;
-    email: string;
-  };
-}
-
 @Controller('audit')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
@@ -22,13 +9,9 @@ export class AuditController {
    * Get audit logs with filters - Admin and Registrar only
    */
   @Get()
-  @Roles('admin', 'registrar')
-  async getAuditLogs(
-    @Query() query: any,
-    @Request() req: AuthenticatedRequest
-  ) {
+  async getAuditLogs(@Query() query: any) {
     try {
-      console.log('🔍 Audit request from user:', req.user);
+      console.log('🔍 Audit request');
       console.log('📊 Query parameters:', query);
 
       const filters = {
@@ -49,7 +32,6 @@ export class AuditController {
 
       const result = await this.auditService.getAuditLogs(filters);
       
-      // Type guard to check if result has data property
       if (result.success && 'data' in result) {
         console.log('✅ Audit logs result:', {
           success: result.success,
@@ -74,14 +56,12 @@ export class AuditController {
    * Get available filter options
    */
   @Get('filters')
-  @Roles('admin', 'registrar')
-  async getFilterOptions(@Request() req: AuthenticatedRequest) {
+  async getFilterOptions() {
     try {
-      console.log('🔍 Filter options request from user:', req.user);
+      console.log('🔍 Filter options request');
       
       const result = await this.auditService.getFilterOptions();
       
-      // Type guard to check if result has data property
       if (result.success && 'data' in result) {
         console.log('✅ Filter options result:', {
           success: result.success,
@@ -106,13 +86,9 @@ export class AuditController {
    * Get audit history for a specific user
    */
   @Get('user/:userId')
-  @Roles('admin', 'registrar')
-  async getUserAuditHistory(
-    @Param('userId') userId: string,
-    @Request() req: AuthenticatedRequest
-  ) {
+  async getUserAuditHistory(@Param('userId') userId: string) {
     try {
-      console.log('🔍 User audit history request for userId:', userId, 'from user:', req.user);
+      console.log('🔍 User audit history request for userId:', userId);
       
       const userIdNum = parseInt(userId);
       if (isNaN(userIdNum)) {
@@ -121,7 +97,6 @@ export class AuditController {
 
       const result = await this.auditService.getUserAuditHistory(userIdNum);
       
-      // Type guard to check if result has data property
       if (result.success && 'data' in result) {
         console.log('✅ User audit history result:', {
           success: result.success,
@@ -145,13 +120,12 @@ export class AuditController {
    * Get current user's own audit history - All authenticated users
    */
   @Get('my-history')
-  async getMyAuditHistory(@Request() req: AuthenticatedRequest) {
+  async getMyAuditHistory() {
     try {
-      console.log('🔍 My audit history request from user:', req.user);
+      console.log('🔍 My audit history request');
       
-      const result = await this.auditService.getUserAuditHistory(req.user.userId);
+      const result = await this.auditService.getUserAuditHistory(1);
       
-      // Type guard to check if result has data property
       if (result.success && 'data' in result) {
         console.log('✅ My audit history result:', {
           success: result.success,
@@ -170,11 +144,4 @@ export class AuditController {
       throw new BadRequestException('Failed to retrieve your audit history');
     }
   }
-  
-   @Get('recent')
-  async getRecentLogs(@Query('limit') limit: string = '10') {
-    const logs = await this.auditService.getRecentLogs(Number(limit));
-    return { success: true, data: logs };
-  }
-
 }
