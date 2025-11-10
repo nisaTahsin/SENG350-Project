@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
 
 interface AuditRecord {
     id: string;
@@ -20,142 +19,7 @@ interface FilterOptions {
     categories: string[];
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-
-// Keep existing hardcoded data for testing
-const auditRecords: AuditRecord[] = [
-    // Sign-ins
-    {
-        id: '1',
-        timestamp: '2024-01-15 09:30:15',
-        user: 'john.smith@example.com',
-        userRole: 'Staff',
-        action: 'Sign-in',
-        details: 'Successful login from office network',
-        category: 'Authentication'
-    },
-    {
-        id: '2',
-        timestamp: '2024-01-15 08:45:22',
-        user: 'jane.doe@example.com',
-        userRole: 'Registrar',
-        action: 'Sign-in',
-        details: 'Successful login from office network',
-        category: 'Authentication'
-    },
-    {
-        id: '3',
-        timestamp: '2024-01-15 14:20:33',
-        user: 'admin@example.com',
-        userRole: 'Admin',
-        action: 'Sign-in',
-        details: 'Successful login from office network',
-        category: 'Authentication'
-    },
-    // Bookings/Cancellations
-    {
-        id: '4',
-        timestamp: '2024-01-15 10:15:45',
-        user: 'john.smith@example.com',
-        userRole: 'Staff',
-        action: 'Booking Created',
-        details: 'Booked Room A101 for 2024-01-16 14:00-16:00',
-        category: 'Booking Management'
-    },
-    {
-        id: '5',
-        timestamp: '2024-01-15 11:30:12',
-        user: 'alice.brown@example.com',
-        userRole: 'Staff',
-        action: 'Booking Cancelled',
-        details: 'Cancelled booking for Room B205 on 2024-01-17 10:00-12:00',
-        category: 'Booking Management'
-    },
-    {
-        id: '6',
-        timestamp: '2024-01-15 13:45:28',
-        user: 'bob.johnson@example.com',
-        userRole: 'Staff',
-        action: 'Booking Created',
-        details: 'Booked Room C301 for 2024-01-18 09:00-11:00',
-        category: 'Booking Management'
-    },
-    // Role/Permission Changes
-    {
-        id: '7',
-        timestamp: '2024-01-15 09:15:30',
-        user: 'admin@example.com',
-        userRole: 'Admin',
-        action: 'Role Changed',
-        details: 'Changed user mike.wilson@example.com from Staff to Registrar',
-        category: 'User Management'
-    },
-    {
-        id: '8',
-        timestamp: '2024-01-15 10:30:45',
-        user: 'admin@example.com',
-        userRole: 'Admin',
-        action: 'Account Disabled',
-        details: 'Disabled account for user sarah.davis@example.com',
-        category: 'User Management'
-    },
-    {
-        id: '9',
-        timestamp: '2024-01-15 11:45:12',
-        user: 'admin@example.com',
-        userRole: 'Admin',
-        action: 'Account Enabled',
-        details: 'Enabled account for user tom.wilson@example.com',
-        category: 'User Management'
-    },
-    // Escalations
-    {
-        id: '10',
-        timestamp: '2024-01-15 12:00:15',
-        user: 'jane.doe@example.com',
-        userRole: 'Registrar',
-        action: 'Account Blocked',
-        details: 'Blocked account for user problematic.user@example.com due to policy violations',
-        category: 'Escalations'
-    },
-    {
-        id: '11',
-        timestamp: '2024-01-15 14:15:30',
-        user: 'jane.doe@example.com',
-        userRole: 'Registrar',
-        action: 'Account Released',
-        details: 'Released booking for user john.smith@example.com after review',
-        category: 'Escalations'
-    },
-    // System Configuration Edits
-    {
-        id: '12',
-        timestamp: '2024-01-15 08:30:45',
-        user: 'admin@example.com',
-        userRole: 'Admin',
-        action: 'Config Changed',
-        details: 'Changed max bookings per day from 2 to 3',
-        category: 'System Configuration'
-    },
-    {
-        id: '13',
-        timestamp: '2024-01-15 15:20:18',
-        user: 'admin@example.com',
-        userRole: 'Admin',
-        action: 'Config Changed',
-        details: 'Changed time slot granularity from 60 to 30 minutes',
-        category: 'System Configuration'
-    },
-    {
-        id: '14',
-        timestamp: '2024-01-15 16:45:22',
-        user: 'admin@example.com',
-        userRole: 'Admin',
-        action: 'Config Changed',
-        details: 'Changed default classroom open time from 07:00 to 08:00',
-        category: 'System Configuration'
-    }
-];
+const API_BASE_URL = 'http://localhost:4000';
 
 const AdminAuditRecordsTable: React.FC = () => {
     // State for filters
@@ -167,9 +31,8 @@ const AdminAuditRecordsTable: React.FC = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     
-    // New state for backend integration
-    const [useRealData, setUseRealData] = useState(false);
-    const [realAuditRecords, setRealAuditRecords] = useState<AuditRecord[]>([]);
+    // Backend integration state
+    const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
         actions: [],
         targetTypes: [],
@@ -177,49 +40,14 @@ const AdminAuditRecordsTable: React.FC = () => {
         categories: []
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string>('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalRecords, setTotalRecords] = useState(0);
 
-    // Memoize auth functions to prevent dependency issues
-    const getAuthToken = useMemo(() => {
-        return () => {
-            const token = localStorage.getItem('token') || localStorage.getItem('authToken') || sessionStorage.getItem('token');
-            console.log('🔑 Retrieved token:', token ? `${token.substring(0, 20)}...` : 'No token found');
-            return token;
-        };
-    }, []);
-
-    const getAuthHeaders = useMemo(() => {
-        return () => {
-            const token = getAuthToken();
-            if (!token) {
-                console.error('❌ No authentication token found in storage');
-                setError('No authentication token found. Please login again.');
-                return {};
-            }
-            
-            return {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
-        };
-    }, [getAuthToken]);
-
-    // Enhanced backend connection test
+    // Test backend connection - no authentication needed
     const testBackendConnection = async () => {
-        console.log('=== ENHANCED DEBUGGING BACKEND CONNECTION ===');
-        console.log('API_BASE_URL:', API_BASE_URL);
-        
-        const token = getAuthToken();
-        console.log('Auth token exists:', !!token);
-        console.log('Auth token preview:', token ? `${token.substring(0, 50)}...` : 'No token');
-        
-        if (!token) {
-            alert('❌ No authentication token found! Please login first.');
-            return;
-        }
+        console.log('=== Testing Backend Connection ===');
 
         try {
             // Test 1: Backend health check
@@ -228,7 +56,9 @@ const AdminAuditRecordsTable: React.FC = () => {
             console.log('✅ Backend health status:', healthResponse.status);
             
             if (!healthResponse.ok) {
-                throw new Error(`Backend health check failed: ${healthResponse.status}`);
+                const healthText = await healthResponse.text();
+                console.log('Health response body:', healthText);
+                throw new Error(`Backend health check failed: ${healthResponse.status} - ${healthText}`);
             }
         } catch (error) {
             console.error('❌ Backend health check failed:', error);
@@ -237,77 +67,30 @@ const AdminAuditRecordsTable: React.FC = () => {
         }
 
         try {
-            // Test 2: Protected endpoint with token
-            console.log('🔍 Testing protected auth profile endpoint...');
-            const profileResponse = await axios.get(`${API_BASE_URL}/auth/profile`, {
-                headers: getAuthHeaders()
-            });
+            // Test 2: Public audit filters endpoint
+            console.log('🔍 Testing public audit filters endpoint...');
             
-            console.log('✅ Profile endpoint response:', profileResponse.data);
+            const filtersResponse = await fetch(`${API_BASE_URL}/audit/filters`);
+            console.log('Filters response status:', filtersResponse.status);
             
-            if (profileResponse.data.success) {
-                const user = profileResponse.data.user;
-                console.log('👤 Current user info:', user);
-                
-                if (user.role !== 'admin' && user.role !== 'registrar') {
-                    alert(`⚠️ Access denied. Your role (${user.role}) doesn't have permission to view audit logs. Only admin and registrar roles can access audit records.`);
-                    return;
-                }
-                
-                alert(`✅ Authentication successful! Logged in as: ${user.username} (${user.role})`);
-            }
-        } catch (error: any) {
-            console.error('❌ Profile endpoint failed:', error);
+            const filtersData = await filtersResponse.json();
+            console.log('✅ Filters endpoint response:', filtersData);
             
-            if (error.response?.status === 401) {
-                alert('❌ Authentication failed! Your session may have expired. Please login again.');
-                // Clear invalid token
-                localStorage.removeItem('token');
-                localStorage.removeItem('authToken');
-                sessionStorage.removeItem('token');
+            if (filtersData.success) {
+                alert(`✅ Audit endpoint works! Found ${filtersData.data.users?.length || 0} users and ${filtersData.data.actions?.length || 0} actions.`);
             } else {
-                alert(`❌ Profile test failed: ${error.response?.data?.message || error.message}`);
-            }
-            return;
-        }
-
-        try {
-            // Test 3: Audit endpoint
-            console.log('🔍 Testing audit endpoint...');
-            const auditResponse = await axios.get(`${API_BASE_URL}/audit/filters`, {
-                headers: getAuthHeaders()
-            });
-            
-            console.log('✅ Audit filters response:', auditResponse.data);
-            
-            if (auditResponse.data.success) {
-                alert(`✅ Audit endpoint works! Found ${auditResponse.data.data.users?.length || 0} users and ${auditResponse.data.data.actions?.length || 0} actions.`);
+                alert(`❌ Audit endpoint failed: ${filtersData.message || 'Unknown error'}`);
             }
         } catch (error: any) {
             console.error('❌ Audit endpoint failed:', error);
-            
-            if (error.response?.status === 401) {
-                alert('❌ Audit endpoint authentication failed. Token may be invalid.');
-            } else if (error.response?.status === 403) {
-                alert('❌ Access forbidden. Your role may not have audit access permissions.');
-            } else {
-                alert(`❌ Audit endpoint failed: ${error.response?.data?.message || error.message}`);
-            }
+            alert(`❌ Audit endpoint failed: ${error.message}`);
         }
     };
 
-    // Fetch real audit records from backend - enhanced with better error handling
-    const fetchRealAuditRecords = useCallback(async () => {
-        if (!useRealData) return;
-        
-        const token = getAuthToken();
-        if (!token) {
-            setError('Authentication token not found. Please login again.');
-            return;
-        }
-
+    // Fetch audit records without authentication
+    const fetchAuditRecords = useCallback(async () => {
         setLoading(true);
-        setError(null);
+        setError('');
         
         try {
             const params = new URLSearchParams();
@@ -322,155 +105,90 @@ const AdminAuditRecordsTable: React.FC = () => {
             params.append('limit', '50');
 
             console.log('🔍 Fetching audit records with params:', params.toString());
-            console.log('🔑 Using token:', token.substring(0, 20) + '...');
 
-            const response = await axios.get(`${API_BASE_URL}/audit?${params}`, {
-                headers: getAuthHeaders(),
-                timeout: 10000 // 10 second timeout
-            });
+            const response = await fetch(`${API_BASE_URL}/audit?${params}`);
 
-            console.log('✅ Audit records response:', response.data);
+            console.log('Audit records response status:', response.status);
 
-            if (response.data.success) {
-                setRealAuditRecords(response.data.data.logs || []);
-                setTotalPages(response.data.data.pagination?.totalPages || 1);
-                setTotalRecords(response.data.data.pagination?.total || 0);
-                
-                if (response.data.data.logs?.length === 0) {
-                    setError('No audit records found. This might be because the database is empty or your filters are too restrictive.');
-                }
-            } else {
-                setError(response.data.message || 'Failed to fetch audit records');
+            const data = await response.json();
+            console.log('✅ Audit records response:', data);
+
+            if (!data.success) {
+                setError(data.message || 'Failed to load audit records');
+                return;
+            }
+
+            const records: AuditRecord[] = data.data?.logs || [];
+            setAuditRecords(records);
+            setTotalPages(data.data?.pagination?.totalPages || 1);
+            setTotalRecords(data.data?.pagination?.total || 0);
+            
+            if (records.length === 0 && currentPage === 1) {
+                setError('No audit records found. This might be because the database is empty or your filters are too restrictive.');
             }
         } catch (err: any) {
             console.error('❌ Error fetching audit records:', err);
-            
-            let errorMessage = 'Error fetching audit records';
-            
-            if (err.code === 'ECONNREFUSED' || err.code === 'ERR_NETWORK') {
-                errorMessage = 'Cannot connect to backend server. Please ensure your backend is running on port 4000.';
-            } else if (err.response?.status === 401) {
-                errorMessage = 'Authentication failed. Please login again.';
-                // Clear invalid token
-                localStorage.removeItem('token');
-                localStorage.removeItem('authToken');
-                sessionStorage.removeItem('token');
-            } else if (err.response?.status === 403) {
-                errorMessage = 'Access denied. You need admin or registrar role to view audit records.';
-            } else if (err.response?.status === 404) {
-                errorMessage = 'Audit endpoint not found. Please check your backend routes.';
-            } else if (err.timeout) {
-                errorMessage = 'Request timeout. Backend server may be overloaded.';
-            } else if (err.response?.data?.message) {
-                errorMessage = err.response.data.message;
-            } else if (err.message) {
-                errorMessage = err.message;
+            if (err.message.includes('Failed to fetch')) {
+                setError('Cannot connect to backend server. Please check if the backend is running.');
+            } else {
+                setError(err.message || 'Unexpected error loading audit records');
             }
-            
-            setError(errorMessage);
         } finally {
             setLoading(false);
         }
-    }, [useRealData, searchTerm, selectedUser, selectedRole, selectedAction, selectedCategory, startDate, endDate, currentPage, getAuthToken, getAuthHeaders]);
+    }, [searchTerm, selectedUser, selectedRole, selectedAction, selectedCategory, startDate, endDate, currentPage]);
 
-    // Fetch filter options from backend - enhanced
+    // Fetch filter options without authentication
     useEffect(() => {
         const fetchFilterOptions = async () => {
-            if (!useRealData) return;
-            
-            const token = getAuthToken();
-            if (!token) {
-                console.warn('⚠️ No token available for fetching filter options');
-                return;
-            }
-            
             try {
                 console.log('🔍 Fetching filter options...');
-                const response = await axios.get(`${API_BASE_URL}/audit/filters`, {
-                    headers: getAuthHeaders(),
-                    timeout: 5000
-                });
+                const response = await fetch(`${API_BASE_URL}/audit/filters`);
                 
-                console.log('✅ Filter options response:', response.data);
+                console.log('Filter options response status:', response.status);
                 
-                if (response.data.success) {
-                    setFilterOptions(response.data.data);
+                const data = await response.json();
+                console.log('✅ Filter options response:', data);
+                
+                if (data.success) {
+                    setFilterOptions(data.data);
                 } else {
-                    console.warn('⚠️ Filter options request succeeded but returned success: false');
+                    console.warn('⚠️ Filter options request succeeded but returned success: false', data);
                 }
             } catch (err: any) {
                 console.error('❌ Error fetching filter options:', err);
-                
-                if (err.response?.status === 401) {
-                    setError('Authentication failed while fetching filter options. Please login again.');
-                } else if (err.response?.status === 403) {
-                    setError('Access denied for filter options. Check your permissions.');
-                } else {
-                    console.warn('⚠️ Failed to load filter options, but continuing with empty options');
-                }
+                console.warn('⚠️ Failed to load filter options, but continuing with empty options');
             }
         };
 
         fetchFilterOptions();
-    }, [useRealData, getAuthToken, getAuthHeaders]);
+    }, []);
 
-    // Fetch records when filters change (only for real data)
+    // Fetch records when filters change
     useEffect(() => {
-        if (useRealData) {
-            fetchRealAuditRecords();
-        }
-    }, [useRealData, fetchRealAuditRecords]);
+        fetchAuditRecords();
+    }, [fetchAuditRecords]);
 
-    // Determine which data source to use
-    const currentRecords = useRealData ? realAuditRecords : auditRecords;
-    
-    // Get unique values for filters (use appropriate data source)
-    const uniqueUsers = useRealData 
-        ? filterOptions.users.map(u => u.email || u.username)
-        : Array.from(new Set(auditRecords.map(record => record.user)));
-    
-    const uniqueRoles = useRealData 
-        ? ['Admin', 'Registrar', 'Staff'] 
-        : Array.from(new Set(auditRecords.map(record => record.userRole)));
-    
-    const uniqueActions = useRealData 
-        ? filterOptions.actions 
-        : Array.from(new Set(auditRecords.map(record => record.action)));
-    
-    const uniqueCategories = useRealData 
-        ? filterOptions.categories 
-        : Array.from(new Set(auditRecords.map(record => record.category)));
+    // Get unique values for filters
+    const uniqueUsers = Array.from(new Set(filterOptions.users.map((u: { email?: string; username: string }) => u.email || u.username)));
+    const uniqueRoles = ['admin', 'registrar', 'staff'];
+    const uniqueActions = filterOptions.actions;
+    const uniqueCategories = filterOptions.categories;
 
-    // Filter records based on all criteria (for hardcoded data only)
-    const filteredRecords = useRealData ? currentRecords : currentRecords.filter(record => {
-        const matchesSearch = record.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            record.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            record.details.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        const matchesUser = !selectedUser || record.user === selectedUser;
-        const matchesRole = !selectedRole || record.userRole === selectedRole;
-        const matchesAction = !selectedAction || record.action === selectedAction;
-        const matchesCategory = !selectedCategory || record.category === selectedCategory;
-        
-        const recordDate = new Date(record.timestamp);
-        const matchesStartDate = !startDate || recordDate >= new Date(startDate);
-        const matchesEndDate = !endDate || recordDate <= new Date(endDate + ' 23:59:59');
-        
-        return matchesSearch && matchesUser && matchesRole && matchesAction && matchesCategory && matchesStartDate && matchesEndDate;
-    });
-
-    // Apply client-side role and category filtering for real data
-    const finalFilteredRecords = useRealData ? filteredRecords.filter(record => {
-        const matchesRole = !selectedRole || record.userRole === selectedRole;
+    // Apply client-side role and category filtering
+    const filteredRecords = auditRecords.filter((record: AuditRecord) => {
+        const matchesRole = !selectedRole || record.userRole.toLowerCase() === selectedRole.toLowerCase();
         const matchesCategory = !selectedCategory || record.category === selectedCategory;
         return matchesRole && matchesCategory;
-    }) : filteredRecords;
+    });
 
-    const getCategoryColor = (category: string) => {
+    const getCategoryColor = (category: string): string => {
         switch (category) {
             case 'Authentication': return '#007bff';
             case 'Booking Management': return '#28a745';
             case 'User Management': return '#ffc107';
+            case 'Room Management': return '#17a2b8';
+            case 'Maintenance': return '#fd7e14';
             case 'Escalations': return '#dc3545';
             case 'System Configuration': return '#6f42c1';
             default: return '#6c757d';
@@ -488,30 +206,21 @@ const AdminAuditRecordsTable: React.FC = () => {
         setCurrentPage(1);
     };
 
-    const toggleDataSource = () => {
-        setUseRealData(!useRealData);
-        clearFilters();
-        setError(null);
-    };
+    if (loading && auditRecords.length === 0) {
+        return (
+            <div style={{ background: 'white', borderRadius: 10, boxShadow: '0 2px 10px rgba(0,0,0,0.1)', padding: 24 }}>
+                <h2>Audit Records</h2>
+                <p>Loading audit records...</p>
+            </div>
+        );
+    }
 
     return (
         <div style={{ background: 'white', borderRadius: 10, boxShadow: '0 2px 10px rgba(0,0,0,0.1)', padding: 24, position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h2>Audit Records</h2>
                 
-                {/* Data source toggle */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <label style={{ fontSize: 14, color: '#666' }}>
-                        <input
-                            type="checkbox"
-                            checked={useRealData}
-                            onChange={toggleDataSource}
-                            style={{ marginRight: 8 }}
-                        />
-                        Use Real Data from Backend
-                    </label>
-                    
-                    {/* Enhanced test connection button */}
                     <button
                         onClick={testBackendConnection}
                         style={{
@@ -527,27 +236,25 @@ const AdminAuditRecordsTable: React.FC = () => {
                         Test Connection
                     </button>
                     
-                    {useRealData && (
-                        <button
-                            onClick={fetchRealAuditRecords}
-                            disabled={loading}
-                            style={{
-                                padding: '6px 12px',
-                                background: '#007bff',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: 4,
-                                cursor: loading ? 'not-allowed' : 'pointer',
-                                fontSize: 12
-                            }}
-                        >
-                            {loading ? 'Refreshing...' : 'Refresh'}
-                        </button>
-                    )}
+                    <button
+                        onClick={fetchAuditRecords}
+                        disabled={loading}
+                        style={{
+                            padding: '6px 12px',
+                            background: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: 4,
+                            cursor: loading ? 'not-allowed' : 'pointer',
+                            fontSize: 12
+                        }}
+                    >
+                        {loading ? 'Refreshing...' : 'Refresh'}
+                    </button>
                 </div>
             </div>
 
-            {/* Enhanced error display */}
+            {/* Error display */}
             {error && (
                 <div style={{ 
                     background: '#f8d7da', 
@@ -563,20 +270,15 @@ const AdminAuditRecordsTable: React.FC = () => {
 
             {/* Data source indicator */}
             <div style={{ 
-                background: useRealData ? '#d1ecf1' : '#fff3cd', 
-                color: useRealData ? '#0c5460' : '#856404',
+                background: '#d1ecf1', 
+                color: '#0c5460',
                 padding: 8, 
                 borderRadius: 4, 
                 marginBottom: 16,
                 fontSize: 12,
                 fontWeight: 'bold'
             }}>
-                📊 Currently showing: {useRealData ? 'Real backend data' : 'Test/hardcoded data'}
-                {useRealData && getAuthToken() && (
-                    <span style={{ marginLeft: 8 }}>
-                        🔑 Authenticated
-                    </span>
-                )}
+                📊 Showing audit data from database
             </div>
             
             {/* Search and Filters */}
@@ -613,7 +315,7 @@ const AdminAuditRecordsTable: React.FC = () => {
                             }}
                         >
                             <option value="">All Users</option>
-                            {uniqueUsers.map(user => (
+                            {uniqueUsers.map((user: string) => (
                                 <option key={user} value={user}>{user}</option>
                             ))}
                         </select>
@@ -633,7 +335,7 @@ const AdminAuditRecordsTable: React.FC = () => {
                             }}
                         >
                             <option value="">All Roles</option>
-                            {uniqueRoles.map(role => (
+                            {uniqueRoles.map((role: string) => (
                                 <option key={role} value={role}>{role}</option>
                             ))}
                         </select>
@@ -653,7 +355,7 @@ const AdminAuditRecordsTable: React.FC = () => {
                             }}
                         >
                             <option value="">All Actions</option>
-                            {uniqueActions.map(action => (
+                            {uniqueActions.map((action: string) => (
                                 <option key={action} value={action}>{action}</option>
                             ))}
                         </select>
@@ -673,7 +375,7 @@ const AdminAuditRecordsTable: React.FC = () => {
                             }}
                         >
                             <option value="">All Categories</option>
-                            {uniqueCategories.map(category => (
+                            {uniqueCategories.map((category: string) => (
                                 <option key={category} value={category}>{category}</option>
                             ))}
                         </select>
@@ -733,15 +435,15 @@ const AdminAuditRecordsTable: React.FC = () => {
             {/* Results Summary and Pagination */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div style={{ color: '#666', fontSize: 14 }}>
-                    Showing {finalFilteredRecords.length} of {useRealData ? totalRecords : auditRecords.length} records
+                    Showing {filteredRecords.length} of {totalRecords} records
                     {loading && <span> (loading...)</span>}
                 </div>
                 
-                {/* Pagination for real data */}
-                {useRealData && totalPages > 1 && (
+                {/* Pagination */}
+                {totalPages > 1 && (
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <button
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}
                             disabled={currentPage === 1 || loading}
                             style={{
                                 padding: '4px 8px',
@@ -757,7 +459,7 @@ const AdminAuditRecordsTable: React.FC = () => {
                             Page {currentPage} of {totalPages}
                         </span>
                         <button
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            onClick={() => setCurrentPage((p: number) => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages || loading}
                             style={{
                                 padding: '4px 8px',
@@ -778,77 +480,55 @@ const AdminAuditRecordsTable: React.FC = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ background: '#0a4a7e', color: 'white' }}>
-                            <th style={{ padding: 12, textAlign: 'left' }}>TIMESTAMP</th>
-                            <th style={{ padding: 12, textAlign: 'left' }}>USER</th>
-                            <th style={{ padding: 12, textAlign: 'left' }}>ROLE</th>
-                            <th style={{ padding: 12, textAlign: 'left' }}>ACTION</th>
-                            <th style={{ padding: 12, textAlign: 'left' }}>DETAILS</th>
-                            <th style={{ padding: 12, textAlign: 'left', minWidth: 150 }}>CATEGORY</th>
+                            <th style={{ padding: 12, textAlign: 'left', fontSize: 12 }}>Timestamp</th>
+                            <th style={{ padding: 12, textAlign: 'left', fontSize: 12 }}>User</th>
+                            <th style={{ padding: 12, textAlign: 'left', fontSize: 12 }}>Role</th>
+                            <th style={{ padding: 12, textAlign: 'left', fontSize: 12 }}>Action</th>
+                            <th style={{ padding: 12, textAlign: 'left', fontSize: 12 }}>Category</th>
+                            <th style={{ padding: 12, textAlign: 'left', fontSize: 12 }}>Details</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {finalFilteredRecords.length > 0 ? (
-                            finalFilteredRecords.map((record) => (
+                        {filteredRecords.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} style={{ padding: 20, textAlign: 'center', color: '#666' }}>
+                                    {loading ? 'Loading audit records...' : 'No audit records found'}
+                                </td>
+                            </tr>
+                        ) : (
+                            filteredRecords.map((record: AuditRecord) => (
                                 <tr key={record.id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                                    <td style={{ padding: 12, fontSize: 12, fontFamily: 'monospace' }}>
-                                        {useRealData 
-                                            ? new Date(record.timestamp).toLocaleString() 
-                                            : record.timestamp
-                                        }
+                                    <td style={{ padding: 8, fontSize: 11 }}>
+                                        {new Date(record.timestamp).toLocaleString()}
                                     </td>
-                                    <td style={{ padding: 12, fontWeight: 'bold' }}>
-                                        {record.user}
-                                    </td>
-                                    <td style={{ padding: 12 }}>
+                                    <td style={{ padding: 8, fontSize: 11 }}>{record.user}</td>
+                                    <td style={{ padding: 8, fontSize: 11 }}>
                                         <span style={{
-                                            background: record.userRole === 'Admin' ? '#000000ff' : 
-                                                        record.userRole === 'Registrar' ? '#6f6f6fff' : '#a3a3a3ff',
-                                            color: 'white',
                                             padding: '2px 6px',
-                                            borderRadius: 12,
-                                            fontSize: 10,
-                                            fontWeight: 'bold'
+                                            borderRadius: 4,
+                                            background: record.userRole.toLowerCase() === 'admin' ? '#dc3545' : 
+                                                       record.userRole.toLowerCase() === 'registrar' ? '#ffc107' : '#28a745',
+                                            color: record.userRole.toLowerCase() === 'registrar' ? '#000' : '#fff',
+                                            fontSize: 10
                                         }}>
                                             {record.userRole}
                                         </span>
                                     </td>
-                                    <td style={{ padding: 12 }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                            {record.action}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: 12, maxWidth: 300, wordWrap: 'break-word' }}>
-                                        {record.details}
-                                    </td>
-                                    <td style={{ padding: 12, minWidth: 150, whiteSpace: 'nowrap' }}>
+                                    <td style={{ padding: 8, fontSize: 11 }}>{record.action}</td>
+                                    <td style={{ padding: 8, fontSize: 11 }}>
                                         <span style={{
+                                            padding: '2px 6px',
+                                            borderRadius: 4,
                                             background: getCategoryColor(record.category),
                                             color: 'white',
-                                            padding: '4px 12px',
-                                            borderRadius: 12,
-                                            fontSize: 11,
-                                            fontWeight: 'bold',
-                                            display: 'inline-block'
+                                            fontSize: 10
                                         }}>
                                             {record.category}
                                         </span>
                                     </td>
+                                    <td style={{ padding: 8, fontSize: 11, maxWidth: 300 }}>{record.details}</td>
                                 </tr>
                             ))
-                        ) : (
-                            <tr>
-                                <td colSpan={6} style={{ padding: 32, textAlign: 'center', color: '#666' }}>
-                                    {loading 
-                                        ? 'Loading audit records...' 
-                                        : 'No audit records found matching your criteria.'
-                                    }
-                                    {useRealData && !loading && (
-                                        <div style={{ marginTop: 8, fontSize: 12 }}>
-                                            Try clicking "Test Connection" to check your backend setup.
-                                        </div>
-                                    )}
-                                </td>
-                            </tr>
                         )}
                     </tbody>
                 </table>
