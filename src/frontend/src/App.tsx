@@ -17,9 +17,9 @@ import StaffMyBookings from './components/pages/staff_pages/StaffMyBookings';
 import RegistrarClassroomManagement from './components/pages/registrar_pages/RegistrarClassroomManagement';
 import RegistrarTimeSlotManagement from './components/pages/registrar_pages/RegistrarTimeSlotManagement';
 import RegistrarEscalations from './components/pages/registrar_pages/RegistrarEscalations';
-import RegistrarAccountManagement from './components/pages/registrar_pages/RegistrarAccountManagement';
+import RegistrarAccountManagement from './components/pages/registrar_pages/registrar_components/RegistrarAccountManagement';
 import RegistrarStatisticsLogs from './components/pages/registrar_pages/RegistrarStatisticsLogs';
-import AdminScheduleIntegrity from './components/pages/registrar_pages/RegistrarScheduleIntegrity'; // reused for registrar route now
+import AdminScheduleIntegrity from './components/pages/registrar_pages/RegistrarScheduleIntegrity'; 
 
 // Admin pages
 import AdminSystemConfig from './components/pages/admin_pages/AdminSystemConfig';
