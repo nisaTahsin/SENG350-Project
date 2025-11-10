@@ -1,46 +1,9 @@
-// src/backend/tests/booking.service.unit.spec.ts
-import { vi, beforeEach, describe, expect, it } from 'vitest';
-
-// --- user.entity stubs (absolute + relative) ---
-vi.mock('/Users/taqdeerkaur/Desktop/SENG350_project/group_2_proj/src/backend/src/user/user.entity.ts', () => ({
-  User: class User { id!: number; email!: string; }
-}));
-vi.mock('/Users/taqdeerkaur/Desktop/SENG350_project/group_2_proj/src/backend/src/user/user.entity', () => ({
-  User: class User { id!: number; email!: string; }
-}));
-vi.mock('../src/user/user.entity.ts', () => ({
-  User: class User { id!: number; email!: string; }
-}));
-vi.mock('../src/user/user.entity', () => ({
-  User: class User { id!: number; email!: string; }
-}));
-
-// --- booking.entity stubs (absolute + relative) ---
-vi.mock('/Users/taqdeerkaur/Desktop/SENG350_project/group_2_proj/src/backend/src/booking/booking.entity.ts', () => ({
-  Booking: class Booking { id!: number; userId!: number; roomId!: number; timeslotId!: number; status!: string; notes?: string; }
-}));
-vi.mock('/Users/taqdeerkaur/Desktop/SENG350_project/group_2_proj/src/backend/src/booking/booking.entity', () => ({
-  Booking: class Booking { id!: number; userId!: number; roomId!: number; timeslotId!: number; status!: string; }
-}));
-vi.mock('../src/booking/booking.entity.ts', () => ({
-  Booking: class Booking { id!: number; userId!: number; roomId!: number; timeslotId!: number; status!: string; notes?: string; }
-}));
-vi.mock('../src/booking/booking.entity', () => ({
-  Booking: class Booking { id!: number; userId!: number; roomId!: number; timeslotId!: number; status!: string; }
-}));
-
-// --- data-source stubs (absolute + relative) ---
-vi.mock('/Users/taqdeerkaur/Desktop/SENG350_project/group_2_proj/src/backend/src/data-source.ts', () => ({
-  AppDataSource: { query: vi.fn(), initialize: vi.fn(), getRepository: vi.fn() }
-}));
-vi.mock('../src/data-source.ts', () => ({
-  AppDataSource: { query: vi.fn(), initialize: vi.fn(), getRepository: vi.fn() }
-}));
-
-// ---- now import SUTs ----
+// tests/booking.service.unit.spec.ts
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { BookingService } from '../src/booking/booking.service';
 import { Booking } from '../src/booking/booking.entity';
 import { AuditService } from '../src/audit/audit.service';
@@ -55,7 +18,7 @@ describe('BookingService (unit)', () => {
       create: vi.fn((d: Partial<Booking>) => d as Booking),
       save:   vi.fn(async (b: Booking) => ({ id: 1, status: 'confirmed', ...b } as Booking)),
       findOne: vi.fn(async () => null),
-      find:    vi.fn(async () => [{ roomId: 2 } as any]), // Pretend room 2 is busy
+      find:    vi.fn(async () => [{ roomId: 2 } as any]), // 2 is busy
     };
 
     const moduleRef = await Test.createTestingModule({
