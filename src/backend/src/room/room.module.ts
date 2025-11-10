@@ -7,9 +7,10 @@ import { Room } from './room.entity';
 import { Timeslot } from '../timeslot/timeslot.entity';
 import { BookingModule } from '../booking/booking.module';
 import { AuditModule } from '../audit/audit.module';
+import { MaintenanceModule } from '../maintenance/maintenance.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Room, Timeslot]), BookingModule, AuditModule],
+  imports: [TypeOrmModule.forFeature([Room, Timeslot]), BookingModule, AuditModule, MaintenanceModule],
   providers: [RoomsService, RoomImportService],
   controllers: [RoomsController],
   exports: [RoomsService, RoomImportService],

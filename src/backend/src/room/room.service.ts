@@ -399,55 +399,50 @@ export class RoomsService {
   }
 
   async generateTimeslotsForDate(date: string): Promise<Timeslot[]> {
-    const rooms = await this.roomRepository.find({ where: { isActive: true } });
+  const rooms = await this.roomRepository.find({ where: { isActive: true } });
 
-    // Desired 30-min schedule: both :00 and :30 starts within operating window
-    const desiredStarts = [
-      '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-      '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00',
-      '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
-    ];
+  const desiredStarts = [
+    '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00',
+    '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
+  ];
 
-    const created: Timeslot[] = [];
+  const created: Timeslot[] = [];
 
-    for (const room of rooms) {
-      // Get existing starts for this room/date
-      const existingForRoom: { start_time: Date }[] = await this.timeslotRepository
-        .createQueryBuilder('t')
-        .select(['t.start_time AS start_time'])
-        .where('t.room_id = :roomId', { roomId: room.id })
-        .andWhere('DATE(t.start_time) = :date', { date })
-        .getRawMany();
+  for (const room of rooms) {
+    // Get existing timeslots for this room/date
+    const existingForRoom: { start_time: Date; end_time: Date }[] = await this.timeslotRepository
+      .createQueryBuilder('t')
+      .select(['t.start_time AS start_time', 't.end_time AS end_time'])
+      .where('t.room_id = :roomId', { roomId: room.id })
+      .andWhere('DATE(t.start_time) = :date', { date })
+      .getRawMany();
 
-      const existingKeys = new Set(
-        existingForRoom.map((row) => {
-          const d = new Date(row.start_time);
-          const hh = String(d.getHours()).padStart(2, '0');
-          const mm = String(d.getMinutes()).padStart(2, '0');
-          return `${hh}:${mm}`;
-        })
+    const toCreate: Timeslot[] = [];
+
+    for (const t of desiredStarts) {
+      const startTime = new Date(`${date}T${t}:00`);
+      const endTime = new Date(startTime.getTime() + 30 * 60 * 1000);
+
+      // Skip if overlaps any existing timeslot
+      const overlaps = existingForRoom.some(slot =>
+        startTime < slot.end_time && endTime > slot.start_time
       );
+      if (overlaps) continue;
 
-      const toCreate: Timeslot[] = [];
-      for (const t of desiredStarts) {
-        if (existingKeys.has(t)) continue; // already present
-        // Create times in LOCAL time (no 'Z') so they align with the UI's local schedule
-        const startTime = new Date(`${date}T${t}:00`);
-        const endTime = new Date(startTime.getTime() + 30 * 60 * 1000);
-        const dateOnly = new Date(`${date}T00:00:00`);
-        const timeslot = this.timeslotRepository.create({ room, startTime, endTime, date: dateOnly });
-        toCreate.push(timeslot);
-      }
-
-      if (toCreate.length > 0) {
-        const saved = await this.timeslotRepository.save(toCreate);
-        created.push(...saved);
-      }
+      const dateOnly = new Date(`${date}T00:00:00`);
+      const timeslot = this.timeslotRepository.create({ room, startTime, endTime, date: dateOnly });
+      toCreate.push(timeslot);
     }
 
-    // Returns only newly created entries (no-ops if complete)
-    return created;
+    if (toCreate.length > 0) {
+      const saved = await this.timeslotRepository.save(toCreate);
+      created.push(...saved);
+    }
   }
+
+  return created;
+}
 
   // ========== BOOKING QUERIES ==========
 

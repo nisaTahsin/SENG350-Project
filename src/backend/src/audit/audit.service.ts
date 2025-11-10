@@ -708,4 +708,43 @@ export class AuditService {
       return this.getActionDescription(action);
     }
   }
+
+    /**
+   * Get most recent audit logs for quick public view (no guards)
+   */
+  async getRecentLogs(limit: number = 10) {
+    try {
+      if (!AppDataSource.isInitialized) {
+        await AppDataSource.initialize();
+      }
+
+      const logs: AuditLogRaw[] = await AppDataSource.query(
+        `SELECT a.*, 
+                u.username AS actor_username,
+                u.email AS actor_email,
+                u.role AS actor_role
+         FROM audit_logs a
+         LEFT JOIN users u ON a.actor_id = u.id
+         ORDER BY a.created_at DESC
+         LIMIT $1`,
+        [limit]
+      );
+
+      const formatted = logs.map((log) => ({
+        id: log.id.toString(),
+        timestamp: log.created_at.toISOString(),
+        user: log.actor_email || log.actor_username || 'System',
+        userRole: this.formatRole(log.actor_role),
+        action: this.mapBackendActionToFrontend(log.action),
+        details: this.formatDetails(log.action, log.metadata, log.target_name),
+        category: this.getActionCategory(log.action),
+      }));
+
+      return formatted; // controller wraps with { success: true, data: formatted }
+    } catch (error) {
+      console.error('❌ Error in getRecentLogs:', error);
+      return [];
+    }
+  }
+
 }
