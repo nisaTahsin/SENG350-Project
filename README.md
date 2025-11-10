@@ -1,6 +1,6 @@
 # UVIC Classroom Booking System
 
-
+This document details important information for running, using, and understanding the system.
 
 ## Team Members
 
@@ -12,96 +12,95 @@
 | V00984911 | Anitta Varghese |
 | V01033161 | Taqdeer Kaur Sandhu|
 
-## Quick Start
 
-### Prerequisites
+## 1.0 Quick Start
+
+### 1.1 Prerequisites
 - Docker and Docker Compose
 - Node.js (for local development)
 
-### Running the Application
+### 1.2 Running the Application
 
-1. **Clone the repository**
+1. **Clone the repository:**
    ```bash
    git clone <repository-url>
    cd group_2_proj
    ```
 
-2. **Start the application**
+2. **Start the application:**
    ```bash
-   docker-compose up
+   docker compose up
    ```
-   Try again if it doesn't work the first time
-
-3. **Access the application**
+3. **Access the application:**
 Just go to localhost:3000 on your web browser to begin interacting with the system
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:4000
 
-### Test User Credentials
-The following test users are available for testing different user roles:
+4. **Troubleshooting:**
+If you are having issues with database inconsistencies/errors, try using these commands:
+   ```bash
+   docker compose down -v
+   docker compose up --build
+   ```
 
-| Username | Password | Role | Description |
-|----------|----------|------|-------------|
-| `staff` | `test123` | Staff | Can browse and book classrooms |
-| `staffA` | `test123` | Staff | Additional staff user |
-| `registrar` | `test123` | Registrar | Registrar-level access |
-| `admin` | `test123` | Admin | Administrative access |
+### 1.3 Test User Credentials
 
-### Test Audit Logs
-The following test audit log entries are seeded in the database:
+Please login with one of the following available test users :
 
-| Actor    | Action                      | Target Type | Target ID | Metadata (summary)                                                                 | Timestamp (relative) |
-|----------|-----------------------------|-------------|-----------|------------------------------------------------------------------------------------|----------------------|
-| admin    | USER_LOGIN                  | user        | 1         | {"username":"admin","role":"admin","timestamp":"2024-11-09T10:00:00Z"}             | ~1 hour ago          |
-| registrar| USER_LOGIN                  | user        | 2         | {"username":"registrar","role":"registrar","timestamp":"2024-11-09T09:30:00Z"}     | ~1.5 hours ago       |
-| staff    | USER_LOGIN                  | user        | 3         | {"username":"staff","role":"staff","timestamp":"2024-11-09T09:00:00Z"}             | ~2 hours ago         |
-| admin    | USER_CREATED                | user        | 4         | {"username":"newstaff","role":"staff","created_by":"admin"}                       | ~3 hours ago         |
-| admin    | USER_ROLE_CHANGED           | user        | 2         | {"username":"registrar","old_role":"staff","new_role":"registrar"}                | ~4 hours ago         |
-| registrar| USER_BLOCKED_WITH_REASON    | user        | 4         | {"username":"newstaff","reason":"Policy violation"}                               | ~5 hours ago         |
-| admin    | SYSTEM_CONFIG_CHANGED       | NULL        | NULL      | {"setting":"max_bookings_per_day","old_value":"2","new_value":"3"}                | ~6 hours ago         |
+| Username | Password | Role |
+|----------|----------|------|
+| `staff` | `test123` | Staff |
+| `staffA` | `test123` | Staff |
+| `registrar` | `test123` | Registrar |
+| `admin` | `test123` | Admin |
 
-### Features
+### 1.4 Features
 
-- **User Authentication**: Login with different user roles
+**All Users:**
+- **User Authentication**: Login with any of the three user roles (staff, registrar, or admin)
+- **User Permission Hierarchy**: Admin users can log into registrar and staff accounts, and registrars can login to staff accounts
+
+**Staff:**
 - **Room Browsing**: View available classrooms by building
-- **Room Booking**: Book classrooms in 30-minute chunks many days into the future
+- **Room Booking**: Book classrooms in 30-minute sessions a maximum of 7 days into the future
+- **View Bookings**: View bookings (upcoming, passed, and cancelled), filter by date, cancel bookings, and view booking details
 
-### Available Buildings
+**Registrar:**
+- **Classroom & Timeslot Management**: Edit classroom information and configure available time slots
+- **Account Management**: Block abusive accounts or manually release bookings
+- **Statistics & System Logs**: View booking statistics, generate reports, and monitor system activity
+- **Manage Schedule Integrity**: View utilization and ensure efficient room usage
+
+**Admin:**
+- **System Configuration**: Configure system level settings
+- **Audit Records**: View comprehensive audit trails and system records
+- **System Health**: Monitor system performance and health metrics
+
+
+### 1.5 Available Buildings
 
 - Elliot Building
 - MacLaurin Building  
-- Clearihue Building
-- David Strong Building
 - Cornett Building
 - And many more...
 
-### API Endpoints
+## 2.0 Additional Information
+
+### 2.1 API Endpoints
 
 - `GET /users` - List all users
 - `POST /users/login` - User authentication
-- `GET /rooms` - List all rooms
-- `GET /rooms/:id/timeslots` - Get timeslots for a room
 - `POST /booking` - Create a new booking
 - `GET /booking` - List all bookings
 
-### Development
+### 2.2 Development
 
 To run in development mode:
-
-```bash
-# Backend
-cd src/backend
-npm install
-npm run start:dev
-
-# Frontend  
-cd src/frontend
-npm install
+```
 npm start
 ```
 
-## Directory Structure
-
+### 2.3 File Structure Guide
 The project directory is organized as follows:
 
 ```
@@ -139,3 +138,25 @@ Notes:
 - docker-compose.yml wires the three services (frontend, backend, db) for local development.
 
 
+### 2.5 Frontend to Backend Connections
+Done through http fetching and oxios.
+
+### 2.4 Hardcoded Elements
+
+#### 2.4.1 Admin System Health Data
+
+Since this system will not be operating like a real booking website, a lot of the system health data is not practical display. 
+The database connection timestamp, number of failed booking attempts, and number of failed requests to the system health are dynamic.
+The hardcoded elements are:
+
+- API Endpoints status
+- Booking Service status
+- Error Rate
+- Failed Bookings
+- System Uptime
+
+#### 2.4.2 Admin Audit Logs
+
+One of our team members worked very hard to implement this feature dynamically, however, their implementation unfortunately caused system-wide authentication issues which interrupted the primary purpose of the system, staff booking. 
+
+Since we don't have nearly enough time to re-implement the audit logs feature after spending many many hours trying to fix the authentication issues, we have decided to roll back the dynamic implementation in favour of hardcoded data. 
