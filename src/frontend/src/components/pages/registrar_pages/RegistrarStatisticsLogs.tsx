@@ -125,7 +125,7 @@ const RegistrarStatisticsLogs: React.FC = () => {
       setAuditLogs(auditData.success ? auditData.data || [] : []);
       setBookingTrends(trendsData.success ? trendsData.data || [] : []);
     } catch (err) {
-      console.warn('⚠️ Backend unavailable, showing mock data...');
+      console.warn('Backend unavailable, showing mock data...');
       // --- mock fallback data for demo ---
       setStats([
         { status: 'confirmed', count: 45, percentage: 60 },
@@ -210,7 +210,7 @@ const RegistrarStatisticsLogs: React.FC = () => {
 
           {/* Booking Trends */}
           <section style={{ marginBottom: 40 }}>
-            <h3>� Booking Trends</h3>
+            <h3>Booking Trends</h3>
             <div style={{ height: 300, marginTop: 20 }}>
               {bookingTrends.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -233,7 +233,7 @@ const RegistrarStatisticsLogs: React.FC = () => {
 
           {/* Room Utilization */}
           <section style={{ marginBottom: 40 }}>
-            <h3>🏫 Room Utilization</h3>
+            <h3>Room Utilization</h3>
             {popularRooms.length > 0 ? (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 20 }}>
@@ -270,7 +270,7 @@ const RegistrarStatisticsLogs: React.FC = () => {
 
           {/* Recent Audit Logs */}
           <section style={{ marginBottom: 40 }}>
-            <h3>🧾 Recent Audit Logs</h3>
+            <h3>Recent Audit Logs</h3>
             {auditLogs.length > 0 ? (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 20 }}>

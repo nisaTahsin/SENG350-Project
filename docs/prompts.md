@@ -76,6 +76,8 @@ Oct. 28: Is the registrar feature: Statistics/logs fully implemented in the back
 
 Oct. 28: Which specific admin features and endpoints are implemented currently? (backend and frontend)
 
+
+
 Links to ChatGPT logs:
 Oct. 1: https://chatgpt.com/share/68e33a5d-9a20-8002-aa74-fc14af4048b6
 
@@ -94,6 +96,14 @@ Oct. 17: Give a comprehensive description of the flow for the staff booking proc
 Oct. 19: Confirm whether or not the frontend and backend is connected by a REST architecture
 
 Oct. 19: What are the benefits and downsides of using a REST architecture?
+
+Nov 08: Can you display the class size on my bookings here?
+
+Nov 08: Could you sort the bookings displayed by date? I would like it sorted earliest to latest
+
+Nov 08: Is this file being used anywhere?
+
+Nov 09: Can you update the file structure diagram in here to match the current file structure within frontend?
 
 *Implementation 2
 
