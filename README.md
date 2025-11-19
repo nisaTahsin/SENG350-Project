@@ -166,3 +166,8 @@ The hardcoded elements are:
 One of our team members worked very hard to implement this feature dynamically, however, their implementation unfortunately caused system-wide authentication issues which interrupted the primary purpose of the system, staff booking. 
 
 Since we don't have nearly enough time to re-implement the audit logs feature after spending many many hours trying to fix the authentication issues, we have decided to roll back the dynamic implementation in favour of hardcoded data. 
+
+
+## 3.0 Programming Styles activity
+
+A pdf containing the slides from our presentation on programming styles can be found within the "docs" folder [here](./docs/Programming_Styles_-_Passive_Aggressive.pdf.pdf).
