@@ -95,17 +95,10 @@ The solution to this smell is to abstract a common service. Doing so will allow 
 
 
 **Method Signature:**
-The extracted method `logRoomAction()` has the following method signature:
+The created service method `validateBookingTimes()` has the following method signature:
 
 ```typescript
-private async logRoomAction(
-    action: string,
-    targetId: number | string,
-    actorName: string,
-    details: string,
-    before?: any,
-    after?: any
-): Promise<void>
+validateBookingTimes(startStr: string, endStr: string): [Date, Date]
 ```
 
 ### 2.1.3 Evidence of Tests
