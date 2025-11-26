@@ -73,11 +73,6 @@ private async logRoomAction(
 ): Promise<void>
 ```
 
-**Test Coverage:** `test/rooms.controller.spec.ts` - "logRoomAction (REFACTORING TEST)" section
-- Tests verify logging for create operation
-- Tests verify logging with before/after states
-- Tests verify deletion logging
-
 
 #### 2.1.2 High Parameter Coupling
 
@@ -112,11 +107,6 @@ private async logRoomAction(
     after?: any
 ): Promise<void>
 ```
-
-**Test Coverage:** `test/rooms.controller.spec.ts` - "logRoomAction (REFACTORING TEST)" section
-- Tests verify logging for create operation
-- Tests verify logging with before/after states
-- Tests verify deletion logging
 
 ### 2.1.3 Evidence of Tests
 
