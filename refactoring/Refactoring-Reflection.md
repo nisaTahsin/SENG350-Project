@@ -1,22 +1,73 @@
-documentation was not accurate - rooms.csv file was not in docs folder, but rather the data folder.
-readme file in backend folder appears to be from Nest, and does not state information about the application itself
+# Refactoring Reflection
 
-Frontend:
-inconsistent quality of comments - some files such as Admin.tsx have well commented code, but others such as classroom search page has very limited number of comments. No comments present for all files under styles folder
-naming of variables is occassionally vague - a, b, rn, res used in some files, making the code less readable
-frontend view for users is good. Users can all book rooms with clear filtering for time, room, and capacity. 
-confirmation or failure messages are clear, logs and analytics are updated clearly for admin and registrars
+## Documentation 7/10
+- Project documentation contained incorrect information.  
+  - uvic_rooms.csv was documented as being in the `docs` folder but was actually located in `data`.  
+- The backend README.md appeared to be a default NestJS template rather than a description of the project.
+- There was no README.md file for the frontend.    
+- These issues made it harder for the team to understand the system before refactoring.
+- However, the README.md file in the root was well documented, with instructions on how to test the application and what features are present.
 
-Testing: 
-comments are very limited. However, there are some descriptions in the tests that explain what functionalities are being tested
-testing appears to have coverage over essential functionalities such as booking classrooms, admin health page, and blocking users 
-also uses vague variable naming such as 'u' 
+---
 
-Backend:
-auth folder: does not have comments present, but has better variable naming that makes it easier to tell what is being documentation
-bookings folder: very well commented. clear variable naming and steps that are well explained
+## Frontend 8/10
 
-** ADD IN WHETHER TESTS WERE PASSING OR NOT 
-** ADD IN CODE SMELLS
-** GIVE RATING FOR EACH SECTION
+### Strengths
+- The user-facing interface provides a clear and intuitive workflow for booking rooms.  
+  - Filtering by time, room, and capacity is straightforward.  
+- Confirmation and failure messages are displayed clearly.  
+- Logs and analytics pages update correctly for admin and registrar roles.
 
+### Challenges / Issues Noticed
+- Variable names were occasionally vague (`a`, `b`, `rn`, `res`), reducing readability.  
+- The lack of comments in most files made their logic harder to follow.
+
+---
+
+## Testing 9/10
+
+### Strengths
+- Core features are covered by the test suite such as classroom booking creation/deletion, user management, and logging.
+- Test descriptions provided insight into expected behavior.
+
+### Challenges
+- Limited explanation and vague variable naming (e.g., `u`) reduced test readability.
+
+---
+
+## Backend 9/10
+
+### Strengths 
+- The service modules such as bookings.service and users.service were very well commented.
+  - Uses consistently clear variable names.
+  - Each step of the operations are explained, making the logical flow easy to understand.
+- The controller modules include information about what operation each method is resposible for and what information is returned.
+- Clear status codes with accompanying success/error messages.
+
+## Code Smells Identified
+
+### 1. Duplicated Logging Logic (Rooms Controller)
+**Location:** `src/backend/src/rooms/rooms.controller.ts`
+
+**Issue**
+- Audit logging code was repeated across several methods: `create()`, `update()`, `delete()`, `uploadCSV()`, `deleteAll()`
+- Each block used the same multi-step logging pattern.
+
+**Refactoring Challenges**
+- Required careful comparison of each repeated block to ensure identical behavior.  
+- Increased risk of overlooking subtle variations.  
+- Added verification workload due to the large number of copies.
+
+### 2. Tight Coupling (Bookings Module)
+**Location:**  
+- Originally in `bookings.controller.ts`  
+- Moved into `bookings.service.ts`
+
+**Issue**
+- Start/end time validation was implemented directly in multiple controller methods.  
+- Controllers handled both request processing and business logic, violating the single responsibility principle.  
+- Validation logic duplicated across endpoints.
+
+**Refactoring Challenges**
+- Required locating and comparing validation implementations across several controllers.  
+- Moving logic to different file risked unintended behavioral changes.
