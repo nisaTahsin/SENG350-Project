@@ -3,7 +3,7 @@
 ## Documentation 7/10
 - Project documentation contained incorrect information.  
   - uvic_rooms.csv was documented as being in the `docs` folder but was actually located in `data`.  
-- The backend README.md appeared to be a default NestJS template rather than a description of the project.
+  - The backend README.md appeared to be a default NestJS template rather than a description of the project.
 - There was no README.md file for the frontend.    
 - These issues made it harder for the team to understand the system before refactoring.
 - However, the README.md file in the root was well documented, with instructions on how to test the application and what features are present.
