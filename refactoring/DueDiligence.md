@@ -39,7 +39,7 @@ The original developers demonstrated strong knowledge of both React and NestJS.
 The backend shows consistent separation of concerns, appropriate use of dependency injection and thoughtful DTO validation. 
 The breadth and reliability of the test suite further highlight the developers familiarity with good engineering practices. 
 Despite some inconsistencies in frontend documentation, the implementation reflects a clear understanding of modern development frameworks. 
-The code smells present appear to be normal artefacts of project timelines rather than signs of inexperience.
+The code smells present appear to be normal artifacts of project timelines rather than signs of inexperience.
 
 
 ## 2.0 Refactoring
