@@ -1,9 +1,10 @@
 # Refactoring Reflection
 
 ## Documentation 7/10
-- Project documentation contained incorrect information.  
+- Project documentation contained incorrect or incomplete information.  
   - uvic_rooms.csv was documented as being in the `docs` folder but was actually located in `data`.  
   - The backend README.md appeared to be a default NestJS template rather than a description of the project.
+  - The method to make rooms available for booking was not clearly documented.
 - There was no README.md file for the frontend.    
 - These issues made it harder for the team to understand the system before refactoring.
 - However, the README.md file in the root was well documented, with instructions on how to test the application and what features are present.
@@ -29,6 +30,7 @@
 ### Strengths
 - Core features are covered by the test suite such as classroom booking creation/deletion, user management, and logging.
 - Test descriptions provided insight into expected behavior.
+- All test cases were passing.
 
 ### Challenges
 - Limited explanation and vague variable naming (e.g., `u`) reduced test readability.
