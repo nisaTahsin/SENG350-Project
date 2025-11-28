@@ -17,19 +17,29 @@ These factors as well as the presence of some code smells which would be easy to
 
 ### 1.1 Code Quality Evaluation
 
+
 #### 1.1.1 Comments and Documentation
-*insert answer to: Does the code have good comments? Are there adequate documents to explain the architecture?*
+The project contains generally good comments, especially in the backend. 
+Many functions include descriptive comments that clarify the purpose of parameters and return values. 
+The backend is structured using idiomatic NestJS patterns and the clear naming conventions help reduce cognitive load. 
+While the frontend documentation is uneven, the overall structure remains understandable. 
+Architectural explanations are present through the module layout and folder organization, though the project would benefit from a dedicated high-level README describing system interactions.
 
 
 #### 1.1.2 Evaluation with SonarQube
-*insert answer to: Are there obvious quality gaps in the code, as explained by code quality tools such as SonarQube?*
-
-
-note for Taqdeer: you can download SonarQube as an extension for VSCode.
+Using SonarQube, we identified several quality issues consistent with our manual review. 
+The most significant finding was duplicated code within the room-management controller, where multiple methods replicated similar logging logic. 
+SonarQube also reported elevated cognitive complexity in booking-related logic due to repeated time-validation checks dispersed across several files. 
+Additional minor issues such as unused variables and small formatting inconsistencies were noted but were not impactful. 
+Overall, SonarQube confirmed that the project is structurally sound but contains refactoring opportunities around duplication and complexity.
 
 
 #### 1.1.3 Developer Capability 
-*insert answer to: Do the developers seem capable and understand the approach they took?*
+The original developers demonstrated strong knowledge of both React and NestJS. 
+The backend shows consistent separation of concerns, appropriate use of dependency injection and thoughtful DTO validation. 
+The breadth and reliability of the test suite further highlight the developers familiarity with good engineering practices. 
+Despite some inconsistencies in frontend documentation, the implementation reflects a clear understanding of modern development frameworks. 
+The code smells present appear to be normal artefacts of project timelines rather than signs of inexperience.
 
 
 ## 2.0 Refactoring
