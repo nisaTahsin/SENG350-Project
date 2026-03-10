@@ -4,13 +4,13 @@ This document details important information for running, using, and understandin
 
 ## Team Members
 
-| V#   | Name     |
+|  Name     |
 | ---- | -------- |
-| V01010048 | Amanda Erickson |
-| V01006449 | Nisa Tahsin |
-| V01013819 | Griffin Costello |
-| V00984911 | Anitta Varghese |
-| V01033161 | Taqdeer Kaur Sandhu|
+|  Amanda Erickson |
+|  Nisa Tahsin |
+|  Griffin Costello |
+|  Anitta Varghese |
+|  Taqdeer Kaur Sandhu|
 
 
 ## 1.0 Quick Start
@@ -169,5 +169,6 @@ Since we don't have nearly enough time to re-implement the audit logs feature af
 
 
 ## 3.0 Programming Styles activity
+
 
 A pdf containing the slides from our presentation on programming styles can be found within the "docs" folder [here](./docs/Programming_Styles_-_Passive_Aggressive.pdf.pdf).
